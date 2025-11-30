@@ -5,20 +5,16 @@ import crypto from "crypto";
 import User from "../models/User.js";
 import { sendEmail } from "../utils/sendEmail.js";
 
-const JWT_SECRET: Secret =
-  (process.env.JWT_SECRET as string) ?? "secret";
+const JWT_SECRET: Secret = (process.env.JWT_SECRET as string) ?? "secret";
 
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 
 function signToken(id: string): string {
-  return jwt.sign(
-    { id },
-    JWT_SECRET,
-    { expiresIn: "7d", algorithm: "HS256" } as jwt.SignOptions
-  );
+  return jwt.sign({ id }, JWT_SECRET, {
+    expiresIn: "7d",
+    algorithm: "HS256",
+  } as jwt.SignOptions);
 }
-
-
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -96,7 +92,8 @@ export const login = async (req: Request, res: Response) => {
     if (!user) return res.status(400).json({ message: "Invalid credentials." });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials." });
+    if (!isMatch)
+      return res.status(400).json({ message: "Invalid credentials." });
 
     const token = signToken(user._id.toString());
     res.status(200).json({
@@ -131,7 +128,9 @@ export const forgotPassword = async (req: Request, res: Response) => {
     await user.save();
 
     // create link for frontend that includes email & otp (frontend will read otp from query)
-    const resetLink = `${CLIENT_URL}/reset-password?email=${encodeURIComponent(user.email)}&otp=${otp}`;
+    const resetLink = `${CLIENT_URL}/reset-password?email=${encodeURIComponent(
+      user.email
+    )}&otp=${otp}`;
 
     const html = `
       <p>Hi ${user.fullName},</p>
@@ -142,7 +141,11 @@ export const forgotPassword = async (req: Request, res: Response) => {
       <p>If you didn't request this, please ignore this email.</p>
     `;
 
-    await sendEmail(user.email, "Password Reset OTP", html);
+    try {
+      await sendEmail(user.email, "Password Reset OTP", html);
+    } catch (emailError) {
+      console.error("sendEmail failed:", emailError);
+    }
 
     return res.status(200).json({ message: "OTP sent to email." });
   } catch (error) {
@@ -164,7 +167,9 @@ export const resetPassword = async (req: Request, res: Response) => {
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ message: "Password must be at least 6 characters." });
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters." });
     }
 
     const user = await User.findOne({ email: email.toLowerCase() });

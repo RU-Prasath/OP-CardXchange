@@ -1,8 +1,7 @@
 import { useForm } from "react-hook-form";
-import { useContext } from "react";
-import { toast } from "react-toastify";
-import { AuthContext } from "../../context/AuthContext";
-import { api } from "../../api/config/axiosClient";
+import { useLoginApi } from "../../api/hooks/auth";
+import CustomInput from "../../components/UI/CustomInput";
+import CustomButton from "../../components/UI/CustomButton";
 
 interface LoginForm {
   email: string;
@@ -11,22 +10,43 @@ interface LoginForm {
 
 export default function Login() {
   const { register, handleSubmit } = useForm<LoginForm>();
-  const { setUser } = useContext(AuthContext);
+  const loginApi = useLoginApi();
 
-  const onSubmit = async (data: LoginForm) => {
-    const res = await api.post("/api/auth/login", data);
-    setUser(res.data.user);
-    toast.success("Logged in!");
+  const onSubmit = (data: LoginForm) => {
+    loginApi.mutate(data);
   };
 
   return (
-    <div className="max-w-md mx-auto p-6">
-      <h2 className="text-3xl font-bold mb-4">Login</h2>
+    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow">
+      <h2 className="text-3xl font-bold mb-5 text-[#c0392b]">Login</h2>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        <input className="border p-2" placeholder="Email" {...register("email")} />
-        <input className="border p-2" placeholder="Password" type="password" {...register("password")} />
-        <button className="bg-red-600 text-white p-2 rounded">Login</button>
+      <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+        <CustomInput
+          label="Email"
+          type="email"
+          {...register("email", { required: true })}
+        />
+
+        <CustomInput
+          label="Password"
+          type="password"
+          {...register("password", { required: true })}
+        />
+
+        <div className="text-right">
+          <a
+            href="/forgot-password"
+            className="text-sm text-[#c0392b] font-semibold hover:underline"
+          >
+            Forgot password?
+          </a>
+        </div>
+
+        <CustomButton
+          label="Login"
+          type="submit"
+          loading={loginApi.isPending}
+        />
       </form>
     </div>
   );

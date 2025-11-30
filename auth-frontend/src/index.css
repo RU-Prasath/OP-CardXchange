@@ -2,5 +2,9 @@
 
 body {
     background-color: #f6f2ee;
+    font-family: "Pirata One", serif;
+}
+
+p {
     font-family: "Poppins", sans-serif;
 }
