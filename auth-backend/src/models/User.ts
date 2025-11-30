@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface IUser extends Document {
     fullName: string;
@@ -10,9 +10,10 @@ export interface IUser extends Document {
     city?: string;
     state?: string;
     pincode?: string;
-    resetOtp?: string;
+    resetOtp?: string; // hashed otp
     resetOtpExpires?: Date;
     createdAt: Date;
+    updatedAt: Date;
 }
 
 const UserSchema: Schema = new Schema({
@@ -26,7 +27,7 @@ const UserSchema: Schema = new Schema({
     state: { type: String },
     pincode: { type: String },
     resetOtp: { type: String },
-    resetOtpExpires: { type: String },
+    resetOtpExpires: { type: Date },
 }, { timestamps: true });
 
 export default mongoose.model<IUser>("User", UserSchema);

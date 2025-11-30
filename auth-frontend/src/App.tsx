@@ -1,8 +1,8 @@
+import AppRouter from "./router/AuthRouter"
+
 function App() {
   return (
-    <>
-     <h1>Naruto</h1>
-    </>
+    <AppRouter />
   )
 }
 
