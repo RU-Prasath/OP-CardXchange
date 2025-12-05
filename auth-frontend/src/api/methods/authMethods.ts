@@ -16,7 +16,22 @@ export const AuthMethods = {
     return api.post(AUTH_ENDPOINTS.forgotPassword, data);
   },
 
-  resetPassword: async (data: { email: string; otp: string; password: string; confirmPassword: string }) => {
+  resetPassword: async (data: {
+    email: string;
+    otp: string;
+    password: string;
+    confirmPassword: string;
+  }) => {
     return api.post(AUTH_ENDPOINTS.resetPassword, data);
+  },
+
+  sendOtp: async (data: { email: string }) => {
+    return api.post(AUTH_ENDPOINTS.sendOtp, data);
+  },
+
+  verifyOtp: async (formData: FormData) => {
+    return api.post(AUTH_ENDPOINTS.verifyOtp, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
   },
 };

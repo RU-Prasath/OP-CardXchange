@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import path from "path";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js"
+import cardRoutes from "./routes/cardRoutes.js"
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // routes
 app.use("/api/auth", authRoutes);
+app.use("/api/cards", cardRoutes);
 
 // health
 app.get("/api/health", (_req, res) => res.json({ ok: true }));

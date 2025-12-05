@@ -1,6 +1,18 @@
-import { IMAGES } from "../../assets";
+import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../../context/AuthContext";
+import { IMAGES } from "../../../assets";
 
 const HeroSection: React.FC = () => {
+
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const onSellClick = () => {
+    if (!user) return navigate("/register");
+    navigate("/sell");
+  }
+
   return (
     <>
       <div className="relative w-full h-[650px] md:h-[750px]">
@@ -44,7 +56,7 @@ const HeroSection: React.FC = () => {
             </a>
 
             <a
-              href="/sell"
+              onClick={onSellClick}
               className="border-2 border-[#fdd18e] text-[#fdd18e] hover:bg-[#fdd18e] hover:text-black transition px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-xl text-xs whitespace-nowrap sm:text-lg md:font-semibold shadow-xl"
             >
               <p>Sell Your Card</p>

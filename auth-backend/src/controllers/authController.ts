@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import jwt, { type Secret, type SignOptions } from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import User from "../models/User.js";
+import User, { type IUser } from "../models/User.js";
 import { sendEmail } from "../utils/sendEmail.js";
 
 const JWT_SECRET: Secret = (process.env.JWT_SECRET as string) ?? "secret";
@@ -24,7 +24,6 @@ export const register = async (req: Request, res: Response) => {
       email,
       password,
       confirmPassword,
-      gender,
       city,
       state,
       pincode,
@@ -63,7 +62,6 @@ export const register = async (req: Request, res: Response) => {
       email: email.toLowerCase(),
       password: hashed,
       profileImage: (req as any).file ? (req as any).file.path : undefined,
-      gender,
       city,
       state,
       pincode,
@@ -72,13 +70,39 @@ export const register = async (req: Request, res: Response) => {
     const token = signToken(user._id.toString());
     res.status(201).json({
       token,
-      user: { id: user._id, fullName: user.fullName, email: user.email },
+      user: { id: user._id, fullName: user.fullName, email: user.email, isAdmin: user.isAdmin  },
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// export const login = async (req: Request, res: Response) => {
+//   try {
+//     const { email, password } = req.body as any;
+
+//     if (!email || !password) {
+//       return res.status(400).json({ message: "Missing email or password." });
+//     }
+
+//     const user = await User.findOne({ email: email.toLowerCase() });
+//     if (!user) return res.status(400).json({ message: "Invalid credentials." });
+
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch)
+//       return res.status(400).json({ message: "Invalid credentials." });
+
+//     const token = signToken(user._id.toString());
+//     res.status(200).json({
+//       token,
+//       user: { id: user._id, fullName: user.fullName, email: user.email },
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -98,7 +122,12 @@ export const login = async (req: Request, res: Response) => {
     const token = signToken(user._id.toString());
     res.status(200).json({
       token,
-      user: { id: user._id, fullName: user.fullName, email: user.email },
+      user: { 
+        id: user._id, 
+        fullName: user.fullName, 
+        email: user.email,
+        isAdmin: user.isAdmin 
+      },
     });
   } catch (error) {
     console.error(error);
@@ -205,3 +234,119 @@ export const resetPassword = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const sendEmailOtp = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required" });
+
+    let user: any = await User.findOne({ email: email.toLowerCase() });
+
+    if (user && user.isVerified) {
+      return res.status(400).json({ message: "Email already registered" });
+    }
+
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const salt = await bcrypt.genSalt(10);
+    const hashedOtp = await bcrypt.hash(otp, salt);
+
+    if (!user) {
+      user = await User.create({
+        email: email.toLowerCase(),
+        fullName: "temp", // placeholder
+        mobile: "0000000000", // placeholder
+        password: "Temp@1234", // placeholder
+        emailOtp: hashedOtp,
+        emailOtpExpires: new Date(Date.now() + 10 * 60 * 1000),
+        isVerified: false,
+      } as any);
+    } else {
+      user.emailOtp = hashedOtp;
+      user.emailOtpExpires = new Date(Date.now() + 10 * 60 * 1000);
+      await user.save();
+    }
+
+    const html = `<p>Your OTP for email verification is: <strong>${otp}</strong></p>
+                  <p>Valid for 10 minutes.</p>`;
+
+    try {
+      await sendEmail(user.email, "Email Verification OTP", html);
+    } catch (emailError) {
+      console.error("sendEmail failed:", emailError);
+      return res.status(500).json({ message: "Failed to send OTP email" });
+    }
+
+    return res.status(200).json({ message: "OTP sent to email." });
+  } catch (error) {
+    console.error("sendEmailOtp error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+import { uploadProfile } from "../middleware/upload.js";
+
+// Use multer to handle file upload
+export const verifyEmailOtp = [
+  uploadProfile.single("profile"), // parse profile image if exists
+  async (req: Request, res: Response) => {
+    try {
+      const { email, otp, fullName, mobile, password, confirmPassword, city, state, pincode } = req.body;
+
+      if (!email || !otp || !fullName || !mobile || !password || !confirmPassword) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      if (password !== confirmPassword) {
+        return res.status(400).json({ message: "Passwords do not match" });
+      }
+
+      if (password.length < 6) {
+        return res.status(400).json({ message: "Password must be at least 6 characters" });
+      }
+
+      const user = await User.findOne({ email: email.toLowerCase() });
+      if (!user || !user.emailOtp || !user.emailOtpExpires) {
+        return res.status(400).json({ message: "No OTP request found" });
+      }
+
+      if (user.emailOtpExpires.getTime() < Date.now()) {
+        return res.status(400).json({ message: "OTP expired" });
+      }
+
+      const isMatch = await bcrypt.compare(otp, user.emailOtp);
+      if (!isMatch) return res.status(400).json({ message: "Invalid OTP" });
+
+      // hash password
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+
+      // update other fields
+      user.fullName = fullName;
+      user.mobile = mobile;
+      user.city = city;
+      user.state = state;
+      user.pincode = pincode;
+
+      // set profile image if uploaded
+      if ((req as any).file) {
+        user.profileImage = (req as any).file.path;
+      }
+
+      user.isVerified = true;
+      user.emailOtp = undefined as any;
+      user.emailOtpExpires = undefined as any;
+
+      await user.save();
+
+      const token = signToken(user._id.toString());
+      return res.status(201).json({
+        message: "Registration successful",
+        token,
+        user: { id: user._id, fullName: user.fullName, email: user.email },
+      });
+    } catch (error) {
+      console.error("verifyEmailOtp error:", error);
+      return res.status(500).json({ message: "Server error", error });
+    }
+  }
+];
