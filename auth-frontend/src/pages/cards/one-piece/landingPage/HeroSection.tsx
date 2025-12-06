@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../../context/AuthContext";
-import { IMAGES } from "../../../assets";
+import { AuthContext } from "../../../../context/AuthContext";
+import { IMAGES } from "../../../../assets";
 
 const HeroSection: React.FC = () => {
 
@@ -15,7 +15,7 @@ const HeroSection: React.FC = () => {
 
   return (
     <>
-      <div className="relative w-full h-[650px] md:h-[750px]">
+      <div className="relative w-full h-[650px] md:h-[700px]">
         {/* Background Image */}
         <img
           src={IMAGES.heroSecBg}

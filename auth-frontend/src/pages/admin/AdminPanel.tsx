@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import { useFetchPendingCards, useUpdateCardStatus } from "../../api/hooks/card";
 import { customToast } from "../../utils/customToast";
+import { API_BASE_URL } from "../../api/config/axiosClient";
 
 interface Card {
   _id: string;
@@ -147,7 +148,7 @@ export default function AdminPanel() {
                     <div className="md:w-48">
                       {card.images?.[0] ? (
                         <img
-                          src={card.images[0]}
+                          src={`${API_BASE_URL}${card.images[0]}`}
                           alt={card.name}
                           className="w-full h-48 object-cover rounded-lg"
                         />
@@ -160,7 +161,7 @@ export default function AdminPanel() {
                         {card.images?.slice(0, 3).map((img, idx) => (
                           <img
                             key={idx}
-                            src={img}
+                            src={`${API_BASE_URL}${img}`}
                             alt={`${card.name} ${idx + 1}`}
                             className="w-16 h-16 object-cover rounded"
                           />

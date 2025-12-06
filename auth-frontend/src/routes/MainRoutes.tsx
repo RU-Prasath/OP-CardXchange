@@ -5,10 +5,10 @@ import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
-import SellPage from "../pages/dashboard/sell/SellPage";
 import MainPage from "../pages/MainPage";
 import AdminPanel from "../pages/admin/AdminPanel";
-import Dashboard from "../pages/cards/one-piece/Dashboard";
+import Dashboard from "../pages/cards/one-piece/landingPage/Dashboard";
+import SellPage from "../pages/cards/one-piece/sellingPage/SellPage";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -16,7 +16,15 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) => {
-  const { user } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        Loading...
+      </div>
+    );
+  }
 
   if (!user) {
     return <Navigate to="/login" />;

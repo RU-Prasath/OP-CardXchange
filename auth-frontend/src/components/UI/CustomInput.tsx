@@ -10,7 +10,7 @@ export default function CustomInput({ labelClassName, label, error, ...props }: 
   return (
     <div className="flex flex-col gap-1 w-full">
       {label && <label className={`font-medium text-sm ${labelClassName}`}>{label}</label>}
-
+    
       <input
         {...props}
         className={`border rounded-lg px-3 py-2 w-full outline-none 
