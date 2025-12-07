@@ -163,25 +163,23 @@
 //   );
 // }
 
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { useCreateCard } from "../../../../api/hooks/card";
 import CustomInput from "../../../../components/UI/CustomInput";
 import CustomButton from "../../../../components/UI/CustomButton";
 import CustomSelect from "../../../../components/UI/CustomSelect";
+import { useCreateCard } from "../../../../api/hooks/card/opCard/card";
 
 interface SellForm {
   name: string;
+  price: number;
   category?: string;
   condition?: string;
   description?: string;
-  status?: string;
   images: FileList;
 }
 
-// ✅ FULL ONE PIECE TCG CATEGORY LIST
 const CATEGORY_OPTIONS = [
-  // OP Series
   "OP01 Foil",
   "OP02 Foil",
   "OP03 Foil",
@@ -196,13 +194,9 @@ const CATEGORY_OPTIONS = [
   "OP12 Foil",
   "OP13 Foil",
   "OP14 Foil",
-
-  // EB Series
   "EB01 Foil",
   "EB02 Foil",
   "EB03 Foil",
-
-  // Starter Decks (ST)
   "ST01 Leader",
   "ST02 Leader",
   "ST03 Leader",
@@ -213,8 +207,6 @@ const CATEGORY_OPTIONS = [
   "ST08 Leader",
   "ST09 Leader",
   "ST10 Leader",
-
-  // Rarity Variants
   "Parallel Rare (SP)",
   "Alternate Art (AA)",
   "Full Art",
@@ -222,24 +214,52 @@ const CATEGORY_OPTIONS = [
   "Secret Rare (SEC)",
 ];
 
-// ✅ CONDITION OPTIONS
 const CONDITION_OPTIONS = ["Good", "New Card", "Excellent", "Not Bad", "Poor"];
+const MAX_FILE_SIZE_MB = 3; // Max 3MB per image
+const MIN_IMAGES = 6;
 
 export default function SellPage() {
-  const { register, handleSubmit, watch } = useForm<SellForm>();
+  const { register, handleSubmit, watch, formState, setError, clearErrors, reset } =
+    useForm<SellForm>();
   const createCard = useCreateCard();
-  const navigate = useNavigate();
 
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [isFormValid, setIsFormValid] = useState(false);
   const images = watch("images");
 
-  const onSubmit = (data: SellForm) => {
-    if (!data.images || data.images.length < 6) {
-      alert("Minimum 6 images required (Front, Back & 4 Edges)");
+  // Validate images whenever they change
+  useEffect(() => {
+    if (!images || images.length < MIN_IMAGES) {
+      setError("images", {
+        type: "manual",
+        message: `Select at least ${MIN_IMAGES} images`,
+      });
+      setIsFormValid(false);
       return;
     }
 
+    // Validate file size
+    for (let i = 0; i < images.length; i++) {
+      if (images[i].size / 1024 / 1024 > MAX_FILE_SIZE_MB) {
+        setError("images", {
+          type: "manual",
+          message: `Each image must be ≤ ${MAX_FILE_SIZE_MB}MB`,
+        });
+        setIsFormValid(false);
+        return;
+      }
+    }
+
+    clearErrors("images");
+    setIsFormValid(true);
+  }, [images, setError, clearErrors]);
+
+  const onSubmit = (data: SellForm) => {
+    if (!isFormValid) return;
+
     const formData = new FormData();
-    formData.append("name", data.name || "");
+    formData.append("name", data.name);
+    formData.append("price", String(data.price));
     formData.append("category", data.category || "");
     formData.append("condition", data.condition || "");
     formData.append("description", data.description || "");
@@ -247,113 +267,148 @@ export default function SellPage() {
     Array.from(data.images).forEach((file) => formData.append("images", file));
 
     createCard.mutate(formData, {
-      onSuccess: () => navigate("/"),
+      onSuccess: () => {
+        reset();
+        setPreviewImage(null);
+        setIsFormValid(false);
+      },
+      onError: (err: any) => {
+        alert(
+          err?.response?.data?.message || "Server error. Please try again."
+        );
+      },
     });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-linear-to-b from-luffyYellow/50 to-seaBlue/20">
-      <div className="w-full max-w-3xl bg-parchment/80 backdrop-blur-lg rounded-3xl p-10 shadow-2xl border border-animeBlack">
-        <h2 className="text-4xl font-extrabold mb-8 text-strawRed text-center tracking-wide">
-          Sell Your Pirate Card
-        </h2>
-
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="grid gap-6 md:grid-cols-2 md:gap-6"
+    <>
+      {/* IMAGE PREVIEW MODAL */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center"
+          onClick={() => setPreviewImage(null)}
         >
-          {/* CARD NAME */}
-          <CustomInput
-            label="Card Name"
-            {...register("name", { required: true })}
-            className="focus:border-strawRed focus:ring-strawRed/40 text-animeBlack"
-            labelClassName="text-animeBlack font-semibold"
+          <img
+            src={previewImage}
+            alt="preview"
+            className="max-w-full max-h-full rounded-xl shadow-2xl"
           />
+        </div>
+      )}
 
-          {/* CATEGORY SELECT */}
-          <CustomSelect
-            label="Category"
-            options={CATEGORY_OPTIONS}
-            {...register("category", { required: true })}
-            className="focus:border-seaBlue focus:ring-seaBlue/40 text-animeBlack"
-            labelClassName="text-animeBlack font-semibold"
-          />
+      <div className="min-h-screen flex items-center justify-center p-4 bg-linear-to-b from-luffyYellow/50 to-seaBlue/20">
+        <div className="w-full max-w-3xl bg-parchment/80 backdrop-blur-lg rounded-3xl p-10 shadow-2xl border border-animeBlack">
+          <h2 className="text-4xl font-extrabold mb-8 text-strawRed text-center tracking-wide">
+            Sell Your Pirate Card
+          </h2>
 
-          {/* CONDITION SELECT (UPDATED) */}
-          <CustomSelect
-            label="Condition"
-            options={CONDITION_OPTIONS}
-            {...register("condition", { required: true })}
-            className="focus:border-luffyYellow focus:ring-luffyYellow/40 text-animeBlack"
-            labelClassName="text-animeBlack font-semibold"
-          />
-
-          {/* IMAGE UPLOAD */}
-          <div className="md:col-span-2">
-            <label className="font-medium text-animeBlack">
-              Images (min 6)
-            </label>
-
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              {...register("images")}
-              className="w-full border rounded p-2 focus:border-strawRed focus:ring-strawRed/40"
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="grid gap-6 md:grid-cols-2 md:gap-6"
+          >
+            {/* CARD NAME */}
+            <CustomInput
+              label="Card Name"
+              {...register("name", { required: "Card name is required" })}
+              error={formState.errors.name?.message}
             />
 
-            <p className="text-xs text-gray-700 mt-1">
-              <span className="font-semibold">Note:</span> Minimum 6 images
-              (Front, Back, Four Edges)
-            </p>
+            {/* PRICE */}
+            <CustomInput
+              label="Price (₹)"
+              type="number"
+              {...register("price", {
+                required: "Price is required",
+                min: { value: 1, message: "Price must be > 0" },
+              })}
+              error={formState.errors.price?.message}
+            />
 
-            {images && images.length > 0 && (
-              <p className="text-sm text-animeBlack mt-2">
-                {images.length} files selected
+            {/* CATEGORY */}
+            <CustomSelect
+              label="Category"
+              options={CATEGORY_OPTIONS}
+              {...register("category", { required: "Category is required" })}
+            />
+            {formState.errors.category && (
+              <p className="text-red-500 text-sm mt-1">
+                {formState.errors.category.message}
               </p>
             )}
 
-            {images && images.length > 0 && (
-              <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mt-4">
-                {Array.from(images).map((file, index) => {
-                  const previewUrl = URL.createObjectURL(file);
-                  return (
-                    <div
-                      key={index}
-                      className="w-full h-24 rounded-lg overflow-hidden border border-gray-300"
-                    >
-                      <img
-                        src={previewUrl}
-                        alt={`preview-${index}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  );
-                })}
-              </div>
+            {/* CONDITION */}
+            <CustomSelect
+              label="Condition"
+              options={CONDITION_OPTIONS}
+              {...register("condition", { required: "Condition is required" })}
+            />
+            {formState.errors.condition && (
+              <p className="text-red-500 text-sm mt-1">
+                {formState.errors.condition.message}
+              </p>
             )}
-          </div>
 
-          {/* DESCRIPTION */}
-          <div className="md:col-span-2">
-            <textarea
-              placeholder="Description"
-              {...register("description")}
-              className="w-full border rounded p-2 focus:border-seaBlue focus:ring-seaBlue/40 text-animeBlack"
-            />
-          </div>
+            {/* IMAGE UPLOAD */}
+            <div className="md:col-span-2">
+              <label className="font-medium text-animeBlack">
+                Images (min 6, ≤3MB each)
+              </label>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                {...register("images", { required: "Please upload images" })}
+                className="w-full border rounded p-2"
+              />
+              {formState.errors.images && (
+                <p className="text-red-500 text-sm mt-1">
+                  {formState.errors.images.message}
+                </p>
+              )}
+              {images && images.length > 0 && (
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mt-4">
+                  {Array.from(images).map((file, index) => {
+                    const previewUrl = URL.createObjectURL(file);
+                    return (
+                      <div
+                        key={index}
+                        className="w-full h-24 rounded-lg overflow-hidden border cursor-pointer"
+                        onClick={() => setPreviewImage(previewUrl)}
+                      >
+                        <img
+                          src={previewUrl}
+                          alt={`preview-${index}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
-          {/* SUBMIT */}
-          <div className="md:col-span-2">
-            <CustomButton
-              label="Submit for Review"
-              type="submit"
-              loading={createCard.isPending}
-              className="w-full bg-strawRed hover:bg-strawRed/80 text-parchment font-bold py-3 rounded-xl mt-2 shadow-lg transition-all duration-200"
-            />
-          </div>
-        </form>
+            {/* DESCRIPTION */}
+            <div className="md:col-span-2">
+              <textarea
+                placeholder="Description"
+                {...register("description")}
+                className="w-full border rounded p-2"
+              />
+            </div>
+
+            {/* SUBMIT BUTTON */}
+            <div className="md:col-span-2">
+              <CustomButton
+                label="Submit for Review"
+                type="submit"
+                loading={createCard.isPending}
+                disabled={!isFormValid || createCard.isPending}
+                className="w-full bg-[#c0392b] hover:bg-[#c0392b]/60 text-white font-bold py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

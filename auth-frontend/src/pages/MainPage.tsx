@@ -42,9 +42,9 @@ export default function MainPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-[#1c1c1c] to-[#2c2c2c] p-4 md:p-8">
+    <div className="min-h-screen bg-linear-to-b from-[#1c1c1c] to-[#2c2c2c] px-4 sm:px-6 md:px-20">
       {/* Hero Section */}
-      <div className="max-w-7xl mx-auto text-center mb-12 pt-10">
+      <div className=" max-w-[1440px] mx-auto text-center mb-12 pt-10">
         <div className="flex justify-center items-center gap-4 mb-6">
           <img 
             src={IMAGES.flag} 

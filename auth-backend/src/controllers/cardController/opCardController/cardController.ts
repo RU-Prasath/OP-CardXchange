@@ -6,7 +6,7 @@ export const createCard = async (req: Request, res: Response) => {
   try {
     // req.user set by protect middleware
     const user = (req as any).user;
-    const { name, category, condition, description } = req.body;
+    const { name, category, condition, description, price } = req.body;
 
     // files from multer: req.files (array)
     const files: any[] = (req as any).files || [];
@@ -21,6 +21,7 @@ export const createCard = async (req: Request, res: Response) => {
       condition,
       description,
       images,
+      price,
       seller: user._id,
       status: "pending",
     });
@@ -54,6 +55,17 @@ export const listPendingCards = async (_req: Request, res: Response) => {
   }
 };
 
+// admin: list pending cards
+export const listRejectedCards = async (_req: Request, res: Response) => {
+  try {
+    const cards = await Card.find({ status: "rejected" }).sort({ createdAt: -1 });
+    res.json({ cards });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // admin: approve/reject
 export const updateCardStatus = async (req: Request, res: Response) => {
   try {
@@ -67,6 +79,47 @@ export const updateCardStatus = async (req: Request, res: Response) => {
     res.json({ message: `Card ${status}`, card });
   } catch (error) {
     console.error("updateCardStatus:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const listAllCards = async (req: Request, res: Response) => {
+  try {
+    const { status, category, search } = req.query as {
+      status?: "pending" | "approved" | "rejected";
+      category?: string;
+      search?: string;
+    };
+
+    const query: any = {};
+
+    if (status) query.status = status;
+    if (category) query.category = category;
+    if (search) {
+      const regex = new RegExp(search, "i"); // case-insensitive
+      query.$or = [{ name: regex }, { description: regex }];
+    }
+
+    const cards = await Card.find(query)
+      .sort({ createdAt: -1 })
+      .populate("seller", "fullName email"); // optional, fetch seller info
+
+    res.json({ cards });
+  } catch (error) {
+    console.error("listAllCards error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ✅ Get card by ID (admin)
+export const getCardById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const card = await Card.findById(id).populate("seller", "fullName email");
+    if (!card) return res.status(404).json({ message: "Card not found" });
+    res.json({ card });
+  } catch (error) {
+    console.error("getCardById error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

@@ -8,4 +8,12 @@ export const ICONS = {
   logout: "mdi:logout",
   login: "mdi:login",
   register: "mdi:account-plus",
+  admin: "eos-icons:admin-outlined",
+  grid: "si:grid-duotone",
+  list: "mynaui:list-solid",
+  heartOutline: "line-md:heart",
+  heartFilled: "line-md:heart-filled",
+  rightArrow: "line-md:arrow-right",
+  leftArrow: "line-md:arrow-left",
+  trash: "line-md:trash",
 };

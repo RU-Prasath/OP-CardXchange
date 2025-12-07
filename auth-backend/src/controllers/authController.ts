@@ -1,9 +1,9 @@
 import type { Request, Response } from "express";
-import jwt, { type Secret, type SignOptions } from "jsonwebtoken";
+import jwt, { type Secret } from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import crypto from "crypto";
-import User, { type IUser } from "../models/User.js";
+import User from "../models/User.js";
 import { sendEmail } from "../utils/sendEmail.js";
+import { uploadProfile } from "../middleware/upload.js";
 
 const JWT_SECRET: Secret = (process.env.JWT_SECRET as string) ?? "secret";
 
@@ -70,7 +70,12 @@ export const register = async (req: Request, res: Response) => {
     const token = signToken(user._id.toString());
     res.status(201).json({
       token,
-      user: { id: user._id, fullName: user.fullName, email: user.email, isAdmin: user.isAdmin  },
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        isAdmin: user.isAdmin,
+      },
     });
   } catch (error) {
     console.error(error);
@@ -96,13 +101,20 @@ export const register = async (req: Request, res: Response) => {
 //     const token = signToken(user._id.toString());
 //     res.status(200).json({
 //       token,
-//       user: { id: user._id, fullName: user.fullName, email: user.email },
+//       user: {
+//         id: user._id,
+//         fullName: user.fullName,
+//         email: user.email,
+//         isAdmin: user.isAdmin
+//       },
 //     });
 //   } catch (error) {
 //     console.error(error);
 //     res.status(500).json({ message: "Server error" });
 //   }
 // };
+
+// Send OTP to email and include link to frontend reset page
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -113,29 +125,40 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) return res.status(400).json({ message: "Invalid credentials." });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials." });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
+    if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials." });
+    }
 
     const token = signToken(user._id.toString());
+
+    // ✅ SEND FULL USER INFO (SAFE FIELDS ONLY)
     res.status(200).json({
       token,
-      user: { 
-        id: user._id, 
-        fullName: user.fullName, 
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        mobile: user.mobile,
         email: user.email,
-        isAdmin: user.isAdmin 
+        profileImage: user.profileImage || null,
+        city: user.city || "",
+        state: user.state || "",
+        pincode: user.pincode || "",
+        isVerified: user.isVerified,
+        isAdmin: user.isAdmin,
+        createdAt: user.createdAt,
       },
     });
   } catch (error) {
-    console.error(error);
+    console.error("Login error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// Send OTP to email and include link to frontend reset page
 export const forgotPassword = async (req: Request, res: Response) => {
   try {
     const { email } = req.body as any;
@@ -283,16 +306,31 @@ export const sendEmailOtp = async (req: Request, res: Response) => {
   }
 };
 
-import { uploadProfile } from "../middleware/upload.js";
-
 // Use multer to handle file upload
 export const verifyEmailOtp = [
   uploadProfile.single("profile"), // parse profile image if exists
   async (req: Request, res: Response) => {
     try {
-      const { email, otp, fullName, mobile, password, confirmPassword, city, state, pincode } = req.body;
+      const {
+        email,
+        otp,
+        fullName,
+        mobile,
+        password,
+        confirmPassword,
+        city,
+        state,
+        pincode,
+      } = req.body;
 
-      if (!email || !otp || !fullName || !mobile || !password || !confirmPassword) {
+      if (
+        !email ||
+        !otp ||
+        !fullName ||
+        !mobile ||
+        !password ||
+        !confirmPassword
+      ) {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
@@ -301,7 +339,9 @@ export const verifyEmailOtp = [
       }
 
       if (password.length < 6) {
-        return res.status(400).json({ message: "Password must be at least 6 characters" });
+        return res
+          .status(400)
+          .json({ message: "Password must be at least 6 characters" });
       }
 
       const user = await User.findOne({ email: email.toLowerCase() });
@@ -348,5 +388,5 @@ export const verifyEmailOtp = [
       console.error("verifyEmailOtp error:", error);
       return res.status(500).json({ message: "Server error", error });
     }
-  }
+  },
 ];

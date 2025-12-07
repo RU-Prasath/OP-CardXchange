@@ -6,6 +6,7 @@ export interface ICard extends Document {
   condition?: string;
   images: string[]; // stored paths
   description?: string;
+  price: number;
   status: "pending"|"approved"|"rejected";
   seller?: mongoose.Types.ObjectId;
   createdAt: Date;
@@ -18,6 +19,7 @@ const CardSchema: Schema = new Schema({
   condition: { type: String },
   images: [{ type: String }], // array of file paths
   description: { type: String },
+  price: { type: Number, required: true },
   status: { type: String, enum: ["pending","approved","rejected"], default: "pending" },
   seller: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 }, { timestamps: true });

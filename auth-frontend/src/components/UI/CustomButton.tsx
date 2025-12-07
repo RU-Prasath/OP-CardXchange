@@ -10,8 +10,8 @@ export default function CustomButton({ label, loading, ...props }: ButtonProps) 
     <button
       {...props}
       disabled={loading || props.disabled}
-      className={`rounded-xl px-5 py-2 font-semibold transition-all 
-                 bg-red-500 text-white hover:bg-red-600 active:scale-95
+      className={`cursor-pointer transition-all 
+                 active:scale-95
                  disabled:opacity-60 disabled:cursor-not-allowed
                  ${props.className}`}
     >

@@ -54,6 +54,6 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
 
 export const adminProtect = (req: AuthRequest, res: Response, next: NextFunction) => {
   if (!req.user) return res.status(401).json({ message: "Not authorized" });
-  if (!req.user.isAdmin) return res.status(403).json({ message: "Admin required" });
+  if (req.user.isAdmin === false) return res.status(403).json({ message: "Admin required" });
   next();
 };
