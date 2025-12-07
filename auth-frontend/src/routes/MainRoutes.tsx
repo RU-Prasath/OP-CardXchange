@@ -9,6 +9,7 @@ import MainPage from "../pages/MainPage";
 import AdminPanel from "../pages/admin/AdminPanel";
 import Dashboard from "../pages/cards/one-piece/landingPage/Dashboard";
 import SellPage from "../pages/cards/one-piece/sellingPage/SellPage";
+import CategoryPage from "../pages/cards/one-piece/categoryPage/Category";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -42,6 +43,7 @@ export default function MainRoutes() {
     <Routes>
       <Route path="/" element={<MainPage />} />
       <Route path="/cards/one-piece" element={<Dashboard />} />
+      <Route path="/cards/one-piece/category" element={<CategoryPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />

@@ -1,9 +1,13 @@
-import AppRouter from "./router/AuthRouter"
+import { ToastContainer } from "react-toastify";
+import AppRouter from "./router/AuthRouter";
 
 function App() {
   return (
-    <AppRouter />
-  )
+    <>
+      <AppRouter />
+      <ToastContainer />
+    </>
+  );
 }
 
-export default App
+export default App;

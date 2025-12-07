@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import Card from "../models/Card.js";
+import Card from "../../../models/Card.js";
 
 // create card (seller must be logged)
 export const createCard = async (req: Request, res: Response) => {

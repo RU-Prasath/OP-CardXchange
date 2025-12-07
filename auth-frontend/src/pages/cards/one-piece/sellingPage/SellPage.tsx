@@ -163,7 +163,6 @@
 //   );
 // }
 
-
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useCreateCard } from "../../../../api/hooks/card";
@@ -180,17 +179,51 @@ interface SellForm {
   images: FileList;
 }
 
+// ✅ FULL ONE PIECE TCG CATEGORY LIST
 const CATEGORY_OPTIONS = [
-  "OP13-118 Foil",
-  "OP14-112 Foil",
-  "OP09-51 Foil",
-  "OP14-118 Foil",
-  "OP14-119 Foil",
-  "OP14-096 Foil",
-  "EB03-061 Foil",
-  "OP05-119 Foil",
-  "ST01-001 Leader",
+  // OP Series
+  "OP01 Foil",
+  "OP02 Foil",
+  "OP03 Foil",
+  "OP04 Foil",
+  "OP05 Foil",
+  "OP06 Foil",
+  "OP07 Foil",
+  "OP08 Foil",
+  "OP09 Foil",
+  "OP10 Foil",
+  "OP11 Foil",
+  "OP12 Foil",
+  "OP13 Foil",
+  "OP14 Foil",
+
+  // EB Series
+  "EB01 Foil",
+  "EB02 Foil",
+  "EB03 Foil",
+
+  // Starter Decks (ST)
+  "ST01 Leader",
+  "ST02 Leader",
+  "ST03 Leader",
+  "ST04 Leader",
+  "ST05 Leader",
+  "ST06 Leader",
+  "ST07 Leader",
+  "ST08 Leader",
+  "ST09 Leader",
+  "ST10 Leader",
+
+  // Rarity Variants
+  "Parallel Rare (SP)",
+  "Alternate Art (AA)",
+  "Full Art",
+  "Manga Rare",
+  "Secret Rare (SEC)",
 ];
+
+// ✅ CONDITION OPTIONS
+const CONDITION_OPTIONS = ["Good", "New Card", "Excellent", "Not Bad", "Poor"];
 
 export default function SellPage() {
   const { register, handleSubmit, watch } = useForm<SellForm>();
@@ -211,9 +244,7 @@ export default function SellPage() {
     formData.append("condition", data.condition || "");
     formData.append("description", data.description || "");
 
-    Array.from(data.images).forEach((file) =>
-      formData.append("images", file)
-    );
+    Array.from(data.images).forEach((file) => formData.append("images", file));
 
     createCard.mutate(formData, {
       onSuccess: () => navigate("/"),
@@ -231,7 +262,7 @@ export default function SellPage() {
           onSubmit={handleSubmit(onSubmit)}
           className="grid gap-6 md:grid-cols-2 md:gap-6"
         >
-          {/* ✅ CARD NAME */}
+          {/* CARD NAME */}
           <CustomInput
             label="Card Name"
             {...register("name", { required: true })}
@@ -239,7 +270,7 @@ export default function SellPage() {
             labelClassName="text-animeBlack font-semibold"
           />
 
-          {/* ✅ CATEGORY SELECT */}
+          {/* CATEGORY SELECT */}
           <CustomSelect
             label="Category"
             options={CATEGORY_OPTIONS}
@@ -248,15 +279,16 @@ export default function SellPage() {
             labelClassName="text-animeBlack font-semibold"
           />
 
-          {/* ✅ CONDITION */}
-          <CustomInput
+          {/* CONDITION SELECT (UPDATED) */}
+          <CustomSelect
             label="Condition"
-            {...register("condition")}
+            options={CONDITION_OPTIONS}
+            {...register("condition", { required: true })}
             className="focus:border-luffyYellow focus:ring-luffyYellow/40 text-animeBlack"
             labelClassName="text-animeBlack font-semibold"
           />
 
-          {/* ✅ IMAGE UPLOAD */}
+          {/* IMAGE UPLOAD */}
           <div className="md:col-span-2">
             <label className="font-medium text-animeBlack">
               Images (min 6)
@@ -270,25 +302,21 @@ export default function SellPage() {
               className="w-full border rounded p-2 focus:border-strawRed focus:ring-strawRed/40"
             />
 
-            {/* ✅ NOTE */}
             <p className="text-xs text-gray-700 mt-1">
-              <span className="font-semibold">Note:</span> Minimum 6 images need
-              to upload (Front Side, Back Side, Four Edges of the card)
+              <span className="font-semibold">Note:</span> Minimum 6 images
+              (Front, Back, Four Edges)
             </p>
 
-            {/* ✅ IMAGE COUNT */}
             {images && images.length > 0 && (
               <p className="text-sm text-animeBlack mt-2">
                 {images.length} files selected
               </p>
             )}
 
-            {/* ✅ IMAGE PREVIEW */}
             {images && images.length > 0 && (
               <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mt-4">
                 {Array.from(images).map((file, index) => {
                   const previewUrl = URL.createObjectURL(file);
-
                   return (
                     <div
                       key={index}
@@ -306,7 +334,7 @@ export default function SellPage() {
             )}
           </div>
 
-          {/* ✅ DESCRIPTION */}
+          {/* DESCRIPTION */}
           <div className="md:col-span-2">
             <textarea
               placeholder="Description"
@@ -315,7 +343,7 @@ export default function SellPage() {
             />
           </div>
 
-          {/* ✅ SUBMIT BUTTON */}
+          {/* SUBMIT */}
           <div className="md:col-span-2">
             <CustomButton
               label="Submit for Review"

@@ -4,7 +4,7 @@ import {
   listApprovedCards,
   listPendingCards,
   updateCardStatus
-} from "../controllers/cardController.js";
+} from "../controllers/cardController/opCardController/cardController.js";
 import { protect, adminProtect } from "../middleware/auth.js";
 import { uploadCards } from "../middleware/uploadMultiple.js";
 
