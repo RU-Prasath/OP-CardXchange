@@ -1,17 +1,14 @@
 import express from "express";
-import { register, login, forgotPassword, resetPassword, sendEmailOtp, verifyEmailOtp } from "../controllers/authController.js";
-import { uploadProfile } from "../middleware/upload.js";
+import { uploadProfile } from "../utils/storage/upload.js";
+import { forgotPassword, login, register, resetPassword, sendEmailOtp, verifyEmailOtp, verifyEmailOtpWithUpload } from "../controllers/auth/auth.controller.js";
 
 const router = express.Router();
 
-// upload single profile photo with field name "profile"
 router.post("/register", uploadProfile.single("profile"), register);
-
 router.post("/login", login);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/send-otp", sendEmailOtp);
-router.post("/verify-otp", verifyEmailOtp);
-
+router.post("/verify-otp", verifyEmailOtpWithUpload);
 
 export default router;

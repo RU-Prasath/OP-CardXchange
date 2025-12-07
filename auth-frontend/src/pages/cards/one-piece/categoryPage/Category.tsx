@@ -1,4 +1,4 @@
-import { OP_CATEGORIES } from "../../../../constants/one-piece/Categories";
+import { OP_CATEGORIES } from "../../../../constants/card/one-piece/categories";
 
 const Category = () => {
   return (

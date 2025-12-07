@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
-import { useForgotPasswordApi } from "../../api/hooks/auth";
-import CustomInput from "../../components/UI/CustomInput";
-import CustomButton from "../../components/UI/CustomButton";
+import { useForgotPasswordApi } from "../../api/hooks/auth/useAuth";
+import CustomInput from "../../components/common/UI/CustomInput";
+import CustomButton from "../../components/common/UI/CustomButton";
 
 interface ForgotForm {
   email: string;

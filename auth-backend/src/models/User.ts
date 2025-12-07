@@ -5,19 +5,16 @@ export interface IUser extends Document {
   mobile: string;
   email: string;
   password: string;
-  profileImage?: string;
-  city?: string;
-  state?: string;
-  pincode?: string;
-  resetOtp?: string; // hashed otp for reset password
-  resetOtpExpires?: Date;
-
-  // Add these new fields for email verification
-  emailOtp?: string; // hashed OTP for registration
-  emailOtpExpires?: Date;
-  isVerified?: boolean; // if email is verified
+  profileImage?: string | undefined;
+  city?: string | undefined;
+  state?: string | undefined;
+  pincode?: string | undefined;
+  resetOtp?: string | undefined;
+  resetOtpExpires?: Date | undefined;
+  emailOtp?: string | undefined;
+  emailOtpExpires?: Date | undefined;
+  isVerified?: boolean | undefined;
   isAdmin: boolean;
-
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,7 +31,6 @@ const UserSchema: Schema = new Schema(
     pincode: { type: String },
     resetOtp: { type: String },
     resetOtpExpires: { type: Date },
-
     emailOtp: { type: String },
     emailOtpExpires: { type: Date },
     isVerified: { type: Boolean, default: false },

@@ -8,7 +8,7 @@ import {
   useFetchPendingCards,
   useFetchRejectedCards,
   useUpdateCardStatus,
-} from "../../../../api/hooks/card/opCard/card";
+} from "../../../../api/hooks/card/one-piece/useCards";
 
 export default function OnePieceAdmin() {
   const [activeTab, setActiveTab] = useState<

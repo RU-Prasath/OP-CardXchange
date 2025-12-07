@@ -52,11 +52,10 @@
 //   );
 // }
 
-
 import { useForm } from "react-hook-form";
-import { useLoginApi } from "../../api/hooks/auth";
-import CustomInput from "../../components/UI/CustomInput";
-import CustomButton from "../../components/UI/CustomButton";
+import { useLoginApi } from "../../api/hooks/auth/useAuth";
+import CustomInput from "../../components/common/UI/CustomInput";
+import CustomButton from "../../components/common/UI/CustomButton";
 import { IMAGES } from "../../assets";
 
 interface LoginForm {
@@ -82,7 +81,10 @@ export default function Login() {
           Login
         </h2>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6 md:grid-cols-2 md:gap-6">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="grid gap-6 md:grid-cols-2 md:gap-6"
+        >
           <div className="md:col-span-2">
             <CustomInput
               label="Email"

@@ -304,9 +304,9 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useSendOtpApi, useVerifyOtpApi } from "../../api/hooks/auth"; // custom hooks
-import CustomInput from "../../components/UI/CustomInput";
-import CustomButton from "../../components/UI/CustomButton";
+import { useSendOtpApi, useVerifyOtpApi } from "../../api/hooks/auth/useAuth"; // custom hooks
+import CustomInput from "../../components/common/UI/CustomInput";
+import CustomButton from "../../components/common/UI/CustomButton";
 import { IMAGES } from "../../assets";
 
 interface RegisterForm {
@@ -341,7 +341,8 @@ export default function Register() {
           setOtpSent(true);
           alert("OTP sent to your email. Check inbox!");
         },
-        onError: (err: any) => alert(err.response?.data?.message || "Failed to send OTP"),
+        onError: (err: any) =>
+          alert(err.response?.data?.message || "Failed to send OTP"),
       }
     );
   };
@@ -358,14 +359,16 @@ export default function Register() {
     formData.append("state", data.state || "");
     formData.append("pincode", data.pincode || "");
     formData.append("otp", data.otp || "");
-    if (data.profileImage?.[0]) formData.append("profile", data.profileImage[0]);
+    if (data.profileImage?.[0])
+      formData.append("profile", data.profileImage[0]);
 
     verifyOtpApi.mutate(formData, {
       onSuccess: () => {
         alert("Registration successful!");
         window.location.href = "/login";
       },
-      onError: (err: any) => alert(err.response?.data?.message || "OTP verification failed"),
+      onError: (err: any) =>
+        alert(err.response?.data?.message || "OTP verification failed"),
     });
   };
 
@@ -380,14 +383,17 @@ export default function Register() {
         </h2>
 
         {!otpSent ? (
-          <form onSubmit={handleSubmit(handleSendOtp)} className="grid gap-6 md:grid-cols-2 md:gap-6">
+          <form
+            onSubmit={handleSubmit(handleSendOtp)}
+            className="grid gap-6 md:grid-cols-2 md:gap-6"
+          >
             <div className="md:col-span-2">
-            <CustomInput
-              label="Email"
-              {...register("email", { required: true })}
-              className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 md:col-span-2 text-[#f6f2ee]"
-              labelClassName="text-[#f6f2ee]"
-            />
+              <CustomInput
+                label="Email"
+                {...register("email", { required: true })}
+                className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 md:col-span-2 text-[#f6f2ee]"
+                labelClassName="text-[#f6f2ee]"
+              />
               <CustomButton
                 label="Send OTP"
                 type="submit"
@@ -397,7 +403,10 @@ export default function Register() {
             </div>
           </form>
         ) : (
-          <form onSubmit={handleSubmit(handleVerifyOtp)} className="grid gap-6 md:grid-cols-2 md:gap-6">
+          <form
+            onSubmit={handleSubmit(handleVerifyOtp)}
+            className="grid gap-6 md:grid-cols-2 md:gap-6"
+          >
             <CustomInput
               label="OTP"
               {...register("otp", { required: true })}

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { API_BASE_URL } from "../../../../api/config/axiosClient";
+import { API_BASE_URL } from "../../../../api/clients/axiosClient";
 import { useFetchAllUsers } from "../../../../api/hooks/user/useUser";
 
 interface Card {
@@ -29,9 +29,7 @@ export default function CardItem({ card, onApprove, onReject }: CardItemProps) {
   const sellerName = useMemo(() => {
     if (!card.seller || !usersData?.users) return "Unknown";
 
-    const matchedUser = usersData.users.find(
-      (u: any) => u._id === card.seller
-    );
+    const matchedUser = usersData.users.find((u: any) => u._id === card.seller);
 
     return matchedUser?.fullName || "Unknown";
   }, [card.seller, usersData]);
@@ -39,7 +37,6 @@ export default function CardItem({ card, onApprove, onReject }: CardItemProps) {
   return (
     <div className="bg-gray-900 rounded-2xl p-6 border border-gray-700 hover:border-gray-600 transition shadow-lg">
       <div className="flex flex-col md:flex-row gap-6">
-
         {/* Images */}
         <div className="md:w-64 shrink-0">
           {card.images?.length ? (
@@ -48,7 +45,9 @@ export default function CardItem({ card, onApprove, onReject }: CardItemProps) {
                 src={`${API_BASE_URL}${card.images[0]}`}
                 alt={card.name}
                 className="w-full h-48 object-cover rounded-lg cursor-pointer"
-                onClick={() => setPreviewImage(`${API_BASE_URL}${card.images[0]}`)}
+                onClick={() =>
+                  setPreviewImage(`${API_BASE_URL}${card.images[0]}`)
+                }
               />
               <div className="flex gap-2 overflow-x-auto">
                 {card.images.map((img, idx) => (
@@ -122,7 +121,10 @@ export default function CardItem({ card, onApprove, onReject }: CardItemProps) {
           className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
           onClick={() => setPreviewImage(null)}
         >
-          <img src={previewImage} className="max-h-full max-w-full rounded-lg" />
+          <img
+            src={previewImage}
+            className="max-h-full max-w-full rounded-lg"
+          />
         </div>
       )}
     </div>

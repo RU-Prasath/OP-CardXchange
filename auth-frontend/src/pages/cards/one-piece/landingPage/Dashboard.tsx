@@ -1,6 +1,6 @@
 // import { API_BASE_URL } from "../../../../api/config/axiosClient";
-import { useFetchApprovedCards } from "../../../../api/hooks/card/opCard/card";
-import OPCardScrollable from "../components/sections/OPCardScrollable";
+import { useFetchApprovedCards } from "../../../../api/hooks/card/one-piece/useCards";
+import OPCardScrollable from "../../../../components/card/one-piece/sections/OPCardScrollable";
 import CardSection from "./CardSection";
 import HeroSection from "./HeroSection";
 import OnePieceMarquee from "./MarqueeSection";
@@ -10,7 +10,7 @@ const Dashboard = () => {
   const { data } = useFetchApprovedCards();
   const cards = data?.cards || [];
 
-  console.log(cards)
+  console.log(cards);
 
   return (
     <div>
@@ -18,7 +18,11 @@ const Dashboard = () => {
       <OnePieceMarquee />
       <CardSection />
       <OnePieceFeaturedSection />
-      <OPCardScrollable heading="Secret Rare Cards" categoryFilter="Manga Rare" maxCards={10} /> 
+      <OPCardScrollable
+        heading="Secret Rare Cards"
+        categoryFilter="Manga Rare"
+        maxCards={10}
+      />
       {/* <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
         {cards.map((c:any) => (
           <div key={c._id} className="bg-white rounded shadow p-3">
@@ -30,5 +34,5 @@ const Dashboard = () => {
       </div> */}
     </div>
   );
-}
-export default Dashboard
+};
+export default Dashboard;

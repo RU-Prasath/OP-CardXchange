@@ -259,9 +259,9 @@
 
 //       {/* Cards */}
 //       {cards.length > 0 ? (
-//         <OPCardLayout 
-//           cards={cards} 
-//           view={view} 
+//         <OPCardLayout
+//           cards={cards}
+//           view={view}
 //           isWishlisted={isWishlisted}
 //           onToggleWishlist={toggleWishlist}
 //         />
@@ -295,19 +295,19 @@
 // }
 
 import { useState, useContext } from "react";
-import { useFetchApprovedCards } from "../../../../api/hooks/card/opCard/card";
-import OPCardLayout from "../components/cards/OPCardLayout";
+import { useFetchApprovedCards } from "../../../../api/hooks/card/one-piece/useCards";
 import { ICONS } from "../../../../assets/icons";
 import { Icon } from "@iconify/react";
 import { AuthContext } from "../../../../context/AuthContext";
+import OPCardLayout from "../../../../components/card/one-piece/cards/OPCardLayout";
 
 // Custom hook for wishlist - User Specific
 const useWishlist = () => {
   const { user } = useContext(AuthContext);
-  
+
   const [wishlist, setWishlist] = useState<string[]>(() => {
     if (!user) {
-      const saved = localStorage.getItem('onePieceWishlist_anonymous');
+      const saved = localStorage.getItem("onePieceWishlist_anonymous");
       return saved ? JSON.parse(saved) : [];
     }
     const saved = localStorage.getItem(`onePieceWishlist_${user.id}`);
@@ -315,17 +315,23 @@ const useWishlist = () => {
   });
 
   const toggleWishlist = (cardId: string) => {
-    setWishlist(prev => {
+    setWishlist((prev) => {
       const newWishlist = prev.includes(cardId)
-        ? prev.filter(id => id !== cardId)
+        ? prev.filter((id) => id !== cardId)
         : [...prev, cardId];
-      
+
       if (!user) {
-        localStorage.setItem('onePieceWishlist_anonymous', JSON.stringify(newWishlist));
+        localStorage.setItem(
+          "onePieceWishlist_anonymous",
+          JSON.stringify(newWishlist)
+        );
       } else {
-        localStorage.setItem(`onePieceWishlist_${user.id}`, JSON.stringify(newWishlist));
+        localStorage.setItem(
+          `onePieceWishlist_${user.id}`,
+          JSON.stringify(newWishlist)
+        );
       }
-      
+
       return newWishlist;
     });
   };
@@ -338,10 +344,13 @@ const useWishlist = () => {
 export default function CardSection() {
   const { data } = useFetchApprovedCards();
   const allCards = data?.cards || [];
-  
+
   // Sort cards by createdAt in descending order and take latest 8
   const latestCards = [...allCards]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
     .slice(0, 8);
 
   const [view, setView] = useState<"grid" | "list">("grid");
@@ -387,7 +396,9 @@ export default function CardSection() {
             <div className="absolute inset-0 rounded-full bg-linear-to-r from-[#fdd18e]/30 to-[#0097a7]/30"></div>
             <div
               className={`relative w-5 h-5 md:w-6 md:h-6 rounded-full bg-white shadow-lg flex items-center justify-center transition-all duration-500 transform ${
-                view === "list" ? "translate-x-5 md:translate-x-6" : "translate-x-0"
+                view === "list"
+                  ? "translate-x-5 md:translate-x-6"
+                  : "translate-x-0"
               }`}
             >
               <div className="relative w-full h-full flex items-center justify-center">
@@ -419,9 +430,9 @@ export default function CardSection() {
 
       {/* Cards */}
       {latestCards.length > 0 ? (
-        <OPCardLayout 
-          cards={latestCards} 
-          view={view} 
+        <OPCardLayout
+          cards={latestCards}
+          view={view}
           isWishlisted={isWishlisted}
           onToggleWishlist={toggleWishlist}
         />

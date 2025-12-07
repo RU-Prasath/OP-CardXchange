@@ -1,8 +1,8 @@
 import { useForm } from "react-hook-form";
 import { useSearchParams } from "react-router-dom";
-import { useResetPasswordApi } from "../../api/hooks/auth";
-import CustomInput from "../../components/UI/CustomInput";
-import CustomButton from "../../components/UI/CustomButton";
+import { useResetPasswordApi } from "../../api/hooks/auth/useAuth";
+import CustomInput from "../../components/common/UI/CustomInput";
+import CustomButton from "../../components/common/UI/CustomButton";
 
 interface ResetForm {
   password: string;

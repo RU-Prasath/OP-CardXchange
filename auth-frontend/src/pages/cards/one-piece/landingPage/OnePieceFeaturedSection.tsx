@@ -106,7 +106,7 @@ const OnePieceFeaturedSection = () => {
         {/* Right Side - Featured Content */}
         <div className="relative">
           {/* Animated Background Element */}
-          <div className="absolute -top-8 -right-8 w-32 h-32 md:w-40 md:h-40 rounded-full bg-linear-to-br from-[#fdd18e]/10 to-[#0097a7]/10 animate-pulse"></div>
+          <div className="hidden md:flex absolute -top-8 -right-8 w-32 h-32 md:w-40 md:h-40 rounded-full bg-linear-to-br from-[#fdd18e]/10 to-[#0097a7]/10 animate-pulse"></div>
           <div className="absolute -bottom-8 -left-8 w-24 h-24 md:w-32 md:h-32 rounded-full bg-linear-to-br from-[#c0392b]/10 to-[#1c1c1c]/10 animate-pulse delay-1000"></div>
           
           <div className="relative bg-linear-to-br from-[#f6f2ee] to-white rounded-3xl p-6 md:p-8 shadow-xl border border-[#fdd18e]/30">

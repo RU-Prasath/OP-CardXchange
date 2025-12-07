@@ -1,7 +1,7 @@
 import { BrowserRouter } from "react-router-dom";
-import Navbar from "../components/layout/Navbar";
+import Navbar from "../components/common/layout/Navbar";
 import AuthProvider from "../context/AuthContext";
-import MainRoutes from "../routes/MainRoutes";
+import MainRoutes from "./routes/MainRoutes";
 
 export default function AppRouter() {
   return (

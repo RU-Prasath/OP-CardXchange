@@ -1,10 +1,10 @@
 import { useEffect, useState, useContext } from "react";
-import { useFetchApprovedCards } from "../../../../api/hooks/card/opCard/card";
+import { useFetchApprovedCards } from "../../../../api/hooks/card/one-piece/useCards";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import { ICONS } from "../../../../assets/icons";
-import { API_BASE_URL } from "../../../../api/config/axiosClient";
-import CustomButton from "../../../../components/UI/CustomButton";
+import { API_BASE_URL } from "../../../../api/clients/axiosClient";
+import CustomButton from "../../../../components/common/UI/CustomButton";
 import { AuthContext } from "../../../../context/AuthContext"; // Import AuthContext
 
 interface OPCardType {
@@ -26,7 +26,7 @@ const useWishlist = () => {
   const [wishlist, setWishlist] = useState<string[]>(() => {
     if (!user) {
       // For non-logged in users, use anonymous wishlist
-      const saved = localStorage.getItem('onePieceWishlist_anonymous');
+      const saved = localStorage.getItem("onePieceWishlist_anonymous");
       return saved ? JSON.parse(saved) : [];
     }
     // For logged in users, use user-specific wishlist
@@ -55,13 +55,19 @@ const useWishlist = () => {
       const newWishlist = prev.includes(cardId)
         ? prev.filter((id) => id !== cardId)
         : [...prev, cardId];
-      
+
       if (!user) {
-        localStorage.setItem("onePieceWishlist_anonymous", JSON.stringify(newWishlist));
+        localStorage.setItem(
+          "onePieceWishlist_anonymous",
+          JSON.stringify(newWishlist)
+        );
       } else {
-        localStorage.setItem(`onePieceWishlist_${user.id}`, JSON.stringify(newWishlist));
+        localStorage.setItem(
+          `onePieceWishlist_${user.id}`,
+          JSON.stringify(newWishlist)
+        );
       }
-      
+
       return newWishlist;
     });
   };

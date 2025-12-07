@@ -165,10 +165,10 @@
 
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import CustomInput from "../../../../components/UI/CustomInput";
-import CustomButton from "../../../../components/UI/CustomButton";
-import CustomSelect from "../../../../components/UI/CustomSelect";
-import { useCreateCard } from "../../../../api/hooks/card/opCard/card";
+import CustomInput from "../../../../components/common/UI/CustomInput";
+import CustomButton from "../../../../components/common/UI/CustomButton";
+import CustomSelect from "../../../../components/common/UI/CustomSelect";
+import { useCreateCard } from "../../../../api/hooks/card/one-piece/useCards";
 
 interface SellForm {
   name: string;
@@ -214,13 +214,20 @@ const CATEGORY_OPTIONS = [
   "Secret Rare (SEC)",
 ];
 
-const CONDITION_OPTIONS = ["Good", "New Card", "Excellent", "Not Bad", "Poor"];
+const CONDITION_OPTIONS = ["Mint", "Near-Mint", "Good", "Fair"];
 const MAX_FILE_SIZE_MB = 3; // Max 3MB per image
 const MIN_IMAGES = 6;
 
 export default function SellPage() {
-  const { register, handleSubmit, watch, formState, setError, clearErrors, reset } =
-    useForm<SellForm>();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState,
+    setError,
+    clearErrors,
+    reset,
+  } = useForm<SellForm>();
   const createCard = useCreateCard();
 
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -261,7 +268,7 @@ export default function SellPage() {
     formData.append("name", data.name);
     formData.append("price", String(data.price));
     formData.append("category", data.category || "");
-    formData.append("condition", data.condition || "");
+    formData.append("condition", data.condition?.toLowerCase() || "");
     formData.append("description", data.description || "");
 
     Array.from(data.images).forEach((file) => formData.append("images", file));

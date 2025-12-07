@@ -1,2 +1,2 @@
-export * from './authMethods';
-export * from './cardMethods/opMethods/cardMethods';
+export * from './auth/authMethods';
+export * from './cardMethods/one-piece/cardMethods';

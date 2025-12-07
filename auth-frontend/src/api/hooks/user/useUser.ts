@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { UserMethods } from "../../methods/userMethods/userMethods";
+import { UserMethods } from "../../methods/user/userMethods";
 
 // ✅ Fetch all users
 export const useFetchAllUsers = () => {
