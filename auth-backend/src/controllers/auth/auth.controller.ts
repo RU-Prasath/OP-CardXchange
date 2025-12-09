@@ -222,8 +222,8 @@ import {
   verifyOtpSchema,
 } from "../../schemas/auth/register.schema.js";
 import { AuthService } from "../../services/auth.service.js";
-import { uploadProfile } from "../../utils/storage/upload.js";
 import { sendEmail } from "../../utils/sendEmail.js";
+import { uploadProfile } from "../../utils/storage/upload.js";
 
 const authService = new AuthService();
 const JWT_SECRET = process.env.JWT_SECRET || "secret";

@@ -126,33 +126,43 @@
 
 import type { Request, Response } from "express";
 import { CardService } from "../../../services/card/one-piece/card.service.js";
-import { createCardSchema, updateCardStatusSchema } from "../../../schemas/auth/card/one-piece/card.schema.js";
+import {
+  createCardSchema,
+  updateCardStatusSchema,
+} from "../../../schemas/auth/card/one-piece/card.schema.js";
 import type { CardQueryParams } from "../../../types/card/one-piece/card.types.js";
 
 const cardService = new CardService();
 
 export const createCard = async (req: Request, res: Response) => {
   try {
-    // Validate request body
-    const { error } = createCardSchema.validate(req.body);
+    const { error } = createCardSchema.validate(req.body, { abortEarly: true });
+
     if (error) {
-      return res.status(400).json({ message: error.details[0].message });
+      return res.status(400).json({
+        message: error.details?.[0]?.message || "Validation error",
+      });
     }
 
-    // Check files
     const files: any[] = (req as any).files || [];
     if (files.length < 6) {
-      return res.status(400).json({ message: "Please upload at least 6 images" });
+      return res
+        .status(400)
+        .json({ message: "Please upload at least 6 images" });
     }
 
-    const images = files.map(f => `/uploads/cards/${f.filename}`);
+    const images = files.map((f) => `/uploads/cards/${f.filename}`);
     const user = req.user!;
 
-    const card = await cardService.createCard(req.body, images, user._id.toString());
+    const card = await cardService.createCard(
+      req.body,
+      images,
+      user._id.toString()
+    );
 
-    res.status(201).json({ 
-      message: "Card submitted for admin review", 
-      card 
+    res.status(201).json({
+      message: "Card submitted for admin review",
+      card,
     });
   } catch (error: any) {
     console.error("Create card error:", error);
@@ -204,8 +214,11 @@ export const listAllCards = async (req: Request, res: Response) => {
 export const getCardById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ message: "Card ID is required" });
+    }
     const card = await cardService.getCardById(id);
-    
+
     if (!card) {
       return res.status(404).json({ message: "Card not found" });
     }
@@ -219,16 +232,25 @@ export const getCardById = async (req: Request, res: Response) => {
 
 export const updateCardStatus = async (req: Request, res: Response) => {
   try {
-    const { error } = updateCardStatusSchema.validate(req.body);
+    const { error } = updateCardStatusSchema.validate(req.body, {
+      abortEarly: true,
+    });
+
     if (error) {
-      return res.status(400).json({ message: error.details[0].message });
+      return res.status(400).json({
+        message: error.details?.[0]?.message || "Validation error",
+      });
     }
 
-    const { id } = req.params;
+    const id = req.params.id;
     const { status } = req.body;
 
+    if (!id) {
+      return res.status(400).json({ message: "Card ID is required" });
+    }
+
     const card = await cardService.updateCardStatus(id, { status });
-    
+
     if (!card) {
       return res.status(404).json({ message: "Card not found" });
     }

@@ -10,7 +10,6 @@ export class CardService {
       images,
       seller: sellerId,
       status: "pending",
-      game: "one-piece",
     });
   }
 

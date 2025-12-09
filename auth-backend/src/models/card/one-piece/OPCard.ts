@@ -8,7 +8,7 @@ export interface IOPCard extends Document {
   description?: string;
   price: number;
   status: "pending"|"approved"|"rejected";
-  seller?: mongoose.Types.ObjectId;
+  seller?: mongoose.Types.ObjectId | string;
   createdAt: Date;
   updatedAt: Date;
 }
