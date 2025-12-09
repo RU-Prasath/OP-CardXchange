@@ -13,6 +13,7 @@ import OnePieceAdmin from "../../pages/admin/cards/OnePiece/OnePieceAdmin";
 import CardSection from "../../pages/cards/one-piece/landingPage/CardSection";
 import ProductDetail from "../../pages/cards/one-piece/productDetailPage/ProductDetail";
 import WishList from "../../pages/cards/one-piece/wishlistPage/WishList";
+import AllCards from "../../pages/cards/one-piece/allCards/AllCards";
 
 interface RouteConfig {
   path: string;
@@ -37,6 +38,10 @@ const routeConfig: RouteConfig[] = [
   {
     path: "/admin/cards/one-piece",
     element: <ProtectedRoute adminOnly>{<OnePieceAdmin />}</ProtectedRoute>,
+  },
+  {
+    path: "/cards/one-piece/all-cards",
+    element: <AllCards />,
   },
 ];
 

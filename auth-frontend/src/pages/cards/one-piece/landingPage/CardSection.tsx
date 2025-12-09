@@ -343,6 +343,7 @@ const useWishlist = () => {
 
 export default function CardSection() {
   const { data } = useFetchApprovedCards();
+  console.log(data)
   const allCards = data?.cards || [];
 
   // Sort cards by createdAt in descending order and take latest 8

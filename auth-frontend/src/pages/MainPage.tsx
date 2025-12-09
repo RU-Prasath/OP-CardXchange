@@ -52,7 +52,7 @@ export default function MainPage() {
             className="w-16 h-16 md:w-20 md:h-20 object-contain animate-pulse" 
           />
           <h1 className="text-4xl md:text-6xl font-extrabold bg-linear-to-r from-[#c0392b] via-[#fdd18e] to-[#0097a7] bg-clip-text text-transparent">
-            TCG CardXChange
+            TCG MarketPlace
           </h1>
         </div>
         <p className="text-gray-300 text-lg md:text-2xl max-w-3xl mx-auto">
@@ -126,7 +126,7 @@ export default function MainPage() {
         </div>
 
         {/* Call to Action */}
-        <div className="text-center mb-12">
+        <div className="text-center pb-12">
           <Link
             to="/register"
             className="inline-block bg-linear-to-r from-[#c0392b] to-[#e74c3c] text-white font-bold text-lg px-8 py-4 rounded-full hover:shadow-2xl hover:scale-105 transition-all duration-300"

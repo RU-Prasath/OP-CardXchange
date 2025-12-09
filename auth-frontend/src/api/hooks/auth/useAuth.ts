@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import { AuthMethods } from "../../methods";
+import { api } from "../../clients/axiosClient";
 
 export const useRegisterApi = () => {
   const navigate = useNavigate();
@@ -114,19 +115,29 @@ export const useSendOtpApi = () => {
 
 // Verify OTP Hook
 export const useVerifyOtpApi = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   return useMutation({
     mutationFn: (formData: FormData) => AuthMethods.verifyOtp(formData),
     onSuccess: (res: any) => {
-      customToast.success("Registration successful!");
+      // customToast.success("Registration successful!");
       localStorage.setItem("token", res.data.token); // store token after registration
-      navigate("/"); // redirect after successful registration
+      // navigate("/");
     },
     onError: (err: any) => {
       customToast.error(
         err.response?.data?.message || "OTP verification failed"
       );
+    },
+  });
+};
+
+// api/hooks/auth/useAuth.ts
+export const useVerifyResetOtpApi = () => {
+  return useMutation({
+    mutationFn: async (data: { email: string; otp: string }) => {
+      const response = await api.post("/api/auth/verify-reset-otp", data);
+      return response.data;
     },
   });
 };

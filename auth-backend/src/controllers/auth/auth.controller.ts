@@ -357,6 +357,51 @@ export const forgotPassword = async (req: Request, res: Response) => {
   }
 };
 
+// export const forgotPassword = async (req: Request, res: Response) => {
+//   try {
+//     const { email } = req.body;
+//     if (!email) {
+//       return res.status(400).json({ message: "Email is required" });
+//     }
+
+//     // Find user
+//     const user = await User.findOne({ email: email.toLowerCase() });
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     // Generate OTP
+//     const otp = Math.floor(1000 + Math.random() * 9000).toString();
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedOtp = await bcrypt.hash(otp, salt);
+
+//     // Save RESET OTP (not email verification OTP)
+//     user.resetOtp = hashedOtp;
+//     user.resetOtpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+//     user.isResetOtpVerified = false;
+//     await user.save();
+
+//     // Send email
+//     const html = `
+//       <h3>Password Reset Request</h3>
+//       <p>Your password reset OTP is: <strong>${otp}</strong></p>
+//       <p>This OTP is valid for 10 minutes.</p>
+//       <p>If you didn't request a password reset, please ignore this email.</p>
+//     `;
+
+//     await sendEmail(user.email, "Password Reset OTP", html);
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "OTP sent to email",
+//       email: user.email,
+//     });
+//   } catch (error: any) {
+//     console.error("Forgot password error:", error);
+//     res.status(500).json({ message: "Failed to send OTP" });
+//   }
+// };
+
 export const resetPassword = async (req: Request, res: Response) => {
   try {
     const { email, otp, password, confirmPassword } = req.body;
@@ -376,6 +421,59 @@ export const resetPassword = async (req: Request, res: Response) => {
     res.status(400).json({ message: error.message || "Server error" });
   }
 };
+
+// export const resetPassword = async (req: Request, res: Response) => {
+//   try {
+//     const { email, otp, password, confirmPassword } = req.body;
+
+//     if (!email || !otp || !password || !confirmPassword) {
+//       return res.status(400).json({ message: "Missing required fields" });
+//     }
+
+//     if (password !== confirmPassword) {
+//       return res.status(400).json({ message: "Passwords do not match" });
+//     }
+
+//     // Find user
+//     const user = await User.findOne({ email: email.toLowerCase() });
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     // Verify OTP
+//     if (!user.resetOtp || !user.resetOtpExpires) {
+//       return res.status(400).json({ message: "No OTP request found" });
+//     }
+
+//     if (user.resetOtpExpires.getTime() < Date.now()) {
+//       return res.status(400).json({ message: "OTP expired" });
+//     }
+
+//     const isMatch = await bcrypt.compare(otp, user.resetOtp);
+//     if (!isMatch) {
+//       return res.status(400).json({ message: "Invalid OTP" });
+//     }
+
+//     // Hash new password
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedPassword = await bcrypt.hash(password, salt);
+
+//     // Update password and clear OTP fields
+//     user.password = hashedPassword;
+//     user.resetOtp = undefined;
+//     user.resetOtpExpires = undefined;
+//     user.isResetOtpVerified = undefined;
+//     await user.save();
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "Password reset successful",
+//     });
+//   } catch (error: any) {
+//     console.error("Reset password error:", error);
+//     res.status(500).json({ message: "Failed to reset password" });
+//   }
+// };
 
 export const sendEmailOtp = async (req: Request, res: Response) => {
   try {
@@ -568,3 +666,46 @@ export const verifyEmailOtpWithUpload = [
   uploadProfile.single("profile"),
   verifyEmailOtp,
 ];
+
+// export const verifyResetOtp = async (req: Request, res: Response) => {
+//   try {
+//     const { email, otp } = req.body;
+
+//     if (!email || !otp) {
+//       return res.status(400).json({ message: "Email and OTP are required" });
+//     }
+
+//     // Find user
+//     const user = await User.findOne({ email: email.toLowerCase() });
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     // Check reset OTP (you need to add these fields to User model)
+//     if (!user.resetOtp || !user.resetOtpExpires) {
+//       return res.status(400).json({ message: "No OTP request found" });
+//     }
+
+//     if (user.resetOtpExpires.getTime() < Date.now()) {
+//       return res.status(400).json({ message: "OTP expired. Please request new OTP." });
+//     }
+
+//     const isMatch = await bcrypt.compare(otp, user.resetOtp);
+//     if (!isMatch) {
+//       return res.status(400).json({ message: "Invalid OTP" });
+//     }
+
+//     // Mark OTP as verified (optional: you can add a field like isResetOtpVerified)
+//     user.isResetOtpVerified = true;
+//     await user.save();
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "OTP verified successfully",
+//       email: user.email,
+//     });
+//   } catch (error: any) {
+//     console.error("Verify reset OTP error:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };

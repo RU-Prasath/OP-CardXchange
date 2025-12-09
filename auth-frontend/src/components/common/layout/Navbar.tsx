@@ -134,7 +134,7 @@ export default function Navbar() {
     ${isActive ? "text-[#c0392b]" : "hover:text-[#c0392b]"}`;
 
   return (
-    <nav className="px-6 md:px-10 py-3 shadow-md sticky top-0 z-50 bg-[#f6f2ee]">
+    <nav className="px-4 sm:px-6 md:px-20 py-3 shadow-md sticky top-0 z-50 bg-[#f6f2ee]">
       <div className="max-w-[1440px] mx-auto">
         <div className="flex justify-between items-center gap-4">
           {/* ✅ LOGO */}
@@ -177,34 +177,34 @@ export default function Navbar() {
                 : "opacity-0 invisible md:visible md:opacity-100"
             }`}
           >
-            {/* ✅ Wishlist */}
-            <NavLink
-              to="/cards/one-piece/wishlist"
-              onClick={() => setMenuOpen(false)}
-              className={navLinkClass}
-            >
-              <span className="hidden xl:flex">
-                <Icon icon={ICONS.wishlist} width="22" />
-              </span>
-              <span>Wishlist</span>
-            </NavLink>
-
-            {/* ✅ Category */}
-            <NavLink
-              to="/cards/one-piece/category"
-              onClick={() => setMenuOpen(false)}
-              className={navLinkClass}
-            >
-              <span className="hidden xl:flex">
-                <Icon icon={ICONS.category} width="22" />
-              </span>
-              <span>Category</span>
-            </NavLink>
-
             {user && (
               <>
-                {/* ✅ My Orders */}
+                {/* ✅ Category */}
                 <NavLink
+                  to="/cards/one-piece/category"
+                  onClick={() => setMenuOpen(false)}
+                  className={navLinkClass}
+                >
+                  <span className="hidden xl:flex">
+                    <Icon icon={ICONS.category} width="22" />
+                  </span>
+                  <span>Category</span>
+                </NavLink>
+                
+                {/* ✅ Wishlist */}
+                <NavLink
+                  to="/cards/one-piece/wishlist"
+                  onClick={() => setMenuOpen(false)}
+                  className={navLinkClass}
+                >
+                  <span className="hidden xl:flex">
+                    <Icon icon={ICONS.wishlist} width="22" />
+                  </span>
+                  <span>Wishlist</span>
+                </NavLink>
+
+                {/* ✅ My Orders */}
+                {/* <NavLink
                   to="/orders"
                   onClick={() => setMenuOpen(false)}
                   className={navLinkClass}
@@ -213,7 +213,7 @@ export default function Navbar() {
                     <Icon icon={ICONS.orders} width="22" />
                   </span>
                   <span>Orders</span>
-                </NavLink>
+                </NavLink> */}
 
                 {/* ✅ Sell */}
                 <NavLink

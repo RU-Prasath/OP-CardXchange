@@ -70,7 +70,7 @@ router.post("/", protect, uploadCards.array("images", 12), createCard);
 router.get("/", protect, adminProtect, listAllCards);
 router.get("/pending", protect, adminProtect, listPendingCards);
 router.get("/rejected", protect, adminProtect, listRejectedCards);
-router.get("/:id", protect, adminProtect, getCardById);
+router.get("/:id", getCardById);
 router.patch("/:id/status", protect, adminProtect, updateCardStatus);
 
 export default router;

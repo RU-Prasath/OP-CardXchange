@@ -307,7 +307,8 @@ import { useForm } from "react-hook-form";
 import { useSendOtpApi, useVerifyOtpApi } from "../../api/hooks/auth/useAuth"; // custom hooks
 import CustomInput from "../../components/common/UI/CustomInput";
 import CustomButton from "../../components/common/UI/CustomButton";
-import { IMAGES } from "../../assets";
+import { customToast } from "../../utils/customToast";
+import { useNavigate } from "react-router-dom";
 
 interface RegisterForm {
   fullName: string;
@@ -323,6 +324,7 @@ interface RegisterForm {
 }
 
 export default function Register() {
+  const navigate = useNavigate();
   const { register, handleSubmit } = useForm<RegisterForm>();
   const sendOtpApi = useSendOtpApi();
   const verifyOtpApi = useVerifyOtpApi();
@@ -332,17 +334,17 @@ export default function Register() {
 
   // Step 1: Send OTP
   const handleSendOtp = async (data: RegisterForm) => {
-    if (!data.email) return alert("Please enter email first");
+    if (!data.email) return customToast.info("Please enter email first");
     setEmail(data.email);
     sendOtpApi.mutate(
       { email: data.email },
       {
         onSuccess: () => {
           setOtpSent(true);
-          alert("OTP sent to your email. Check inbox!");
+          // alert("OTP sent to your email. Check inbox!");
         },
         onError: (err: any) =>
-          alert(err.response?.data?.message || "Failed to send OTP"),
+          console.error(err.response?.data?.message || "Failed to send OTP"),
       }
     );
   };
@@ -364,19 +366,24 @@ export default function Register() {
 
     verifyOtpApi.mutate(formData, {
       onSuccess: () => {
-        alert("Registration successful!");
-        window.location.href = "/login";
+        customToast.success("Registration successful!");
+        navigate("/login");
       },
       onError: (err: any) =>
-        alert(err.response?.data?.message || "OTP verification failed"),
+        console.error(err.response?.data?.message || "OTP verification failed"),
     });
   };
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-cover bg-center p-4"
-      style={{ backgroundImage: `url(${IMAGES.authBg})` }}
+      className="min-h-screen flex items-center justify-center bg-linear-to-br from-[#0f0f0f] via-[#121212] to-black relative p-4 overflow-hidden"
     >
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden animate-pulse">
+        <h1 className="text-center text-[15vw] md:text-[20rem] font-black text-white tracking-wider">
+          TCG
+        </h1>
+      </div>
+
       <div className="w-full max-w-3xl bg-[#f6f2ee]/15 backdrop-blur-lg rounded-3xl p-10 shadow-2xl border border-gray-200">
         <h2 className="text-4xl font-extrabold mb-8 text-[#c0392b] text-center tracking-wide">
           Create Pirate

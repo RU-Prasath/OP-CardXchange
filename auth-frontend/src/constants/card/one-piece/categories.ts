@@ -1,6 +1,7 @@
 import { OPIMAGES } from "../../../assets";
 
 export const OP_CATEGORIES = [
+  { id: "all", label: "All Cards", image: OPIMAGES.CAll },
   { id: "OP01", label: "OP01 Foil", image: OPIMAGES.C1 },
   { id: "OP02", label: "OP02 Foil", image: OPIMAGES.C2 },
   { id: "OP03", label: "OP03 Foil", image: OPIMAGES.C3 },

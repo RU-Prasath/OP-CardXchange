@@ -65,4 +65,5 @@ export const useFetchCardById = (id: string) =>
     queryKey: ["cards", id],
     queryFn: () => CardMethods.getById(id),
     enabled: !!id,
+    retry: false,
   });

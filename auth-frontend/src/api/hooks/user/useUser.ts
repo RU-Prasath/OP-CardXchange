@@ -15,5 +15,6 @@ export const useFetchUserById = (id: string) => {
     queryKey: ["users", id],
     queryFn: () => UserMethods.getById(id),
     enabled: !!id, // only fetch if id exists
+    retry: false,
   });
 };
