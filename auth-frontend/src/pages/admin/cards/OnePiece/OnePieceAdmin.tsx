@@ -1,6 +1,5 @@
 import { useState } from "react";
-import CardFilters from "./CardFilters";
-import CardList from "./CardList";
+import CardList from "../../../../components/admin/card/one-piece/CardList";
 import { customToast } from "../../../../utils/customToast";
 import type { Card } from "../../../../api/types/card/opCard/card";
 import {
@@ -9,6 +8,7 @@ import {
   useFetchRejectedCards,
   useUpdateCardStatus,
 } from "../../../../api/hooks/card/one-piece/useCards";
+import CardFilters from "../../../../components/admin/common/CardFilters";
 
 export default function OnePieceAdmin() {
   const [activeTab, setActiveTab] = useState<
@@ -24,7 +24,6 @@ export default function OnePieceAdmin() {
   const { data: rejectedData, refetch: refetchRejected } =
     useFetchRejectedCards();
 
-  console.log(pendingData);
   const updateStatus = useUpdateCardStatus();
 
   const pendingCards = pendingData?.cards || [];

@@ -20,7 +20,7 @@ const Dashboard = () => {
       <OnePieceFeaturedSection />
       <OPCardScrollable
         heading="Secret Rare Cards"
-        categoryFilter="Manga Rare"
+        categoryFilter="Secret Rare (SEC)"
         maxCards={10}
       />
       {/* <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 sm:grid-cols-3 gap-6">

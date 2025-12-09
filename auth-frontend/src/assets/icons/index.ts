@@ -16,4 +16,11 @@ export const ICONS = {
   rightArrow: "line-md:arrow-right",
   leftArrow: "line-md:arrow-left",
   trash: "line-md:trash",
+  // New icons added:
+  fullscreen: "mdi:fullscreen",
+  checkAll: "line-md:check-all",
+  closeCircle: "line-md:close",
+  calendar: "mdi:calendar",
+  account: "mdi:account",
+  identifier: "mdi:identifier",
 };
