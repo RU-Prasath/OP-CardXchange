@@ -1,6 +1,13 @@
 import express from "express";
 import { uploadProfile } from "../utils/storage/upload.js";
-import { forgotPassword, login, register, resetPassword, sendEmailOtp, verifyEmailOtpWithUpload } from "../controllers/auth/auth.controller.js";
+import {
+  forgotPassword,
+  login,
+  register,
+  resetPassword,
+  sendEmailOtp,
+  verifyEmailOtpWithUpload,
+} from "../controllers/auth/auth.controller.js";
 
 const router = express.Router();
 
