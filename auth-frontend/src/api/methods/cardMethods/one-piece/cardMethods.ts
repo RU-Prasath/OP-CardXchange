@@ -17,6 +17,25 @@ export const CardMethods = {
     api.get(OPCARD_ENDPOINTS.list, { params }).then((res) => res.data),
   updateStatus: async (id: string, status: "approved" | "rejected") =>
     api.patch(OPCARD_ENDPOINTS.updateStatus(id), { status }),
+  rejectCard: async (id: string, rejectionReason: string) => {
+    return api.patch(OPCARD_ENDPOINTS.updateStatus(id), {
+      status: "rejected",
+      rejectionReason,
+    });
+  },
   getById: async (id: string): Promise<{ card: Card }> =>
     api.get(OPCARD_ENDPOINTS.getById(id)).then((res) => res.data),
+  listMyPending: async (): Promise<CardListResponse> =>
+    api.get(OPCARD_ENDPOINTS.myPending).then((res) => res.data),
+
+  listMyApproved: async (): Promise<CardListResponse> =>
+    api.get(OPCARD_ENDPOINTS.myApproved).then((res) => res.data),
+
+  listMyRejected: async (): Promise<CardListResponse> =>
+    api.get(OPCARD_ENDPOINTS.myRejected).then((res) => res.data),
+  deleteMyCard: async (id: string) =>
+    api.delete(`${OPCARD_ENDPOINTS.myCards}/${id}`),
+
+  deleteCard: async (id: string) =>
+    api.delete(`${OPCARD_ENDPOINTS.adminDelete(id)}`),
 };

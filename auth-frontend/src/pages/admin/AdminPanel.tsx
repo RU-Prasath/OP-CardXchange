@@ -24,7 +24,7 @@
 //   const navigate = useNavigate();
 //   const { data, refetch } = useFetchPendingCards();
 //   const updateStatus = useUpdateCardStatus();
-  
+
 //   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 //   const [rejectReason, setRejectReason] = useState("");
 
@@ -55,7 +55,7 @@
 //       customToast.warning("Please provide a rejection reason");
 //       return;
 //     }
-    
+
 //     updateStatus.mutate(
 //       // { id: cardId, status: "rejected", reason },
 //       { id: cardId, status: "rejected" },
@@ -309,26 +309,28 @@ export default function AdminPanel() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900 p-6 md:p-10 text-white">
-      <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
+    <div className=" bg-gray-900 py-10 text-white">
+      <div className="px-4 sm:px-6 md:px-20 max-w-[1440px] mx-auto">
+        <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-12">
-        {/* <StatCard title="Pending Cards" count={pendingCards.length} color="yellow" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+          {/* <StatCard title="Pending Cards" count={pendingCards.length} color="yellow" />
         <StatCard title="Approved Cards" count={approvedCards.length} color="green" />
         <StatCard title="Rejected Cards" count={rejectedCards.length} color="red" /> */}
-        <StatCard title="Total Users" count={usersCount} color="blue" />
-      </div>
+          <StatCard title="Total Users" count={usersCount} color="blue" />
+        </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-        {cardCategories.map((cat) => (
-          <button
-            key={cat.title}
-            onClick={() => navigate(cat.path)}
-            className="cursor-pointer bg-gray-800 hover:bg-gray-700 transition-colors rounded-lg p-6 font-semibold text-lg shadow-md flex justify-center items-center"
-          >
-            {cat.title}
-          </button>
-        ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+          {cardCategories.map((cat) => (
+            <button
+              key={cat.title}
+              onClick={() => navigate(cat.path)}
+              className="cursor-pointer bg-gray-800 hover:bg-gray-700 transition-colors rounded-lg p-6 font-semibold text-lg shadow-md flex justify-center items-center"
+            >
+              {cat.title}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

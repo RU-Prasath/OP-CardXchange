@@ -14,4 +14,5 @@ export interface CardQueryParams {
 
 export interface UpdateCardStatusDTO {
   status: "approved" | "rejected";
+  rejectionReason?: string; // Add this
 }

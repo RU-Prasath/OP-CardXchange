@@ -52,8 +52,52 @@
 
 // export default router;
 
+// 11/12 10:52
+// import express from "express";
+// import { createCard, getCardById, getCardStats, listAllCards, listApprovedCards, listApprovedCardsByUserId, listPendingCards, listPendingCardsByUserId, listRejectedCards, listRejectedCardsByUserId, updateCardStatus } from "../../../controllers/cardController/one-piece/card.controller.js";
+// import { adminProtect, protect } from "../../../config/middleware/auth.js";
+// import { uploadCards } from "../../../utils/storage/uploadMultiple.js";
+
+// const router = express.Router();
+
+// // Public routes
+// router.get("/", listApprovedCards);
+// router.get("/stats", getCardStats);
+
+// // Protected routes (seller)
+// router.post("/", protect, uploadCards.array("images", 12), createCard);
+
+// // User-specific card status routes
+// router.get("/my/pending", protect, listPendingCardsByUserId);
+// router.get("/my/approved", protect, listApprovedCardsByUserId);
+// router.get("/my/rejected", protect, listRejectedCardsByUserId);
+
+// // Admin routes
+// router.get("/", protect, adminProtect, listAllCards);
+// router.get("/pending", protect, adminProtect, listPendingCards);
+// router.get("/rejected", protect, adminProtect, listRejectedCards);
+// router.get("/:id", getCardById);
+// router.patch("/:id/status", protect, adminProtect, updateCardStatus);
+
+// export default router;
+
+// routes/card/one-piece/card.routes.ts
 import express from "express";
-import { createCard, getCardById, getCardStats, listAllCards, listApprovedCards, listPendingCards, listRejectedCards, updateCardStatus } from "../../../controllers/cardController/one-piece/card.controller.js";
+import { 
+  createCard, 
+  getCardById, 
+  getCardStats, 
+  listAllCards, 
+  listApprovedCards, 
+  listPendingCards, 
+  listRejectedCards, 
+  updateCardStatus,
+  listPendingCardsByUserId,
+  listApprovedCardsByUserId,
+  listRejectedCardsByUserId,
+  deleteMyCard,
+  deleteCard
+} from "../../../controllers/cardController/one-piece/card.controller.js";
 import { adminProtect, protect } from "../../../config/middleware/auth.js";
 import { uploadCards } from "../../../utils/storage/uploadMultiple.js";
 
@@ -65,12 +109,19 @@ router.get("/stats", getCardStats);
 
 // Protected routes (seller)
 router.post("/", protect, uploadCards.array("images", 12), createCard);
+router.delete("/my/:id", protect, deleteMyCard); // User delete own card
+
+// User-specific card status routes
+router.get("/my/pending", protect, listPendingCardsByUserId);
+router.get("/my/approved", protect, listApprovedCardsByUserId);
+router.get("/my/rejected", protect, listRejectedCardsByUserId);
 
 // Admin routes
-router.get("/", protect, adminProtect, listAllCards);
+router.get("/all", protect, adminProtect, listAllCards);
 router.get("/pending", protect, adminProtect, listPendingCards);
 router.get("/rejected", protect, adminProtect, listRejectedCards);
 router.get("/:id", getCardById);
 router.patch("/:id/status", protect, adminProtect, updateCardStatus);
+router.delete("/:id", protect, adminProtect, deleteCard); // Admin delete any card
 
 export default router;

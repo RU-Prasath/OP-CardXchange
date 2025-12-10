@@ -230,6 +230,38 @@ export const getCardById = async (req: Request, res: Response) => {
   }
 };
 
+// export const updateCardStatus = async (req: Request, res: Response) => {
+//   try {
+//     const { error } = updateCardStatusSchema.validate(req.body, {
+//       abortEarly: true,
+//     });
+
+//     if (error) {
+//       return res.status(400).json({
+//         message: error.details?.[0]?.message || "Validation error",
+//       });
+//     }
+
+//     const id = req.params.id;
+//     const { status } = req.body;
+
+//     if (!id) {
+//       return res.status(400).json({ message: "Card ID is required" });
+//     }
+
+//     const card = await cardService.updateCardStatus(id, { status });
+
+//     if (!card) {
+//       return res.status(404).json({ message: "Card not found" });
+//     }
+
+//     res.json({ message: `Card ${status}`, card });
+//   } catch (error: any) {
+//     console.error("Update card status error:", error);
+//     res.status(500).json({ message: error.message || "Server error" });
+//   }
+// };
+
 export const updateCardStatus = async (req: Request, res: Response) => {
   try {
     const { error } = updateCardStatusSchema.validate(req.body, {
@@ -243,21 +275,80 @@ export const updateCardStatus = async (req: Request, res: Response) => {
     }
 
     const id = req.params.id;
-    const { status } = req.body;
+    const { status, rejectionReason } = req.body;
 
     if (!id) {
       return res.status(400).json({ message: "Card ID is required" });
     }
 
-    const card = await cardService.updateCardStatus(id, { status });
+    const card = await cardService.updateCardStatus(id, { 
+      status, 
+      rejectionReason 
+    });
 
     if (!card) {
       return res.status(404).json({ message: "Card not found" });
     }
 
-    res.json({ message: `Card ${status}`, card });
+    res.json({ 
+      message: `Card ${status}`,
+      card 
+    });
   } catch (error: any) {
     console.error("Update card status error:", error);
+    res.status(500).json({ message: error.message || "Server error" });
+  }
+};
+
+export const deleteMyCard = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const user = req.user!;
+
+    if (!id) {
+      return res.status(400).json({ message: "Card ID is required" });
+    }
+
+    const success = await cardService.deleteCard(id, user._id.toString());
+
+    if (!success) {
+      return res.status(404).json({ message: "Card not found" });
+    }
+
+    res.json({ 
+      message: "Card deleted successfully" 
+    });
+  } catch (error: any) {
+    console.error("Delete my card error:", error);
+    
+    if (error.message === "You can only delete your own cards") {
+      return res.status(403).json({ message: error.message });
+    }
+    
+    res.status(500).json({ message: error.message || "Server error" });
+  }
+};
+
+// Delete card (admin can delete any card)
+export const deleteCard = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ message: "Card ID is required" });
+    }
+
+    const success = await cardService.deleteCard(id);
+
+    if (!success) {
+      return res.status(404).json({ message: "Card not found" });
+    }
+
+    res.json({ 
+      message: "Card deleted successfully" 
+    });
+  } catch (error: any) {
+    console.error("Delete card error:", error);
     res.status(500).json({ message: error.message || "Server error" });
   }
 };
@@ -268,6 +359,40 @@ export const getCardStats = async (_req: Request, res: Response) => {
     res.json(stats);
   } catch (error: any) {
     console.error("Get card stats error:", error);
+    res.status(500).json({ message: error.message || "Server error" });
+  }
+};
+
+// New functions for user-specific cards
+export const listPendingCardsByUserId = async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    const cards = await cardService.getPendingCardsByUserId(user._id.toString());
+    res.json({ cards });
+  } catch (error: any) {
+    console.error("List pending cards by user ID error:", error);
+    res.status(500).json({ message: error.message || "Server error" });
+  }
+};
+
+export const listApprovedCardsByUserId = async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    const cards = await cardService.getApprovedCardsByUserId(user._id.toString());
+    res.json({ cards });
+  } catch (error: any) {
+    console.error("List approved cards by user ID error:", error);
+    res.status(500).json({ message: error.message || "Server error" });
+  }
+};
+
+export const listRejectedCardsByUserId = async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    const cards = await cardService.getRejectedCardsByUserId(user._id.toString());
+    res.json({ cards });
+  } catch (error: any) {
+    console.error("List rejected cards by user ID error:", error);
     res.status(500).json({ message: error.message || "Server error" });
   }
 };

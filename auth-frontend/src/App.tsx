@@ -1,11 +1,14 @@
 import { ToastContainer } from "react-toastify";
 import AppRouter from "./router/AuthRouter";
+import { CartProvider } from "./context/CartContext";
 
 function App() {
   return (
     <>
-      <AppRouter />
-      <ToastContainer />
+      <CartProvider>
+        <AppRouter />
+        <ToastContainer />
+      </CartProvider>
     </>
   );
 }

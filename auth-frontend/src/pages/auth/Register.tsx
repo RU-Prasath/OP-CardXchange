@@ -376,7 +376,7 @@ export default function Register() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-linear-to-br from-[#0f0f0f] via-[#121212] to-black relative p-4 overflow-hidden"
+      className="flex items-center justify-center bg-linear-to-br from-[#0f0f0f] via-[#121212] to-black relative p-4 overflow-hidden"
     >
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden animate-pulse">
         <h1 className="text-center text-[15vw] md:text-[20rem] font-black text-white tracking-wider">
@@ -384,10 +384,10 @@ export default function Register() {
         </h1>
       </div>
 
-      <div className="w-full max-w-3xl bg-[#f6f2ee]/15 backdrop-blur-lg rounded-3xl p-10 shadow-2xl border border-gray-200">
-        <h2 className="text-4xl font-extrabold mb-8 text-[#c0392b] text-center tracking-wide">
+      <div className="w-full max-w-3xl bg-[#f6f2ee]/15 backdrop-blur-lg rounded-3xl p-4 md:p-10 shadow-2xl border border-gray-200">
+        <p className="text-4xl font-bold mb-8 text-[#c0392b] text-center tracking-wide">
           Create Pirate
-        </h2>
+        </p>
 
         {!otpSent ? (
           <form

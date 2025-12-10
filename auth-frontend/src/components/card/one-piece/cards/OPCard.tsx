@@ -311,10 +311,221 @@
 //   );
 // }
 
+// import { useNavigate } from "react-router-dom";
+// import { Icon } from "@iconify/react";
+// import { API_BASE_URL } from "../../../../api/clients/axiosClient";
+// import { ICONS } from "../../../../assets/icons";
+
+// export interface OPCardType {
+//   _id: string;
+//   name: string;
+//   category: string;
+//   condition: string;
+//   images: string[];
+//   description: string;
+//   price?: number;
+// }
+
+// interface Props {
+//   card: OPCardType;
+//   view?: "grid" | "list";
+//   isWishlisted?: boolean;
+//   onToggleWishlist?: (cardId: string) => void;
+// }
+
+// export default function OPCard({
+//   card,
+//   view = "grid",
+//   isWishlisted = false,
+//   onToggleWishlist,
+// }: Props) {
+//   const navigate = useNavigate();
+
+//   const handleCardClick = () => {
+//     navigate(`/cards/one-piece/cards/${card._id}`);
+//   };
+
+//   const handleWishlistClick = (e: React.MouseEvent) => {
+//     e.stopPropagation();
+//     if (onToggleWishlist) {
+//       onToggleWishlist(card._id);
+//     }
+//   };
+
+//   // For list view, use a different layout
+//   if (view === "list") {
+//     return (
+//       <div
+//         onClick={handleCardClick}
+//         className="group cursor-pointer flex flex-col md:flex-row gap-6 bg-white rounded-2xl border border-[#f6f2ee] hover:border-[#fdd18e] transition-all duration-300 hover:shadow-xl overflow-hidden p-6"
+//       >
+//         {/* Image Container for List View */}
+//         <div className="relative shrink-0 w-full md:w-60 h-48 md:h-60 overflow-hidden rounded-xl">
+//           <img
+//             src={`${API_BASE_URL}${card.images?.[0]}`}
+//             alt={card.name}
+//             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+//           />
+
+//           {/* Gradient Overlay */}
+//           <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+//           {/* Category Badge */}
+//           <div className="absolute top-3 left-3">
+//             <span className="px-3 py-1 bg-linear-to-r from-[#0097a7] to-[#1c1c1c] text-white text-xs font-semibold rounded-full">
+//               {card.category}
+//             </span>
+//           </div>
+
+//           {/* Wishlist Button */}
+//           <button
+//             onClick={handleWishlistClick}
+//             className="absolute top-3 right-3 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all duration-300 hover:scale-110"
+//             aria-label={
+//               isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+//             }
+//           >
+//             <Icon
+//               icon={isWishlisted ? ICONS.heartFilled : ICONS.heartOutline}
+//               className={`text-xl ${
+//                 isWishlisted
+//                   ? "text-[#c0392b]"
+//                   : "text-[#1c1c1c] hover:text-[#c0392b]"
+//               } transition-colors duration-300`}
+//             />
+//           </button>
+//         </div>
+
+//         {/* Card Info for List View */}
+//         <div className="flex-1 flex flex-col justify-between">
+//           <div>
+//             <div className="flex justify-between items-start">
+//               <div className="flex-1 min-w-0">
+//                 <h3 className="font-bold text-2xl text-[#1c1c1c] group-hover:text-[#c0392b] transition-colors duration-300 line-clamp-1">
+//                   {card.name}
+//                 </h3>
+//                 <div className="flex items-center gap-2 mt-3">
+//                   <span className="text-sm text-[#0097a7] font-medium px-3 py-1 bg-[#0097a7]/10 rounded-full">
+//                     {card.condition}
+//                   </span>
+//                 </div>
+//               </div>
+
+//               {card.price && (
+//                 <div className="ml-4">
+//                   <div className="font-bold text-3xl text-[#0097a7]">
+//                     ₹{card.price.toLocaleString()}
+//                   </div>
+//                 </div>
+//               )}
+//             </div>
+
+//             <p className="text-gray-600 text-base mt-4 line-clamp-3">
+//               {card.description}
+//             </p>
+//           </div>
+
+//           <div className="mt-6 pt-4 border-t border-[#f6f2ee]">
+//             <button
+//               onClick={handleCardClick}
+//               className="px-6 py-3 bg-[#1c1c1c] text-white text-sm font-semibold rounded-lg hover:bg-[#c0392b] transition-colors duration-300"
+//             >
+//               View Details
+//             </button>
+//           </div>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   // Grid View (same as OPCardScrollable)
+//   return (
+//     <div
+//       onClick={handleCardClick}
+//       className="group cursor-pointer relative shrink-0 w-full bg-white rounded-2xl border border-[#f6f2ee] hover:border-[#fdd18e] transition-all duration-300 hover:shadow-xl overflow-hidden"
+//     >
+//       {/* Image Container */}
+//       <div className="relative h-56 overflow-hidden">
+//         <img
+//           src={`${API_BASE_URL}${card.images?.[0]}`}
+//           alt={card.name}
+//           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+//         />
+
+//         {/* Gradient Overlay */}
+//         <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+//         {/* Category Badge */}
+//         <div className="absolute top-3 left-3">
+//           <span className="px-3 py-1 bg-linear-to-r from-[#0097a7] to-[#1c1c1c] text-white text-xs font-semibold rounded-full">
+//             {card.category}
+//           </span>
+//         </div>
+
+//         {/* Wishlist Button */}
+//         <button
+//           onClick={handleWishlistClick}
+//           className="absolute top-3 right-3 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all duration-300 hover:scale-110"
+//           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+//         >
+//           <Icon
+//             icon={isWishlisted ? ICONS.heartFilled : ICONS.heartOutline}
+//             className={`text-xl ${
+//               isWishlisted
+//                 ? "text-[#c0392b]"
+//                 : "text-[#1c1c1c] hover:text-[#c0392b]"
+//             } transition-colors duration-300`}
+//           />
+//         </button>
+//       </div>
+
+//       {/* Card Info */}
+//       <div className="p-5">
+//         <div className="flex justify-between items-start">
+//           <div className="flex-1 min-w-0">
+//             <h3 className="font-bold text-xl text-[#1c1c1c] group-hover:text-[#c0392b] transition-colors duration-300 line-clamp-1">
+//               {card.name}
+//             </h3>
+//             <div className="flex items-center gap-2 mt-2">
+//               <span className="text-sm text-[#0097a7] font-medium px-3 py-1 bg-[#0097a7]/10 rounded-full">
+//                 {card.condition}
+//               </span>
+//             </div>
+//           </div>
+
+//           {card.price && (
+//             <div className="ml-2">
+//               <div className="font-bold text-2xl text-[#0097a7]">
+//                 ₹{card.price.toLocaleString()}
+//               </div>
+//             </div>
+//           )}
+//         </div>
+
+//         {/* <p className="text-gray-600 text-sm mt-3 line-clamp-2">
+//           {card.description}
+//         </p> */}
+
+//         <div className="mt-4 pt-4 border-t border-[#f6f2ee]">
+//           <button
+//             onClick={handleCardClick}
+//             className="w-full px-4 py-2 bg-[#1c1c1c] text-white text-sm font-semibold rounded-lg hover:bg-[#c0392b] transition-colors duration-300"
+//           >
+//             View Details
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// components/card/one-piece/cards/OPCard.tsx
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import { API_BASE_URL } from "../../../../api/clients/axiosClient";
 import { ICONS } from "../../../../assets/icons";
+import { AuthContext } from "../../../../context/AuthContext";
 
 export interface OPCardType {
   _id: string;
@@ -324,6 +535,15 @@ export interface OPCardType {
   images: string[];
   description: string;
   price?: number;
+  status?: "pending" | "approved" | "rejected";
+  seller?: {
+    _id: string;
+    fullName?: string;
+    email: string;
+  };
+  createdAt?: string;
+  updatedAt?: string;
+  rejectionReason?: string;
 }
 
 interface Props {
@@ -331,6 +551,8 @@ interface Props {
   view?: "grid" | "list";
   isWishlisted?: boolean;
   onToggleWishlist?: (cardId: string) => void;
+  onDelete?: (cardId: string) => void;
+  showDelete?: boolean;
 }
 
 export default function OPCard({
@@ -338,8 +560,12 @@ export default function OPCard({
   view = "grid",
   isWishlisted = false,
   onToggleWishlist,
+  onDelete,
+  showDelete = false,
 }: Props) {
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleCardClick = () => {
     navigate(`/cards/one-piece/cards/${card._id}`);
@@ -352,15 +578,188 @@ export default function OPCard({
     }
   };
 
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (onDelete) {
+      onDelete(card._id);
+    }
+    setShowDeleteConfirm(false);
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
+  };
+
   // For list view, use a different layout
   if (view === "list") {
     return (
+      <>
+        <div
+          onClick={handleCardClick}
+          className="group cursor-pointer flex flex-col md:flex-row gap-6 bg-white rounded-2xl border border-[#f6f2ee] hover:border-[#fdd18e] transition-all duration-300 hover:shadow-xl overflow-hidden p-6"
+        >
+          {/* Image Container for List View */}
+          <div className="relative shrink-0 w-full md:w-60 h-48 md:h-60 overflow-hidden rounded-xl">
+            <img
+              src={`${API_BASE_URL}${card.images?.[0]}`}
+              alt={card.name}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+            {/* Category Badge */}
+            <div className="absolute top-3 left-3">
+              <span className="px-3 py-1 bg-linear-to-r from-[#0097a7] to-[#1c1c1c] text-white text-xs font-semibold rounded-full">
+                {card.category}
+              </span>
+            </div>
+
+            {/* Delete Button */}
+            {showDelete && onDelete && (
+              <button
+                onClick={handleDeleteClick}
+                className="absolute top-3 right-3 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-red-100 transition-all duration-300 hover:scale-110"
+                aria-label="Delete card"
+              >
+                <Icon
+                  icon="mdi:delete"
+                  className="text-xl text-red-500 hover:text-red-700"
+                />
+              </button>
+            )}
+
+            {/* Wishlist Button */}
+            {onToggleWishlist && (
+              <button
+                onClick={handleWishlistClick}
+                className={`absolute top-3 ${
+                  showDelete ? "right-14" : "right-3"
+                } w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all duration-300 hover:scale-110`}
+                aria-label={
+                  isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+                }
+              >
+                <Icon
+                  icon={isWishlisted ? ICONS.heartFilled : ICONS.heartOutline}
+                  className={`text-xl ${
+                    isWishlisted
+                      ? "text-[#c0392b]"
+                      : "text-[#1c1c1c] hover:text-[#c0392b]"
+                  } transition-colors duration-300`}
+                />
+              </button>
+            )}
+          </div>
+
+          {/* Card Info for List View */}
+          <div className="flex-1 flex flex-col justify-between">
+            <div>
+              <div className="flex justify-between items-start">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-2xl text-[#1c1c1c] group-hover:text-[#c0392b] transition-colors duration-300 line-clamp-1">
+                    {card.name}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-3">
+                    <span className="text-sm text-[#0097a7] font-medium px-3 py-1 bg-[#0097a7]/10 rounded-full">
+                      {card.condition}
+                    </span>
+                    {card.status && (
+                      <span
+                        className={`text-sm font-medium px-3 py-1 rounded-full ${
+                          card.status === "pending"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : card.status === "approved"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {card.status}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {card.price && (
+                  <div className="ml-4">
+                    <div className="font-bold text-3xl text-[#0097a7]">
+                      ₹{card.price.toLocaleString()}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <p className="text-gray-600 text-base mt-4 line-clamp-3">
+                {card.description}
+              </p>
+
+              {card.status === "rejected" && card.rejectionReason && (
+                <div className="mt-3 p-3 bg-red-50 rounded-lg">
+                  <p className="text-sm font-medium text-red-800">
+                    Rejection Reason:
+                  </p>
+                  <p className="text-sm text-red-600">{card.rejectionReason}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-[#f6f2ee]">
+              <button
+                onClick={handleCardClick}
+                className="px-6 py-3 bg-[#1c1c1c] text-white text-sm font-semibold rounded-lg hover:bg-[#c0392b] transition-colors duration-300"
+              >
+                View Details
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full border border-gray-300">
+              <h3 className="text-2xl font-bold text-[#1c1c1c] mb-4">
+                Confirm Delete
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete "{card.name}"? This action
+                cannot be undone.
+              </p>
+              <div className="flex gap-4">
+                <button
+                  onClick={handleConfirmDelete}
+                  className="flex-1 bg-red-600 text-white font-semibold py-3 rounded-lg hover:bg-red-700 transition"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={handleCancelDelete}
+                  className="flex-1 bg-gray-700 text-white font-semibold py-3 rounded-lg hover:bg-gray-600 transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  }
+
+  // Grid View
+  return (
+    <>
       <div
         onClick={handleCardClick}
-        className="group cursor-pointer flex flex-col md:flex-row gap-6 bg-white rounded-2xl border border-[#f6f2ee] hover:border-[#fdd18e] transition-all duration-300 hover:shadow-xl overflow-hidden p-6"
+        className="group cursor-pointer relative shrink-0 w-full bg-white rounded-2xl border border-[#f6f2ee] hover:border-[#fdd18e] transition-all duration-300 hover:shadow-xl overflow-hidden"
       >
-        {/* Image Container for List View */}
-        <div className="relative shrink-0 w-full md:w-60 h-48 md:h-60 overflow-hidden rounded-xl">
+        {/* Image Container */}
+        <div className="relative h-56 overflow-hidden">
           <img
             src={`${API_BASE_URL}${card.images?.[0]}`}
             alt={card.name}
@@ -377,144 +776,129 @@ export default function OPCard({
             </span>
           </div>
 
+          {/* Delete Button */}
+          {showDelete && onDelete && (
+            <button
+              onClick={handleDeleteClick}
+              className="absolute top-3 right-3 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-red-100 transition-all duration-300 hover:scale-110"
+              aria-label="Delete card"
+            >
+              <Icon
+                icon="mdi:delete"
+                className="text-xl text-red-500 hover:text-red-700"
+              />
+            </button>
+          )}
+
           {/* Wishlist Button */}
-          <button
-            onClick={handleWishlistClick}
-            className="absolute top-3 right-3 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all duration-300 hover:scale-110"
-            aria-label={
-              isWishlisted ? "Remove from wishlist" : "Add to wishlist"
-            }
-          >
-            <Icon
-              icon={isWishlisted ? ICONS.heartFilled : ICONS.heartOutline}
-              className={`text-xl ${
-                isWishlisted
-                  ? "text-[#c0392b]"
-                  : "text-[#1c1c1c] hover:text-[#c0392b]"
-              } transition-colors duration-300`}
-            />
-          </button>
+          {user && onToggleWishlist && (
+            <button
+              onClick={handleWishlistClick}
+              className={`absolute top-3 ${
+                showDelete ? "right-14" : "right-3"
+              } w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all duration-300 hover:scale-110`}
+              aria-label={
+                isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+              }
+            >
+              <Icon
+                icon={isWishlisted ? ICONS.heartFilled : ICONS.heartOutline}
+                className={`text-xl ${
+                  isWishlisted
+                    ? "text-[#c0392b]"
+                    : "text-[#1c1c1c] hover:text-[#c0392b]"
+                } transition-colors duration-300`}
+              />
+            </button>
+          )}
         </div>
 
-        {/* Card Info for List View */}
-        <div className="flex-1 flex flex-col justify-between">
-          <div>
-            <div className="flex justify-between items-start">
-              <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-2xl text-[#1c1c1c] group-hover:text-[#c0392b] transition-colors duration-300 line-clamp-1">
-                  {card.name}
-                </h3>
-                <div className="flex items-center gap-2 mt-3">
-                  <span className="text-sm text-[#0097a7] font-medium px-3 py-1 bg-[#0097a7]/10 rounded-full">
-                    {card.condition}
+        {/* Card Info */}
+        <div className="p-5">
+          <div className="flex justify-between items-start">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-xl text-[#1c1c1c] group-hover:text-[#c0392b] transition-colors duration-300 line-clamp-1">
+                {card.name}
+              </h3>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-sm text-[#0097a7] font-medium px-3 py-1 bg-[#0097a7]/10 rounded-full">
+                  {card.condition}
+                </span>
+                {card.status && (
+                  <span
+                    className={`text-xs font-medium px-2 py-1 rounded-full ${
+                      card.status === "pending"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : card.status === "approved"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {card.status}
                   </span>
-                </div>
+                )}
               </div>
-
-              {card.price && (
-                <div className="ml-4">
-                  <div className="font-bold text-3xl text-[#0097a7]">
-                    ₹{card.price.toLocaleString()}
-                  </div>
-                </div>
-              )}
             </div>
 
-            <p className="text-gray-600 text-base mt-4 line-clamp-3">
-              {card.description}
-            </p>
+            {card.price && (
+              <div className="ml-2">
+                <div className="font-bold text-2xl text-[#0097a7]">
+                  ₹{card.price.toLocaleString()}
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="mt-6 pt-4 border-t border-[#f6f2ee]">
+          {card.status === "rejected" && card.rejectionReason && (
+            <div className="mt-3 p-2 bg-red-50 rounded-lg">
+              <p className="text-xs font-medium text-red-800">
+                Rejection Reason:
+              </p>
+              <p className="text-xs text-red-600 line-clamp-1">
+                {card.rejectionReason}
+              </p>
+            </div>
+          )}
+
+          <div className="mt-4 pt-4 border-t border-[#f6f2ee]">
             <button
               onClick={handleCardClick}
-              className="px-6 py-3 bg-[#1c1c1c] text-white text-sm font-semibold rounded-lg hover:bg-[#c0392b] transition-colors duration-300"
+              className="w-full px-4 py-2 bg-[#1c1c1c] text-white text-sm font-semibold rounded-lg hover:bg-[#c0392b] transition-colors duration-300"
             >
               View Details
             </button>
           </div>
         </div>
       </div>
-    );
-  }
 
-  // Grid View (same as OPCardScrollable)
-  return (
-    <div
-      onClick={handleCardClick}
-      className="group cursor-pointer relative shrink-0 w-full bg-white rounded-2xl border border-[#f6f2ee] hover:border-[#fdd18e] transition-all duration-300 hover:shadow-xl overflow-hidden"
-    >
-      {/* Image Container */}
-      <div className="relative h-56 overflow-hidden">
-        <img
-          src={`${API_BASE_URL}${card.images?.[0]}`}
-          alt={card.name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-        />
-
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-        {/* Category Badge */}
-        <div className="absolute top-3 left-3">
-          <span className="px-3 py-1 bg-linear-to-r from-[#0097a7] to-[#1c1c1c] text-white text-xs font-semibold rounded-full">
-            {card.category}
-          </span>
-        </div>
-
-        {/* Wishlist Button */}
-        <button
-          onClick={handleWishlistClick}
-          className="absolute top-3 right-3 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all duration-300 hover:scale-110"
-          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-        >
-          <Icon
-            icon={isWishlisted ? ICONS.heartFilled : ICONS.heartOutline}
-            className={`text-xl ${
-              isWishlisted
-                ? "text-[#c0392b]"
-                : "text-[#1c1c1c] hover:text-[#c0392b]"
-            } transition-colors duration-300`}
-          />
-        </button>
-      </div>
-
-      {/* Card Info */}
-      <div className="p-5">
-        <div className="flex justify-between items-start">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-xl text-[#1c1c1c] group-hover:text-[#c0392b] transition-colors duration-300 line-clamp-1">
-              {card.name}
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full border border-gray-300">
+            <h3 className="text-2xl font-bold text-[#1c1c1c] mb-4">
+              Confirm Delete
             </h3>
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-sm text-[#0097a7] font-medium px-3 py-1 bg-[#0097a7]/10 rounded-full">
-                {card.condition}
-              </span>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete "{card.name}"? This action cannot
+              be undone.
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={handleConfirmDelete}
+                className="flex-1 bg-red-600 text-white font-semibold py-3 rounded-lg hover:bg-red-700 transition"
+              >
+                Delete
+              </button>
+              <button
+                onClick={handleCancelDelete}
+                className="flex-1 bg-gray-700 text-white font-semibold py-3 rounded-lg hover:bg-gray-600 transition"
+              >
+                Cancel
+              </button>
             </div>
           </div>
-
-          {card.price && (
-            <div className="ml-2">
-              <div className="font-bold text-2xl text-[#0097a7]">
-                ₹{card.price.toLocaleString()}
-              </div>
-            </div>
-          )}
         </div>
-
-        {/* <p className="text-gray-600 text-sm mt-3 line-clamp-2">
-          {card.description}
-        </p> */}
-
-        <div className="mt-4 pt-4 border-t border-[#f6f2ee]">
-          <button
-            onClick={handleCardClick}
-            className="w-full px-4 py-2 bg-[#1c1c1c] text-white text-sm font-semibold rounded-lg hover:bg-[#c0392b] transition-colors duration-300"
-          >
-            View Details
-          </button>
-        </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }

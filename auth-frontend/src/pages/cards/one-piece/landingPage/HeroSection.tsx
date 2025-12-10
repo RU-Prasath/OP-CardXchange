@@ -10,7 +10,7 @@ const HeroSection: React.FC = () => {
 
   const onSellClick = () => {
     if (!user) return navigate("/register");
-    navigate("/sell");
+    navigate("/cards/one-piece/sell");
   }
 
   return (

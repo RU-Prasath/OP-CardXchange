@@ -14,6 +14,7 @@ export interface Card {
   status: "pending" | "approved" | "rejected";
   createdAt: string;
   updatedAt: string;
+  rejectionReason?: string;
 }
 
 export interface CardListResponse {

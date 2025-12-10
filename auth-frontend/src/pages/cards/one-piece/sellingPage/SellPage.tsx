@@ -255,14 +255,1452 @@
 //   );
 // }
 
+// import { useState, useEffect } from "react";
+// import { useForm } from "react-hook-form";
+// import { Icon } from "@iconify/react";
+// import CustomInput from "../../../../components/common/UI/CustomInput";
+// import CustomButton from "../../../../components/common/UI/CustomButton";
+// import CustomSelect from "../../../../components/common/UI/CustomSelect";
+// import { useCreateCard } from "../../../../api/hooks/card/one-piece/useCards";
+// import { IMAGES } from "../../../../assets";
+
+// interface SellForm {
+//   name: string;
+//   price: number;
+//   category?: string;
+//   condition?: string;
+//   description?: string;
+//   images: FileList;
+// }
+
+// const CATEGORY_OPTIONS = [
+//   "OP01 Foil",
+//   "OP02 Foil",
+//   "OP03 Foil",
+//   "OP04 Foil",
+//   "OP05 Foil",
+//   "OP06 Foil",
+//   "OP07 Foil",
+//   "OP08 Foil",
+//   "OP09 Foil",
+//   "OP10 Foil",
+//   "OP11 Foil",
+//   "OP12 Foil",
+//   "OP13 Foil",
+//   "OP14 Foil",
+//   "EB01 Foil",
+//   "EB02 Foil",
+//   "EB03 Foil",
+//   "ST01 Leader",
+//   "ST02 Leader",
+//   "ST03 Leader",
+//   "ST04 Leader",
+//   "ST05 Leader",
+//   "ST06 Leader",
+//   "ST07 Leader",
+//   "ST08 Leader",
+//   "ST09 Leader",
+//   "ST10 Leader",
+//   "Parallel Rare (SP)",
+//   "Alternate Art (AA)",
+//   "Full Art",
+//   "Manga Rare",
+//   "Secret Rare (SEC)",
+// ];
+
+// const CONDITION_OPTIONS = ["Mint", "Near-Mint", "Good", "Fair"];
+// const MAX_FILE_SIZE_MB = 3; // Max 3MB per image
+// const MIN_IMAGES = 6;
+
+// export default function SellPage() {
+//   const {
+//     register,
+//     handleSubmit,
+//     watch,
+//     formState,
+//     setError,
+//     clearErrors,
+//     reset,
+//   } = useForm<SellForm>();
+//   const createCard = useCreateCard();
+
+//   const [previewImage, setPreviewImage] = useState<string | null>(null);
+//   const [isFormValid, setIsFormValid] = useState(false);
+//   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+//   const images = watch("images");
+
+//   // Handle image preview cleanup
+//   useEffect(() => {
+//     return () => {
+//       uploadedImages.forEach((url) => URL.revokeObjectURL(url));
+//     };
+//   }, [uploadedImages]);
+
+//   // Validate images whenever they change
+//   useEffect(() => {
+//     if (!images || images.length < MIN_IMAGES) {
+//       setError("images", {
+//         type: "manual",
+//         message: `Select at least ${MIN_IMAGES} images`,
+//       });
+//       setIsFormValid(false);
+//       return;
+//     }
+
+//     // Validate file size
+//     for (let i = 0; i < images.length; i++) {
+//       if (images[i].size / 1024 / 1024 > MAX_FILE_SIZE_MB) {
+//         setError("images", {
+//           type: "manual",
+//           message: `Each image must be ≤ ${MAX_FILE_SIZE_MB}MB`,
+//         });
+//         setIsFormValid(false);
+//         return;
+//       }
+//     }
+
+//     // Create preview URLs
+//     const newPreviewUrls = Array.from(images).map((file) =>
+//       URL.createObjectURL(file)
+//     );
+//     setUploadedImages(newPreviewUrls);
+
+//     clearErrors("images");
+//     setIsFormValid(true);
+//   }, [images, setError, clearErrors]);
+
+//   const onSubmit = (data: SellForm) => {
+//     if (!isFormValid) return;
+
+//     const formData = new FormData();
+//     formData.append("name", data.name);
+//     formData.append("price", String(data.price));
+//     formData.append("category", data.category || "");
+//     formData.append("condition", data.condition?.toLowerCase() || "");
+//     formData.append("description", data.description || "");
+
+//     Array.from(data.images).forEach((file) => formData.append("images", file));
+
+//     createCard.mutate(formData, {
+//       onSuccess: () => {
+//         reset();
+//         setPreviewImage(null);
+//         setUploadedImages([]);
+//         setIsFormValid(false);
+//       },
+//       onError: (err: any) => {
+//         alert(
+//           err?.response?.data?.message || "Server error. Please try again."
+//         );
+//       },
+//     });
+//   };
+
+//   return (
+//     <>
+//       {/* IMAGE PREVIEW MODAL */}
+//       {previewImage && (
+//         <div
+//           className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+//           onClick={() => setPreviewImage(null)}
+//         >
+//           <div className="relative">
+//             <button
+//               onClick={() => setPreviewImage(null)}
+//               className="absolute -top-10 right-0 text-white hover:text-[#fdd18e] transition-colors duration-200"
+//             >
+//               <Icon icon="mdi:close" className="text-2xl" />
+//             </button>
+//             <img
+//               src={previewImage}
+//               alt="preview"
+//               className="max-w-full max-h-[80vh] rounded-xl shadow-2xl"
+//             />
+//           </div>
+//         </div>
+//       )}
+
+//       <div className="min-h-screen bg-linear-to-br from-[#f6f2ee] via-white to-[#fdd18e]/20">
+//         {/* Hero Section with Gradient Text */}
+//         <div className="relative overflow-hidden bg-linear-to-r from-[#1c1c1c] via-[#0a0a0a] to-[#1c1c1c] py-16 md:py-20">
+//           {/* Decorative Elements */}
+//           <div className="absolute top-0 left-0 w-32 h-32 bg-[#c0392b]/10 rounded-full -translate-x-16 -translate-y-16"></div>
+//           <div className="absolute bottom-0 right-0 w-40 h-40 bg-[#0097a7]/10 rounded-full translate-x-20 translate-y-20"></div>
+
+//           <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+//             {/* Jolly Roger Icon */}
+//             <div className="mb-8 flex justify-center">
+//               <div className="relative">
+//                 <div className="relative w-24 h-24 flex items-center justify-center">
+//                   {/* ✅ Spinning Gradient Ring Only */}
+//                   <div className="absolute inset-0 rounded-full bg-linear-to-r from-[#c0392b] via-[#fdd18e] to-[#0097a7] animate-spin-slow"></div>
+
+//                   {/* ✅ Static Inner Circle + Image (NO ROTATION) */}
+//                   <div className="relative w-[90%] h-[90%] rounded-full bg-[#1c1c1c] flex items-center justify-center z-10">
+//                     <img
+//                       src={IMAGES.flag}
+//                       alt="Logo"
+//                       className="w-12 h-12 object-contain"
+//                     />
+//                   </div>
+//                 </div>
+
+//                 <div className="absolute -top-2 -right-2 w-8 h-8 bg-[#fdd18e] rounded-full flex items-center justify-center">
+//                   <Icon
+//                     icon="mdi:treasure-chest"
+//                     className="text-[#c0392b] text-sm"
+//                   />
+//                 </div>
+//               </div>
+//             </div>
+
+//             {/* Gradient Text */}
+//             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 tracking-tight">
+//               <span className="bg-linear-to-r from-[#c0392b] via-[#fdd18e] to-[#0097a7] bg-clip-text text-transparent animate-gradient">
+//                 ONE PIECE
+//               </span>
+//             </h1>
+
+//             {/* Subtitle */}
+//             <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-8 font-semibold">
+//               Sell Your Treasure • Become Part of the Legend
+//             </p>
+
+//             {/* Decorative Line */}
+//             <div className="w-32 h-1 bg-linear-to-r from-[#c0392b] via-[#fdd18e] to-[#0097a7] mx-auto rounded-full mb-10"></div>
+
+//             {/* Stats */}
+//             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
+//               <div className="text-center">
+//                 <div className="text-3xl font-bold text-white">100%</div>
+//                 <div className="text-sm text-gray-400">Authentic Cards</div>
+//               </div>
+//               <div className="text-center">
+//                 <div className="text-3xl font-bold text-white">24h</div>
+//                 <div className="text-sm text-gray-400">Quick Approval</div>
+//               </div>
+//               <div className="text-center">
+//                 <div className="text-3xl font-bold text-white">₹0</div>
+//                 <div className="text-sm text-gray-400">Listing Fees</div>
+//               </div>
+//               <div className="text-center">
+//                 <div className="text-3xl font-bold text-white">★ 4.9</div>
+//                 <div className="text-sm text-gray-400">Seller Rating</div>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Form Section */}
+//         <div className="relative -mt-8 md:-mt-12 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+//           {/* Decorative Card Element */}
+//           <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
+//             <div className="w-12 h-12 rounded-xl bg-linear-to-r from-[#c0392b] to-[#fdd18e] rotate-45 flex items-center justify-center">
+//               <Icon
+//                 icon="mdi:cards"
+//                 className="text-white text-xl -rotate-45"
+//               />
+//             </div>
+//           </div>
+
+//           <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-[#fdd18e]/30 overflow-hidden">
+//             {/* Form Header */}
+//             <div className="bg-linear-to-r from-[#1c1c1c] via-[#2d2d2d] to-[#1c1c1c] p-6 md:p-8">
+//               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+//                 <div>
+//                   <h2 className="text-2xl md:text-3xl font-bold text-white">
+//                     List Your Card
+//                   </h2>
+//                   <p className="text-gray-300 mt-2">
+//                     Fill in the details below to sell your One Piece card
+//                   </p>
+//                 </div>
+//                 <div className="flex items-center gap-2 bg-[#c0392b]/20 px-4 py-2 rounded-full">
+//                   <Icon icon="mdi:shield-check" className="text-[#fdd18e]" />
+//                   <span className="text-sm text-white">Secure & Verified</span>
+//                 </div>
+//               </div>
+//             </div>
+
+//             <form
+//               onSubmit={handleSubmit(onSubmit)}
+//               className="p-6 md:p-8 grid gap-6 md:grid-cols-2 md:gap-8"
+//             >
+//               {/* CARD NAME */}
+//               <div className="md:col-span-2">
+//                 <div className="flex items-center gap-2 mb-3">
+//                   <Icon icon="mdi:card-text" className="text-[#c0392b]" />
+//                   <label className="font-semibold text-[#1c1c1c] text-lg">
+//                     Card Name
+//                   </label>
+//                 </div>
+//                 <CustomInput
+//                   placeholder="e.g., Monkey D. Luffy - Gear Fifth"
+//                   {...register("name", { required: "Card name is required" })}
+//                   error={formState.errors.name?.message}
+//                   className="border-[#fdd18e] focus:border-[#0097a7] focus:ring-[#0097a7]/30"
+//                 />
+//               </div>
+
+//               {/* PRICE */}
+//               <div>
+//                 <div className="flex items-center gap-2 mb-3">
+//                   <Icon icon="mdi:cash" className="text-[#0097a7]" />
+//                   <label className="font-semibold text-[#1c1c1c]">
+//                     Price (₹)
+//                   </label>
+//                 </div>
+//                 <div className="relative">
+//                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+//                     ₹
+//                   </span>
+//                   <CustomInput
+//                     type="number"
+//                     placeholder="0.00"
+//                     {...register("price", {
+//                       required: "Price is required",
+//                       min: { value: 1, message: "Price must be > 0" },
+//                     })}
+//                     error={formState.errors.price?.message}
+//                     className="pl-8 border-[#fdd18e] focus:border-[#0097a7] focus:ring-[#0097a7]/30"
+//                   />
+//                 </div>
+//               </div>
+
+//               {/* CATEGORY */}
+//               <div>
+//                 <div className="flex items-center gap-2 mb-3">
+//                   <Icon icon="mdi:tag" className="text-[#c0392b]" />
+//                   <label className="font-semibold text-[#1c1c1c]">
+//                     Category
+//                   </label>
+//                 </div>
+//                 <CustomSelect
+//                   options={CATEGORY_OPTIONS}
+//                   {...register("category", {
+//                     required: "Category is required",
+//                   })}
+//                   className="border-[#fdd18e] focus:border-[#0097a7] focus:ring-[#0097a7]/30"
+//                 />
+//                 {formState.errors.category && (
+//                   <p className="text-red-500 text-sm mt-1">
+//                     {formState.errors.category.message}
+//                   </p>
+//                 )}
+//               </div>
+
+//               {/* CONDITION */}
+//               <div>
+//                 <div className="flex items-center gap-2 mb-3">
+//                   <Icon icon="mdi:quality-high" className="text-[#0097a7]" />
+//                   <label className="font-semibold text-[#1c1c1c]">
+//                     Condition
+//                   </label>
+//                 </div>
+//                 <CustomSelect
+//                   options={CONDITION_OPTIONS}
+//                   {...register("condition", {
+//                     required: "Condition is required",
+//                   })}
+//                   className="border-[#fdd18e] focus:border-[#0097a7] focus:ring-[#0097a7]/30"
+//                 />
+//                 {formState.errors.condition && (
+//                   <p className="text-red-500 text-sm mt-1">
+//                     {formState.errors.condition.message}
+//                   </p>
+//                 )}
+//               </div>
+
+//               {/* IMAGE UPLOAD */}
+//               <div className="md:col-span-2">
+//                 <div className="flex items-center gap-2 mb-3">
+//                   <Icon icon="mdi:image-multiple" className="text-[#c0392b]" />
+//                   <label className="font-semibold text-[#1c1c1c] text-lg">
+//                     Images (min 6, ≤3MB each)
+//                   </label>
+//                 </div>
+
+//                 <div className="border-2 border-dashed border-[#fdd18e]/50 rounded-2xl p-6 text-center hover:border-[#0097a7] transition-colors duration-300">
+//                   <input
+//                     type="file"
+//                     multiple
+//                     accept="image/*"
+//                     {...register("images", {
+//                       required: "Please upload images",
+//                     })}
+//                     className="hidden"
+//                     id="image-upload"
+//                   />
+//                   <label
+//                     htmlFor="image-upload"
+//                     className="cursor-pointer block"
+//                   >
+//                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#fdd18e]/20 flex items-center justify-center">
+//                       <Icon
+//                         icon="mdi:cloud-upload"
+//                         className="text-3xl text-[#c0392b]"
+//                       />
+//                     </div>
+//                     <p className="text-[#1c1c1c] font-medium mb-2">
+//                       Click to upload or drag and drop
+//                     </p>
+//                     <p className="text-gray-500 text-sm">
+//                       PNG, JPG, WEBP up to {MAX_FILE_SIZE_MB}MB each
+//                     </p>
+//                   </label>
+//                 </div>
+
+//                 {formState.errors.images && (
+//                   <p className="text-red-500 text-sm mt-3 flex items-center gap-2">
+//                     <Icon icon="mdi:alert-circle" />
+//                     {formState.errors.images.message}
+//                   </p>
+//                 )}
+
+//                 {/* Image Previews */}
+//                 {uploadedImages.length > 0 && (
+//                   <div className="mt-6">
+//                     <h4 className="font-medium text-[#1c1c1c] mb-3">
+//                       Uploaded Images ({uploadedImages.length}/{MIN_IMAGES})
+//                     </h4>
+//                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+//                       {uploadedImages.map((url, index) => (
+//                         <div
+//                           key={index}
+//                           className="relative group cursor-pointer"
+//                           onClick={() => setPreviewImage(url)}
+//                         >
+//                           <div className="aspect-square rounded-xl overflow-hidden border-2 border-transparent group-hover:border-[#0097a7] transition-all duration-300">
+//                             <img
+//                               src={url}
+//                               alt={`preview-${index}`}
+//                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+//                             />
+//                           </div>
+//                           <div className="absolute top-2 right-2 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+//                             <Icon
+//                               icon="mdi:eye"
+//                               className="text-white text-xs"
+//                             />
+//                           </div>
+//                           <div className="absolute top-2 left-2 w-6 h-6 bg-[#0097a7] rounded-full flex items-center justify-center text-white text-xs font-bold">
+//                             {index + 1}
+//                           </div>
+//                         </div>
+//                       ))}
+//                     </div>
+//                   </div>
+//                 )}
+//               </div>
+
+//               {/* DESCRIPTION */}
+//               <div className="md:col-span-2">
+//                 <div className="flex items-center gap-2 mb-3">
+//                   <Icon icon="mdi:note-text" className="text-[#0097a7]" />
+//                   <label className="font-semibold text-[#1c1c1c] text-lg">
+//                     Description
+//                   </label>
+//                 </div>
+//                 <div className="relative">
+//                   <textarea
+//                     placeholder="Describe your card in detail (condition, special features, any defects, etc.)"
+//                     {...register("description")}
+//                     rows={4}
+//                     className="w-full px-4 py-3 border border-[#fdd18e] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0097a7]/30 focus:border-[#0097a7] resize-none"
+//                   />
+//                   <div className="absolute bottom-3 right-3 text-gray-400 text-sm">
+//                     Optional
+//                   </div>
+//                 </div>
+//               </div>
+
+//               {/* GUIDELINES */}
+//               <div className="md:col-span-2 p-4 bg-[#f6f2ee] rounded-xl">
+//                 <h4 className="font-semibold text-[#1c1c1c] mb-3 flex items-center gap-2">
+//                   <Icon icon="mdi:information" className="text-[#c0392b]" />
+//                   Listing Guidelines
+//                 </h4>
+//                 <ul className="text-gray-600 text-sm space-y-2">
+//                   <li className="flex items-start gap-2">
+//                     <Icon
+//                       icon="mdi:check-circle"
+//                       className="text-[#0097a7] mt-0.5"
+//                     />
+//                     <span>Ensure all images are clear and well-lit</span>
+//                   </li>
+//                   <li className="flex items-start gap-2">
+//                     <Icon
+//                       icon="mdi:check-circle"
+//                       className="text-[#0097a7] mt-0.5"
+//                     />
+//                     <span>Show all edges and any imperfections</span>
+//                   </li>
+//                   <li className="flex items-start gap-2">
+//                     <Icon
+//                       icon="mdi:check-circle"
+//                       className="text-[#0097a7] mt-0.5"
+//                     />
+//                     <span>Price your card competitively</span>
+//                   </li>
+//                   <li className="flex items-start gap-2">
+//                     <Icon
+//                       icon="mdi:check-circle"
+//                       className="text-[#0097a7] mt-0.5"
+//                     />
+//                     <span>Cards will be reviewed within 24 hours</span>
+//                   </li>
+//                 </ul>
+//               </div>
+
+//               {/* SUBMIT BUTTON */}
+//               <div className="md:col-span-2">
+//                 <CustomButton
+//                   label={
+//                     <div className="flex items-center justify-center gap-3">
+//                       <Icon icon="mdi:send" />
+//                       <span>Submit for Review</span>
+//                     </div>
+//                   }
+//                   type="submit"
+//                   loading={createCard.isPending}
+//                   disabled={!isFormValid || createCard.isPending}
+//                   className="w-full bg-linear-to-r from-[#c0392b] via-[#c0392b] to-[#1c1c1c] hover:from-[#1c1c1c] hover:to-[#c0392b] text-white font-bold py-4 rounded-xl text-lg transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+//                 />
+
+//                 {createCard.isPending && (
+//                   <p className="text-center text-gray-500 mt-3 flex items-center justify-center gap-2">
+//                     <Icon icon="mdi:loading" className="animate-spin" />
+//                     Submitting your card for review...
+//                   </p>
+//                 )}
+//               </div>
+//             </form>
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Add custom animation for gradient */}
+//       <style>{`
+//         @keyframes gradient {
+//           0%, 100% {
+//             background-position: 0% 50%;
+//           }
+//           50% {
+//             background-position: 100% 50%;
+//           }
+//         }
+//         .animate-gradient {
+//           background-size: 200% 200%;
+//           animation: gradient 3s ease infinite;
+//         }
+//         .animate-spin-slow {
+//           animation: spin 20s linear infinite;
+//         }
+//         @keyframes spin {
+//           from {
+//             transform: rotate(0deg);
+//           }
+//           to {
+//             transform: rotate(360deg);
+//           }
+//         }
+//       `}</style>
+//     </>
+//   );
+// }
+
+// import { useState, useEffect } from "react";
+// import { useForm } from "react-hook-form";
+// import { Icon } from "@iconify/react";
+// import CustomInput from "../../../../components/common/UI/CustomInput";
+// import CustomButton from "../../../../components/common/UI/CustomButton";
+// import CustomSelect from "../../../../components/common/UI/CustomSelect";
+// import {
+//   useCreateCard,
+//   useFetchMyApprovedCards,
+//   useFetchMyPendingCards,
+//   useFetchMyRejectedCards,
+// } from "../../../../api/hooks/card/one-piece/useCards";
+// import { IMAGES } from "../../../../assets";
+// import type { OPCardType } from "../../../../components/card/one-piece/cards/OPCard";
+// import OPCardLayout from "../../../../components/card/one-piece/cards/OPCardLayout";
+
+// interface SellForm {
+//   name: string;
+//   price: number;
+//   category?: string;
+//   condition?: string;
+//   description?: string;
+//   images: FileList;
+// }
+
+// const CATEGORY_OPTIONS = [
+//   "OP01 Foil",
+//   "OP02 Foil",
+//   "OP03 Foil",
+//   "OP04 Foil",
+//   "OP05 Foil",
+//   "OP06 Foil",
+//   "OP07 Foil",
+//   "OP08 Foil",
+//   "OP09 Foil",
+//   "OP10 Foil",
+//   "OP11 Foil",
+//   "OP12 Foil",
+//   "OP13 Foil",
+//   "OP14 Foil",
+//   "EB01 Foil",
+//   "EB02 Foil",
+//   "EB03 Foil",
+//   "ST01 Leader",
+//   "ST02 Leader",
+//   "ST03 Leader",
+//   "ST04 Leader",
+//   "ST05 Leader",
+//   "ST06 Leader",
+//   "ST07 Leader",
+//   "ST08 Leader",
+//   "ST09 Leader",
+//   "ST10 Leader",
+//   "Parallel Rare (SP)",
+//   "Alternate Art (AA)",
+//   "Full Art",
+//   "Manga Rare",
+//   "Secret Rare (SEC)",
+// ];
+
+// const CONDITION_OPTIONS = ["Mint", "Near-Mint", "Good", "Fair"];
+// const MAX_FILE_SIZE_MB = 3;
+// const MIN_IMAGES = 6;
+
+// const transformToOPCardType = (apiCards: any[]): OPCardType[] => {
+//   return apiCards.map((card) => ({
+//     _id: card._id,
+//     name: card.name,
+//     category: card.category,
+//     condition: card.condition,
+//     images: card.images,
+//     description: card.description,
+//     price: card.price,
+//     status: card.status,
+//     seller: card.seller
+//       ? {
+//           _id: card.seller._id,
+//           email: card.seller.email,
+//           fullName: card.seller.fullName || "Seller",
+//         }
+//       : undefined,
+//     createdAt: card.createdAt,
+//     updatedAt: card.updatedAt,
+//   }));
+// };
+
+// export default function SellPage() {
+//   const [activeTab, setActiveTab] = useState<"sell" | "my-cards">("sell");
+//   const [selectedStatus, setSelectedStatus] = useState<string>("pending");
+//   const [previewImage, setPreviewImage] = useState<string | null>(null);
+//   const [isFormValid, setIsFormValid] = useState(false);
+//   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+
+//   // React Hook Form
+//   const {
+//     register,
+//     handleSubmit,
+//     watch,
+//     formState,
+//     setError,
+//     clearErrors,
+//     reset,
+//   } = useForm<SellForm>();
+
+//   // Queries
+//   const createCard = useCreateCard();
+//   const { data: pendingData, isLoading: pendingLoading } =
+//     useFetchMyPendingCards();
+//   const { data: approvedData, isLoading: approvedLoading } =
+//     useFetchMyApprovedCards();
+//   const { data: rejectedData, isLoading: rejectedLoading } =
+//     useFetchMyRejectedCards();
+
+//   console.log(pendingData?.cards);
+
+//   const images = watch("images");
+
+//   // Handle image preview cleanup
+//   useEffect(() => {
+//     return () => {
+//       uploadedImages.forEach((url) => URL.revokeObjectURL(url));
+//     };
+//   }, [uploadedImages]);
+
+//   // Validate images whenever they change
+//   useEffect(() => {
+//     if (!images || images.length < MIN_IMAGES) {
+//       setError("images", {
+//         type: "manual",
+//         message: `Select at least ${MIN_IMAGES} images`,
+//       });
+//       setIsFormValid(false);
+//       return;
+//     }
+
+//     for (let i = 0; i < images.length; i++) {
+//       if (images[i].size / 1024 / 1024 > MAX_FILE_SIZE_MB) {
+//         setError("images", {
+//           type: "manual",
+//           message: `Each image must be ≤ ${MAX_FILE_SIZE_MB}MB`,
+//         });
+//         setIsFormValid(false);
+//         return;
+//       }
+//     }
+
+//     const newPreviewUrls = Array.from(images).map((file) =>
+//       URL.createObjectURL(file)
+//     );
+//     setUploadedImages(newPreviewUrls);
+
+//     clearErrors("images");
+//     setIsFormValid(true);
+//   }, [images, setError, clearErrors]);
+
+//   const onSubmit = (data: SellForm) => {
+//     if (!isFormValid) return;
+
+//     const formData = new FormData();
+//     formData.append("name", data.name);
+//     formData.append("price", String(data.price));
+//     formData.append("category", data.category || "");
+//     formData.append("condition", data.condition?.toLowerCase() || "");
+//     formData.append("description", data.description || "");
+
+//     Array.from(data.images).forEach((file) => formData.append("images", file));
+
+//     createCard.mutate(formData, {
+//       onSuccess: () => {
+//         reset();
+//         setPreviewImage(null);
+//         setUploadedImages([]);
+//         setIsFormValid(false);
+//         // Switch to My Cards tab after successful submission
+//         setActiveTab("my-cards");
+//       },
+//       onError: (err: any) => {
+//         alert(
+//           err?.response?.data?.message || "Server error. Please try again."
+//         );
+//       },
+//     });
+//   };
+
+//   // Get cards based on selected status
+//   // const getCardsByStatus = (): OPCardType[] => {
+//   //   switch (selectedStatus) {
+//   //     case "pending":
+//   //       return pendingData?.cards || [];
+//   //     case "approved":
+//   //       return approvedData?.cards || [];
+//   //     case "rejected":
+//   //       return rejectedData?.cards || [];
+//   //     default:
+//   //       return [];
+//   //   }
+//   // };
+//   const getCardsByStatus = (): OPCardType[] => {
+//     let apiCards: any[] = [];
+
+//     switch (selectedStatus) {
+//       case "pending":
+//         apiCards = pendingData?.cards || [];
+//         break;
+//       case "approved":
+//         apiCards = approvedData?.cards || [];
+//         break;
+//       case "rejected":
+//         apiCards = rejectedData?.cards || [];
+//         break;
+//       default:
+//         apiCards = [];
+//     }
+
+//     return transformToOPCardType(apiCards);
+//   };
+
+//   // Get loading state
+//   const getLoadingState = () => {
+//     switch (selectedStatus) {
+//       case "pending":
+//         return pendingLoading;
+//       case "approved":
+//         return approvedLoading;
+//       case "rejected":
+//         return rejectedLoading;
+//       default:
+//         return false;
+//     }
+//   };
+
+//   // Get count for each status
+//   const getStatusCount = (status: string): number => {
+//     switch (status) {
+//       case "pending":
+//         return pendingData?.cards?.length || 0;
+//       case "approved":
+//         return approvedData?.cards?.length || 0;
+//       case "rejected":
+//         return rejectedData?.cards?.length || 0;
+//       default:
+//         return 0;
+//     }
+//   };
+
+//   const cards = getCardsByStatus();
+//   const isLoading = getLoadingState();
+
+//   return (
+//     <>
+//       {/* IMAGE PREVIEW MODAL */}
+//       {previewImage && (
+//         <div
+//           className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+//           onClick={() => setPreviewImage(null)}
+//         >
+//           <div className="relative">
+//             <button
+//               onClick={() => setPreviewImage(null)}
+//               className="absolute -top-10 right-0 text-white hover:text-[#fdd18e] transition-colors duration-200"
+//             >
+//               <Icon icon="mdi:close" className="text-2xl" />
+//             </button>
+//             <img
+//               src={previewImage}
+//               alt="preview"
+//               className="max-w-full max-h-[80vh] rounded-xl shadow-2xl"
+//             />
+//           </div>
+//         </div>
+//       )}
+
+//       <div className="min-h-screen bg-linear-to-br from-[#f6f2ee] via-white to-[#fdd18e]/20">
+//         {/* Hero Section */}
+//         <div className="relative overflow-hidden bg-linear-to-r from-[#1c1c1c] via-[#0a0a0a] to-[#1c1c1c] py-16 md:py-20">
+//           <div className="absolute top-0 left-0 w-32 h-32 bg-[#c0392b]/10 rounded-full -translate-x-16 -translate-y-16"></div>
+//           <div className="absolute bottom-0 right-0 w-40 h-40 bg-[#0097a7]/10 rounded-full translate-x-20 translate-y-20"></div>
+
+//           <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+//             <div className="mb-8 flex justify-center">
+//               <div className="relative">
+//                 <div className="relative w-24 h-24 flex items-center justify-center">
+//                   <div className="absolute inset-0 rounded-full bg-linear-to-r from-[#c0392b] via-[#fdd18e] to-[#0097a7] animate-spin-slow"></div>
+//                   <div className="relative w-[90%] h-[90%] rounded-full bg-[#1c1c1c] flex items-center justify-center z-10">
+//                     <img
+//                       src={IMAGES.flag}
+//                       alt="Logo"
+//                       className="w-12 h-12 object-contain"
+//                     />
+//                   </div>
+//                 </div>
+//                 <div className="absolute -top-2 -right-2 w-8 h-8 bg-[#fdd18e] rounded-full flex items-center justify-center">
+//                   <Icon
+//                     icon="mdi:treasure-chest"
+//                     className="text-[#c0392b] text-sm"
+//                   />
+//                 </div>
+//               </div>
+//             </div>
+
+//             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 tracking-tight">
+//               <span className="bg-linear-to-r from-[#c0392b] via-[#fdd18e] to-[#0097a7] bg-clip-text text-transparent animate-gradient">
+//                 ONE PIECE
+//               </span>
+//             </h1>
+
+//             <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-8 font-semibold">
+//               Sell Your Treasure • Become Part of the Legend
+//             </p>
+
+//             <div className="w-32 h-1 bg-linear-to-r from-[#c0392b] via-[#fdd18e] to-[#0097a7] mx-auto rounded-full mb-10"></div>
+
+//             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
+//               <div className="text-center">
+//                 <div className="text-3xl font-bold text-white">100%</div>
+//                 <div className="text-sm text-gray-400">Authentic Cards</div>
+//               </div>
+//               <div className="text-center">
+//                 <div className="text-3xl font-bold text-white">24h</div>
+//                 <div className="text-sm text-gray-400">Quick Approval</div>
+//               </div>
+//               <div className="text-center">
+//                 <div className="text-3xl font-bold text-white">₹0</div>
+//                 <div className="text-sm text-gray-400">Listing Fees</div>
+//               </div>
+//               <div className="text-center">
+//                 <div className="text-3xl font-bold text-white">★ 4.9</div>
+//                 <div className="text-sm text-gray-400">Seller Rating</div>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Tabs Navigation */}
+//         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8">
+//           <div className="flex space-x-1 bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl border border-[#fdd18e]/30 overflow-hidden">
+//             <button
+//               onClick={() => setActiveTab("sell")}
+//               className={`flex-1 py-4 text-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 ${
+//                 activeTab === "sell"
+//                   ? "bg-linear-to-r from-[#c0392b] to-[#1c1c1c] text-white"
+//                   : "text-gray-600 hover:bg-gray-50"
+//               }`}
+//             >
+//               <Icon icon="mdi:plus-circle" />
+//               Sell Card
+//             </button>
+//             <button
+//               onClick={() => setActiveTab("my-cards")}
+//               className={`flex-1 py-4 text-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 ${
+//                 activeTab === "my-cards"
+//                   ? "bg-linear-to-r from-[#0097a7] to-[#1c1c1c] text-white"
+//                   : "text-gray-600 hover:bg-gray-50"
+//               }`}
+//             >
+//               <Icon icon="mdi:cards" />
+//               My Cards
+//               <span className="ml-1 px-2 py-1 text-xs bg-gray-200 rounded-full text-[#0097a7]">
+//                 {(pendingData?.cards?.length || 0) +
+//                   (approvedData?.cards?.length || 0) +
+//                   (rejectedData?.cards?.length || 0)}
+//               </span>
+//             </button>
+//           </div>
+//         </div>
+
+//         {/* Content Area */}
+//         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+//           {activeTab === "sell" ? (
+//             /* Sell Form */
+//             <div className="mt-8 bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-[#fdd18e]/30 overflow-hidden">
+//               <div className="bg-linear-to-r from-[#1c1c1c] via-[#2d2d2d] to-[#1c1c1c] p-6 md:p-8">
+//                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+//                   <div>
+//                     <h2 className="text-2xl md:text-3xl font-bold text-white">
+//                       List Your Card
+//                     </h2>
+//                     <p className="text-gray-300 mt-2">
+//                       Fill in the details below to sell your One Piece card
+//                     </p>
+//                   </div>
+//                   <div className="flex items-center gap-2 bg-[#c0392b]/20 px-4 py-2 rounded-full">
+//                     <Icon icon="mdi:shield-check" className="text-[#fdd18e]" />
+//                     <span className="text-sm text-white">
+//                       Secure & Verified
+//                     </span>
+//                   </div>
+//                 </div>
+//               </div>
+
+//               <form
+//                 onSubmit={handleSubmit(onSubmit)}
+//                 className="p-6 md:p-8 grid gap-6 md:grid-cols-2 md:gap-8"
+//               >
+//                 {/* CARD NAME */}
+//                 <div className="md:col-span-2">
+//                   <div className="flex items-center gap-2 mb-3">
+//                     <Icon icon="mdi:card-text" className="text-[#c0392b]" />
+//                     <label className="font-semibold text-[#1c1c1c] text-lg">
+//                       Card Name
+//                     </label>
+//                   </div>
+//                   <CustomInput
+//                     placeholder="e.g., Monkey D. Luffy - Gear Fifth"
+//                     {...register("name", { required: "Card name is required" })}
+//                     error={formState.errors.name?.message}
+//                     className="border-[#fdd18e] focus:border-[#0097a7] focus:ring-[#0097a7]/30"
+//                   />
+//                 </div>
+
+//                 {/* PRICE */}
+//                 <div>
+//                   <div className="flex items-center gap-2 mb-3">
+//                     <Icon icon="mdi:cash" className="text-[#0097a7]" />
+//                     <label className="font-semibold text-[#1c1c1c]">
+//                       Price (₹)
+//                     </label>
+//                   </div>
+//                   <div className="relative">
+//                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+//                       ₹
+//                     </span>
+//                     <CustomInput
+//                       type="number"
+//                       placeholder="0.00"
+//                       {...register("price", {
+//                         required: "Price is required",
+//                         min: { value: 1, message: "Price must be > 0" },
+//                       })}
+//                       error={formState.errors.price?.message}
+//                       className="pl-8 border-[#fdd18e] focus:border-[#0097a7] focus:ring-[#0097a7]/30"
+//                     />
+//                   </div>
+//                 </div>
+
+//                 {/* CATEGORY */}
+//                 <div>
+//                   <div className="flex items-center gap-2 mb-3">
+//                     <Icon icon="mdi:tag" className="text-[#c0392b]" />
+//                     <label className="font-semibold text-[#1c1c1c]">
+//                       Category
+//                     </label>
+//                   </div>
+//                   <CustomSelect
+//                     options={CATEGORY_OPTIONS}
+//                     {...register("category", {
+//                       required: "Category is required",
+//                     })}
+//                     className="border-[#fdd18e] focus:border-[#0097a7] focus:ring-[#0097a7]/30"
+//                   />
+//                   {formState.errors.category && (
+//                     <p className="text-red-500 text-sm mt-1">
+//                       {formState.errors.category.message}
+//                     </p>
+//                   )}
+//                 </div>
+
+//                 {/* CONDITION */}
+//                 <div>
+//                   <div className="flex items-center gap-2 mb-3">
+//                     <Icon icon="mdi:quality-high" className="text-[#0097a7]" />
+//                     <label className="font-semibold text-[#1c1c1c]">
+//                       Condition
+//                     </label>
+//                   </div>
+//                   <CustomSelect
+//                     options={CONDITION_OPTIONS}
+//                     {...register("condition", {
+//                       required: "Condition is required",
+//                     })}
+//                     className="border-[#fdd18e] focus:border-[#0097a7] focus:ring-[#0097a7]/30"
+//                   />
+//                   {formState.errors.condition && (
+//                     <p className="text-red-500 text-sm mt-1">
+//                       {formState.errors.condition.message}
+//                     </p>
+//                   )}
+//                 </div>
+
+//                 {/* IMAGE UPLOAD */}
+//                 <div className="md:col-span-2">
+//                   <div className="flex items-center gap-2 mb-3">
+//                     <Icon
+//                       icon="mdi:image-multiple"
+//                       className="text-[#c0392b]"
+//                     />
+//                     <label className="font-semibold text-[#1c1c1c] text-lg">
+//                       Images (min 6, ≤3MB each)
+//                     </label>
+//                   </div>
+
+//                   <div className="border-2 border-dashed border-[#fdd18e]/50 rounded-2xl p-6 text-center hover:border-[#0097a7] transition-colors duration-300">
+//                     <input
+//                       type="file"
+//                       multiple
+//                       accept="image/*"
+//                       {...register("images", {
+//                         required: "Please upload images",
+//                       })}
+//                       className="hidden"
+//                       id="image-upload"
+//                     />
+//                     <label
+//                       htmlFor="image-upload"
+//                       className="cursor-pointer block"
+//                     >
+//                       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#fdd18e]/20 flex items-center justify-center">
+//                         <Icon
+//                           icon="mdi:cloud-upload"
+//                           className="text-3xl text-[#c0392b]"
+//                         />
+//                       </div>
+//                       <p className="text-[#1c1c1c] font-medium mb-2">
+//                         Click to upload or drag and drop
+//                       </p>
+//                       <p className="text-gray-500 text-sm">
+//                         PNG, JPG, WEBP up to {MAX_FILE_SIZE_MB}MB each
+//                       </p>
+//                     </label>
+//                   </div>
+
+//                   {formState.errors.images && (
+//                     <p className="text-red-500 text-sm mt-3 flex items-center gap-2">
+//                       <Icon icon="mdi:alert-circle" />
+//                       {formState.errors.images.message}
+//                     </p>
+//                   )}
+
+//                   {/* Image Previews */}
+//                   {uploadedImages.length > 0 && (
+//                     <div className="mt-6">
+//                       <h4 className="font-medium text-[#1c1c1c] mb-3">
+//                         Uploaded Images ({uploadedImages.length}/{MIN_IMAGES})
+//                       </h4>
+//                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+//                         {uploadedImages.map((url, index) => (
+//                           <div
+//                             key={index}
+//                             className="relative group cursor-pointer"
+//                             onClick={() => setPreviewImage(url)}
+//                           >
+//                             <div className="aspect-square rounded-xl overflow-hidden border-2 border-transparent group-hover:border-[#0097a7] transition-all duration-300">
+//                               <img
+//                                 src={url}
+//                                 alt={`preview-${index}`}
+//                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+//                               />
+//                             </div>
+//                             <div className="absolute top-2 right-2 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+//                               <Icon
+//                                 icon="mdi:eye"
+//                                 className="text-white text-xs"
+//                               />
+//                             </div>
+//                             <div className="absolute top-2 left-2 w-6 h-6 bg-[#0097a7] rounded-full flex items-center justify-center text-white text-xs font-bold">
+//                               {index + 1}
+//                             </div>
+//                           </div>
+//                         ))}
+//                       </div>
+//                     </div>
+//                   )}
+//                 </div>
+
+//                 {/* DESCRIPTION */}
+//                 <div className="md:col-span-2">
+//                   <div className="flex items-center gap-2 mb-3">
+//                     <Icon icon="mdi:note-text" className="text-[#0097a7]" />
+//                     <label className="font-semibold text-[#1c1c1c] text-lg">
+//                       Description
+//                     </label>
+//                   </div>
+//                   <div className="relative">
+//                     <textarea
+//                       placeholder="Describe your card in detail (condition, special features, any defects, etc.)"
+//                       {...register("description")}
+//                       rows={4}
+//                       className="w-full px-4 py-3 border border-[#fdd18e] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0097a7]/30 focus:border-[#0097a7] resize-none"
+//                     />
+//                     <div className="absolute bottom-3 right-3 text-gray-400 text-sm">
+//                       Optional
+//                     </div>
+//                   </div>
+//                 </div>
+
+//                 {/* GUIDELINES */}
+//                 <div className="md:col-span-2 p-4 bg-[#f6f2ee] rounded-xl">
+//                   <h4 className="font-semibold text-[#1c1c1c] mb-3 flex items-center gap-2">
+//                     <Icon icon="mdi:information" className="text-[#c0392b]" />
+//                     Listing Guidelines
+//                   </h4>
+//                   <ul className="text-gray-600 text-sm space-y-2">
+//                     <li className="flex items-start gap-2">
+//                       <Icon
+//                         icon="mdi:check-circle"
+//                         className="text-[#0097a7] mt-0.5"
+//                       />
+//                       <span>Ensure all images are clear and well-lit</span>
+//                     </li>
+//                     <li className="flex items-start gap-2">
+//                       <Icon
+//                         icon="mdi:check-circle"
+//                         className="text-[#0097a7] mt-0.5"
+//                       />
+//                       <span>Show all edges and any imperfections</span>
+//                     </li>
+//                     <li className="flex items-start gap-2">
+//                       <Icon
+//                         icon="mdi:check-circle"
+//                         className="text-[#0097a7] mt-0.5"
+//                       />
+//                       <span>Price your card competitively</span>
+//                     </li>
+//                     <li className="flex items-start gap-2">
+//                       <Icon
+//                         icon="mdi:check-circle"
+//                         className="text-[#0097a7] mt-0.5"
+//                       />
+//                       <span>Cards will be reviewed within 24 hours</span>
+//                     </li>
+//                   </ul>
+//                 </div>
+
+//                 {/* SUBMIT BUTTON */}
+//                 <div className="md:col-span-2">
+//                   <CustomButton
+//                     label={
+//                       <div className="flex items-center justify-center gap-3">
+//                         <Icon icon="mdi:send" />
+//                         <span>Submit for Review</span>
+//                       </div>
+//                     }
+//                     type="submit"
+//                     loading={createCard.isPending}
+//                     disabled={!isFormValid || createCard.isPending}
+//                     className="w-full bg-linear-to-r from-[#c0392b] via-[#c0392b] to-[#1c1c1c] hover:from-[#1c1c1c] hover:to-[#c0392b] text-white font-bold py-4 rounded-xl text-lg transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+//                   />
+
+//                   {createCard.isPending && (
+//                     <p className="text-center text-gray-500 mt-3 flex items-center justify-center gap-2">
+//                       <Icon icon="mdi:loading" className="animate-spin" />
+//                       Submitting your card for review...
+//                     </p>
+//                   )}
+//                 </div>
+//               </form>
+//             </div>
+//           ) : (
+//             /* My Cards Section */
+//             <div className="mt-8 bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-[#fdd18e]/30 overflow-hidden">
+//               <div className="bg-linear-to-r from-[#0097a7] via-[#1c1c1c] to-[#0097a7] p-6 md:p-8">
+//                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+//                   <div>
+//                     <h2 className="text-2xl md:text-3xl font-bold text-white">
+//                       My Cards
+//                     </h2>
+//                     <p className="text-gray-300 mt-2">
+//                       Track the status of your submitted cards
+//                     </p>
+//                   </div>
+//                   <div className="flex items-center gap-2 bg-[#0097a7]/20 px-4 py-2 rounded-full">
+//                     <Icon
+//                       icon="mdi:chart-timeline"
+//                       className="text-[#fdd18e]"
+//                     />
+//                     <span className="text-sm text-white">
+//                       {cards.length} card{cards.length !== 1 ? "s" : ""}
+//                     </span>
+//                   </div>
+//                 </div>
+//               </div>
+
+//               {/* Status Filter and Stats */}
+//               <div className="p-6 border-b border-[#f6f2ee]">
+//                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+//                   {/* Status Filter */}
+//                   <div className="flex items-center gap-4">
+//                     <div className="flex items-center gap-2">
+//                       <Icon icon="mdi:filter" className="text-[#0097a7]" />
+//                       <span className="font-medium text-[#1c1c1c]">
+//                         Filter by:
+//                       </span>
+//                     </div>
+//                     {/* <CustomSelect
+//                       options={CARD_STATUS_OPTIONS.map(opt => 
+//                         `${opt.charAt(0).toUpperCase() + opt.slice(1)} (${getStatusCount(opt)})`
+//                       )}
+//                       value={selectedStatus}
+//                       onChange={(e) => setSelectedStatus(e.target.value)}
+//                       className="border-[#fdd18e] focus:border-[#0097a7] focus:ring-[#0097a7]/30 min-w-[180px]"
+//                     /> */}
+//                     <select
+//                       value={selectedStatus}
+//                       onChange={(e) => setSelectedStatus(e.target.value)}
+//                       className="border border-[#fdd18e] rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0097a7]/30 focus:border-[#0097a7] min-w-[180px]"
+//                     >
+//                       <option value="pending">
+//                         Pending ({getStatusCount("pending")})
+//                       </option>
+//                       <option value="approved">
+//                         Approved ({getStatusCount("approved")})
+//                       </option>
+//                       <option value="rejected">
+//                         Rejected ({getStatusCount("rejected")})
+//                       </option>
+//                     </select>
+//                   </div>
+
+//                   {/* Stats Summary */}
+//                   <div className="flex items-center gap-6">
+//                     <div className="text-center">
+//                       <div
+//                         className={`text-2xl font-bold ${
+//                           selectedStatus === "pending"
+//                             ? "text-[#c0392b]"
+//                             : "text-gray-400"
+//                         }`}
+//                       >
+//                         {getStatusCount("pending")}
+//                       </div>
+//                       <div className="text-sm text-gray-500">Pending</div>
+//                     </div>
+//                     <div className="text-center">
+//                       <div
+//                         className={`text-2xl font-bold ${
+//                           selectedStatus === "approved"
+//                             ? "text-[#0097a7]"
+//                             : "text-gray-400"
+//                         }`}
+//                       >
+//                         {getStatusCount("approved")}
+//                       </div>
+//                       <div className="text-sm text-gray-500">Approved</div>
+//                     </div>
+//                     <div className="text-center">
+//                       <div
+//                         className={`text-2xl font-bold ${
+//                           selectedStatus === "rejected"
+//                             ? "text-[#c0392b]"
+//                             : "text-gray-400"
+//                         }`}
+//                       >
+//                         {getStatusCount("rejected")}
+//                       </div>
+//                       <div className="text-sm text-gray-500">Rejected</div>
+//                     </div>
+//                   </div>
+//                 </div>
+//               </div>
+
+//               {/* Cards Display */}
+//               <div className="p-6 md:p-8">
+//                 {isLoading ? (
+//                   <div className="flex flex-col items-center justify-center py-16">
+//                     <Icon
+//                       icon="mdi:loading"
+//                       className="text-4xl text-[#0097a7] animate-spin mb-4"
+//                     />
+//                     <p className="text-gray-600">Loading your cards...</p>
+//                   </div>
+//                 ) : cards.length > 0 ? (
+//                   <>
+//                     {/* Status Indicator */}
+//                     <div className="mb-6 p-4 rounded-xl bg-gray-50 flex items-center gap-3">
+//                       <Icon
+//                         icon={
+//                           selectedStatus === "pending"
+//                             ? "mdi:clock-outline"
+//                             : selectedStatus === "approved"
+//                             ? "mdi:check-circle-outline"
+//                             : "mdi:close-circle-outline"
+//                         }
+//                         className={`text-xl ${
+//                           selectedStatus === "pending"
+//                             ? "text-yellow-500"
+//                             : selectedStatus === "approved"
+//                             ? "text-green-500"
+//                             : "text-red-500"
+//                         }`}
+//                       />
+//                       <div>
+//                         <h3 className="font-semibold text-[#1c1c1c] capitalize">
+//                           {selectedStatus} Cards
+//                         </h3>
+//                         <p className="text-sm text-gray-600">
+//                           {selectedStatus === "pending"
+//                             ? "Your cards are under review. They will appear on the marketplace once approved."
+//                             : selectedStatus === "approved"
+//                             ? "Your cards are live on the marketplace and available for purchase."
+//                             : "Your cards were not approved for listing. Please check the requirements and try again."}
+//                         </p>
+//                       </div>
+//                     </div>
+
+//                     {/* Cards Grid */}
+//                     <OPCardLayout
+//                       cards={cards}
+//                       view="grid"
+//                       isWishlisted={() => false}
+//                     />
+//                   </>
+//                 ) : (
+//                   <div className="flex flex-col items-center justify-center py-16 text-center">
+//                     <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mb-6">
+//                       <Icon
+//                         icon={
+//                           selectedStatus === "pending"
+//                             ? "mdi:card-outline"
+//                             : selectedStatus === "approved"
+//                             ? "mdi:cards-outline"
+//                             : "mdi:card-remove-outline"
+//                         }
+//                         className="text-3xl text-gray-400"
+//                       />
+//                     </div>
+//                     <h3 className="text-xl font-semibold text-gray-700 mb-2">
+//                       No {selectedStatus} cards found
+//                     </h3>
+//                     <p className="text-gray-500 max-w-md mb-6">
+//                       {selectedStatus === "pending"
+//                         ? "You haven't submitted any cards for review yet. Click on 'Sell Card' to list your first card!"
+//                         : selectedStatus === "approved"
+//                         ? "You don't have any approved cards yet. Your submitted cards will appear here once approved by our team."
+//                         : "Great! You don't have any rejected cards. Keep up the good work with your submissions."}
+//                     </p>
+//                     {selectedStatus === "pending" && (
+//                       <button
+//                         onClick={() => setActiveTab("sell")}
+//                         className="px-6 py-3 bg-linear-to-r from-[#c0392b] to-[#1c1c1c] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity duration-300"
+//                       >
+//                         <div className="flex items-center gap-2">
+//                           <Icon icon="mdi:plus" />
+//                           Sell Your First Card
+//                         </div>
+//                       </button>
+//                     )}
+//                   </div>
+//                 )}
+//               </div>
+//             </div>
+//           )}
+//         </div>
+//       </div>
+
+//       {/* Add custom animation for gradient */}
+//       <style>{`
+//         @keyframes gradient {
+//           0%, 100% {
+//             background-position: 0% 50%;
+//           }
+//           50% {
+//             background-position: 100% 50%;
+//           }
+//         }
+//         .animate-gradient {
+//           background-size: 200% 200%;
+//           animation: gradient 3s ease infinite;
+//         }
+//         .animate-spin-slow {
+//           animation: spin 20s linear infinite;
+//         }
+//         @keyframes spin {
+//           from {
+//             transform: rotate(0deg);
+//           }
+//           to {
+//             transform: rotate(360deg);
+//           }
+//         }
+//       `}</style>
+//     </>
+//   );
+// }
+
+// SellPage.tsx
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Icon } from "@iconify/react";
 import CustomInput from "../../../../components/common/UI/CustomInput";
 import CustomButton from "../../../../components/common/UI/CustomButton";
 import CustomSelect from "../../../../components/common/UI/CustomSelect";
-import { useCreateCard } from "../../../../api/hooks/card/one-piece/useCards";
+import {
+  useCreateCard,
+  useFetchMyApprovedCards,
+  useFetchMyPendingCards,
+  useFetchMyRejectedCards,
+  useDeleteMyCard,
+} from "../../../../api/hooks/card/one-piece/useCards";
 import { IMAGES } from "../../../../assets";
+import type { OPCardType } from "../../../../components/card/one-piece/cards/OPCard";
+import OPCardLayout from "../../../../components/card/one-piece/cards/OPCardLayout";
+import { customToast } from "../../../../utils/customToast";
 
 interface SellForm {
   name: string;
@@ -309,10 +1747,41 @@ const CATEGORY_OPTIONS = [
 ];
 
 const CONDITION_OPTIONS = ["Mint", "Near-Mint", "Good", "Fair"];
-const MAX_FILE_SIZE_MB = 3; // Max 3MB per image
+const MAX_FILE_SIZE_MB = 3;
 const MIN_IMAGES = 6;
 
+const transformToOPCardType = (apiCards: any[]): OPCardType[] => {
+  return apiCards.map((card) => ({
+    _id: card._id,
+    name: card.name,
+    category: card.category,
+    condition: card.condition,
+    images: card.images,
+    description: card.description,
+    price: card.price,
+    status: card.status,
+    rejectionReason: card.rejectionReason,
+    seller: card.seller
+      ? {
+          _id: card.seller._id,
+          email: card.seller.email,
+          fullName: card.seller.fullName || "Seller",
+        }
+      : undefined,
+    createdAt: card.createdAt,
+    updatedAt: card.updatedAt,
+  }));
+};
+
 export default function SellPage() {
+  const [activeTab, setActiveTab] = useState<"sell" | "my-cards">("sell");
+  const [selectedStatus, setSelectedStatus] = useState<string>("pending");
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+
+  // React Hook Form
   const {
     register,
     handleSubmit,
@@ -322,11 +1791,17 @@ export default function SellPage() {
     clearErrors,
     reset,
   } = useForm<SellForm>();
-  const createCard = useCreateCard();
 
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [isFormValid, setIsFormValid] = useState(false);
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  // Queries
+  const createCard = useCreateCard();
+  const { data: pendingData, isLoading: pendingLoading, refetch: refetchPending } =
+    useFetchMyPendingCards();
+  const { data: approvedData, isLoading: approvedLoading, refetch: refetchApproved } =
+    useFetchMyApprovedCards();
+  const { data: rejectedData, isLoading: rejectedLoading, refetch: refetchRejected } =
+    useFetchMyRejectedCards();
+  const deleteMyCard = useDeleteMyCard();
+
   const images = watch("images");
 
   // Handle image preview cleanup
@@ -347,7 +1822,6 @@ export default function SellPage() {
       return;
     }
 
-    // Validate file size
     for (let i = 0; i < images.length; i++) {
       if (images[i].size / 1024 / 1024 > MAX_FILE_SIZE_MB) {
         setError("images", {
@@ -359,7 +1833,6 @@ export default function SellPage() {
       }
     }
 
-    // Create preview URLs
     const newPreviewUrls = Array.from(images).map((file) =>
       URL.createObjectURL(file)
     );
@@ -387,14 +1860,94 @@ export default function SellPage() {
         setPreviewImage(null);
         setUploadedImages([]);
         setIsFormValid(false);
+        // Switch to My Cards tab after successful submission
+        setActiveTab("my-cards");
       },
       onError: (err: any) => {
-        alert(
+        customToast.error(
           err?.response?.data?.message || "Server error. Please try again."
         );
       },
     });
   };
+
+  const getCardsByStatus = (): OPCardType[] => {
+    let apiCards: any[] = [];
+
+    switch (selectedStatus) {
+      case "pending":
+        apiCards = pendingData?.cards || [];
+        break;
+      case "approved":
+        apiCards = approvedData?.cards || [];
+        break;
+      case "rejected":
+        apiCards = rejectedData?.cards || [];
+        break;
+      default:
+        apiCards = [];
+    }
+
+    return transformToOPCardType(apiCards);
+  };
+
+  // Get loading state
+  const getLoadingState = () => {
+    switch (selectedStatus) {
+      case "pending":
+        return pendingLoading;
+      case "approved":
+        return approvedLoading;
+      case "rejected":
+        return rejectedLoading;
+      default:
+        return false;
+    }
+  };
+
+  // Get count for each status
+  const getStatusCount = (status: string): number => {
+    switch (status) {
+      case "pending":
+        return pendingData?.cards?.length || 0;
+      case "approved":
+        return approvedData?.cards?.length || 0;
+      case "rejected":
+        return rejectedData?.cards?.length || 0;
+      default:
+        return 0;
+    }
+  };
+
+  const handleDeleteCard = (cardId: string) => {
+    setDeleteLoading(cardId);
+    deleteMyCard.mutate(cardId, {
+      onSuccess: () => {
+        customToast.success("Card deleted successfully");
+        // Refetch based on current status
+        switch (selectedStatus) {
+          case "pending":
+            refetchPending();
+            break;
+          case "approved":
+            refetchApproved();
+            break;
+          case "rejected":
+            refetchRejected();
+            break;
+        }
+      },
+      onError: (error: any) => {
+        customToast.error(error.response?.data?.message || "Failed to delete card");
+      },
+      onSettled: () => {
+        setDeleteLoading(null);
+      },
+    });
+  };
+
+  const cards = getCardsByStatus();
+  const isLoading = getLoadingState();
 
   return (
     <>
@@ -421,21 +1974,16 @@ export default function SellPage() {
       )}
 
       <div className="min-h-screen bg-linear-to-br from-[#f6f2ee] via-white to-[#fdd18e]/20">
-        {/* Hero Section with Gradient Text */}
+        {/* Hero Section */}
         <div className="relative overflow-hidden bg-linear-to-r from-[#1c1c1c] via-[#0a0a0a] to-[#1c1c1c] py-16 md:py-20">
-          {/* Decorative Elements */}
           <div className="absolute top-0 left-0 w-32 h-32 bg-[#c0392b]/10 rounded-full -translate-x-16 -translate-y-16"></div>
           <div className="absolute bottom-0 right-0 w-40 h-40 bg-[#0097a7]/10 rounded-full translate-x-20 translate-y-20"></div>
 
           <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            {/* Jolly Roger Icon */}
             <div className="mb-8 flex justify-center">
               <div className="relative">
                 <div className="relative w-24 h-24 flex items-center justify-center">
-                  {/* ✅ Spinning Gradient Ring Only */}
                   <div className="absolute inset-0 rounded-full bg-linear-to-r from-[#c0392b] via-[#fdd18e] to-[#0097a7] animate-spin-slow"></div>
-
-                  {/* ✅ Static Inner Circle + Image (NO ROTATION) */}
                   <div className="relative w-[90%] h-[90%] rounded-full bg-[#1c1c1c] flex items-center justify-center z-10">
                     <img
                       src={IMAGES.flag}
@@ -444,7 +1992,6 @@ export default function SellPage() {
                     />
                   </div>
                 </div>
-
                 <div className="absolute -top-2 -right-2 w-8 h-8 bg-[#fdd18e] rounded-full flex items-center justify-center">
                   <Icon
                     icon="mdi:treasure-chest"
@@ -454,22 +2001,18 @@ export default function SellPage() {
               </div>
             </div>
 
-            {/* Gradient Text */}
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 tracking-tight">
               <span className="bg-linear-to-r from-[#c0392b] via-[#fdd18e] to-[#0097a7] bg-clip-text text-transparent animate-gradient">
                 ONE PIECE
               </span>
             </h1>
 
-            {/* Subtitle */}
             <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-8 font-semibold">
               Sell Your Treasure • Become Part of the Legend
             </p>
 
-            {/* Decorative Line */}
             <div className="w-32 h-1 bg-linear-to-r from-[#c0392b] via-[#fdd18e] to-[#0097a7] mx-auto rounded-full mb-10"></div>
 
-            {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
               <div className="text-center">
                 <div className="text-3xl font-bold text-white">100%</div>
@@ -491,291 +2034,519 @@ export default function SellPage() {
           </div>
         </div>
 
-        {/* Form Section */}
-        <div className="relative -mt-8 md:-mt-12 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          {/* Decorative Card Element */}
-          <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-            <div className="w-12 h-12 rounded-xl bg-linear-to-r from-[#c0392b] to-[#fdd18e] rotate-45 flex items-center justify-center">
-              <Icon
-                icon="mdi:cards"
-                className="text-white text-xl -rotate-45"
-              />
-            </div>
-          </div>
-
-          <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-[#fdd18e]/30 overflow-hidden">
-            {/* Form Header */}
-            <div className="bg-linear-to-r from-[#1c1c1c] via-[#2d2d2d] to-[#1c1c1c] p-6 md:p-8">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-white">
-                    List Your Card
-                  </h2>
-                  <p className="text-gray-300 mt-2">
-                    Fill in the details below to sell your One Piece card
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 bg-[#c0392b]/20 px-4 py-2 rounded-full">
-                  <Icon icon="mdi:shield-check" className="text-[#fdd18e]" />
-                  <span className="text-sm text-white">Secure & Verified</span>
-                </div>
-              </div>
-            </div>
-
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="p-6 md:p-8 grid gap-6 md:grid-cols-2 md:gap-8"
+        {/* Tabs Navigation */}
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8">
+          <div className="flex space-x-1 bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl border border-[#fdd18e]/30 overflow-hidden">
+            <button
+              onClick={() => setActiveTab("sell")}
+              className={`flex-1 py-4 text-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 ${
+                activeTab === "sell"
+                  ? "bg-linear-to-r from-[#c0392b] to-[#1c1c1c] text-white"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
             >
-              {/* CARD NAME */}
-              <div className="md:col-span-2">
-                <div className="flex items-center gap-2 mb-3">
-                  <Icon icon="mdi:card-text" className="text-[#c0392b]" />
-                  <label className="font-semibold text-[#1c1c1c] text-lg">
-                    Card Name
-                  </label>
+              <Icon icon="mdi:plus-circle" />
+              Sell Card
+            </button>
+            <button
+              onClick={() => setActiveTab("my-cards")}
+              className={`flex-1 py-4 text-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 ${
+                activeTab === "my-cards"
+                  ? "bg-linear-to-r from-[#0097a7] to-[#1c1c1c] text-white"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              <Icon icon="mdi:cards" />
+              My Cards
+              <span className="ml-1 px-2 py-1 text-xs bg-gray-200 rounded-full text-[#0097a7]">
+                {(pendingData?.cards?.length || 0) +
+                  (approvedData?.cards?.length || 0) +
+                  (rejectedData?.cards?.length || 0)}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* Content Area */}
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+          {activeTab === "sell" ? (
+            /* Sell Form */
+            <div className="mt-8 bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-[#fdd18e]/30 overflow-hidden">
+              <div className="bg-linear-to-r from-[#1c1c1c] via-[#2d2d2d] to-[#1c1c1c] p-6 md:p-8">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-white">
+                      List Your Card
+                    </h2>
+                    <p className="text-gray-300 mt-2">
+                      Fill in the details below to sell your One Piece card
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 bg-[#c0392b]/20 px-4 py-2 rounded-full">
+                    <Icon icon="mdi:shield-check" className="text-[#fdd18e]" />
+                    <span className="text-sm text-white">
+                      Secure & Verified
+                    </span>
+                  </div>
                 </div>
-                <CustomInput
-                  placeholder="e.g., Monkey D. Luffy - Gear Fifth"
-                  {...register("name", { required: "Card name is required" })}
-                  error={formState.errors.name?.message}
-                  className="border-[#fdd18e] focus:border-[#0097a7] focus:ring-[#0097a7]/30"
-                />
               </div>
 
-              {/* PRICE */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <Icon icon="mdi:cash" className="text-[#0097a7]" />
-                  <label className="font-semibold text-[#1c1c1c]">
-                    Price (₹)
-                  </label>
-                </div>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                    ₹
-                  </span>
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="p-6 md:p-8 grid gap-6 md:grid-cols-2 md:gap-8"
+              >
+                {/* CARD NAME */}
+                <div className="md:col-span-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Icon icon="mdi:card-text" className="text-[#c0392b]" />
+                    <label className="font-semibold text-[#1c1c1c] text-lg">
+                      Card Name
+                    </label>
+                  </div>
                   <CustomInput
-                    type="number"
-                    placeholder="0.00"
-                    {...register("price", {
-                      required: "Price is required",
-                      min: { value: 1, message: "Price must be > 0" },
-                    })}
-                    error={formState.errors.price?.message}
-                    className="pl-8 border-[#fdd18e] focus:border-[#0097a7] focus:ring-[#0097a7]/30"
+                    placeholder="e.g., Monkey D. Luffy - Gear Fifth"
+                    {...register("name", { required: "Card name is required" })}
+                    error={formState.errors.name?.message}
+                    className="border-[#fdd18e] focus:border-[#0097a7] focus:ring-[#0097a7]/30"
                   />
                 </div>
-              </div>
 
-              {/* CATEGORY */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <Icon icon="mdi:tag" className="text-[#c0392b]" />
-                  <label className="font-semibold text-[#1c1c1c]">
-                    Category
-                  </label>
-                </div>
-                <CustomSelect
-                  options={CATEGORY_OPTIONS}
-                  {...register("category", {
-                    required: "Category is required",
-                  })}
-                  className="border-[#fdd18e] focus:border-[#0097a7] focus:ring-[#0097a7]/30"
-                />
-                {formState.errors.category && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {formState.errors.category.message}
-                  </p>
-                )}
-              </div>
-
-              {/* CONDITION */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <Icon icon="mdi:quality-high" className="text-[#0097a7]" />
-                  <label className="font-semibold text-[#1c1c1c]">
-                    Condition
-                  </label>
-                </div>
-                <CustomSelect
-                  options={CONDITION_OPTIONS}
-                  {...register("condition", {
-                    required: "Condition is required",
-                  })}
-                  className="border-[#fdd18e] focus:border-[#0097a7] focus:ring-[#0097a7]/30"
-                />
-                {formState.errors.condition && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {formState.errors.condition.message}
-                  </p>
-                )}
-              </div>
-
-              {/* IMAGE UPLOAD */}
-              <div className="md:col-span-2">
-                <div className="flex items-center gap-2 mb-3">
-                  <Icon icon="mdi:image-multiple" className="text-[#c0392b]" />
-                  <label className="font-semibold text-[#1c1c1c] text-lg">
-                    Images (min 6, ≤3MB each)
-                  </label>
+                {/* PRICE */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Icon icon="mdi:cash" className="text-[#0097a7]" />
+                    <label className="font-semibold text-[#1c1c1c]">
+                      Price (₹)
+                    </label>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                      ₹
+                    </span>
+                    <CustomInput
+                      type="number"
+                      placeholder="0.00"
+                      {...register("price", {
+                        required: "Price is required",
+                        min: { value: 1, message: "Price must be > 0" },
+                      })}
+                      error={formState.errors.price?.message}
+                      className="pl-8 border-[#fdd18e] focus:border-[#0097a7] focus:ring-[#0097a7]/30"
+                    />
+                  </div>
                 </div>
 
-                <div className="border-2 border-dashed border-[#fdd18e]/50 rounded-2xl p-6 text-center hover:border-[#0097a7] transition-colors duration-300">
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    {...register("images", {
-                      required: "Please upload images",
+                {/* CATEGORY */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Icon icon="mdi:tag" className="text-[#c0392b]" />
+                    <label className="font-semibold text-[#1c1c1c]">
+                      Category
+                    </label>
+                  </div>
+                  <CustomSelect
+                    options={CATEGORY_OPTIONS}
+                    {...register("category", {
+                      required: "Category is required",
                     })}
-                    className="hidden"
-                    id="image-upload"
+                    className="border-[#fdd18e] focus:border-[#0097a7] focus:ring-[#0097a7]/30"
                   />
-                  <label
-                    htmlFor="image-upload"
-                    className="cursor-pointer block"
-                  >
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#fdd18e]/20 flex items-center justify-center">
+                  {formState.errors.category && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {formState.errors.category.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* CONDITION */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Icon icon="mdi:quality-high" className="text-[#0097a7]" />
+                    <label className="font-semibold text-[#1c1c1c]">
+                      Condition
+                    </label>
+                  </div>
+                  <CustomSelect
+                    options={CONDITION_OPTIONS}
+                    {...register("condition", {
+                      required: "Condition is required",
+                    })}
+                    className="border-[#fdd18e] focus:border-[#0097a7] focus:ring-[#0097a7]/30"
+                  />
+                  {formState.errors.condition && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {formState.errors.condition.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* IMAGE UPLOAD */}
+                <div className="md:col-span-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Icon
+                      icon="mdi:image-multiple"
+                      className="text-[#c0392b]"
+                    />
+                    <label className="font-semibold text-[#1c1c1c] text-lg">
+                      Images (min 6, ≤3MB each)
+                    </label>
+                  </div>
+
+                  <div className="border-2 border-dashed border-[#fdd18e]/50 rounded-2xl p-6 text-center hover:border-[#0097a7] transition-colors duration-300">
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      {...register("images", {
+                        required: "Please upload images",
+                      })}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <label
+                      htmlFor="image-upload"
+                      className="cursor-pointer block"
+                    >
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#fdd18e]/20 flex items-center justify-center">
+                        <Icon
+                          icon="mdi:cloud-upload"
+                          className="text-3xl text-[#c0392b]"
+                        />
+                      </div>
+                      <p className="text-[#1c1c1c] font-medium mb-2">
+                        Click to upload or drag and drop
+                      </p>
+                      <p className="text-gray-500 text-sm">
+                        PNG, JPG, WEBP up to {MAX_FILE_SIZE_MB}MB each
+                      </p>
+                    </label>
+                  </div>
+
+                  {formState.errors.images && (
+                    <p className="text-red-500 text-sm mt-3 flex items-center gap-2">
+                      <Icon icon="mdi:alert-circle" />
+                      {formState.errors.images.message}
+                    </p>
+                  )}
+
+                  {/* Image Previews */}
+                  {uploadedImages.length > 0 && (
+                    <div className="mt-6">
+                      <h4 className="font-medium text-[#1c1c1c] mb-3">
+                        Uploaded Images ({uploadedImages.length}/{MIN_IMAGES})
+                      </h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+                        {uploadedImages.map((url, index) => (
+                          <div
+                            key={index}
+                            className="relative group cursor-pointer"
+                            onClick={() => setPreviewImage(url)}
+                          >
+                            <div className="aspect-square rounded-xl overflow-hidden border-2 border-transparent group-hover:border-[#0097a7] transition-all duration-300">
+                              <img
+                                src={url}
+                                alt={`preview-${index}`}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            </div>
+                            <div className="absolute top-2 right-2 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <Icon
+                                icon="mdi:eye"
+                                className="text-white text-xs"
+                              />
+                            </div>
+                            <div className="absolute top-2 left-2 w-6 h-6 bg-[#0097a7] rounded-full flex items-center justify-center text-white text-xs font-bold">
+                              {index + 1}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* DESCRIPTION */}
+                <div className="md:col-span-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Icon icon="mdi:note-text" className="text-[#0097a7]" />
+                    <label className="font-semibold text-[#1c1c1c] text-lg">
+                      Description
+                    </label>
+                  </div>
+                  <div className="relative">
+                    <textarea
+                      placeholder="Describe your card in detail (condition, special features, any defects, etc.)"
+                      {...register("description")}
+                      rows={4}
+                      className="w-full px-4 py-3 border border-[#fdd18e] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0097a7]/30 focus:border-[#0097a7] resize-none"
+                    />
+                    <div className="absolute bottom-3 right-3 text-gray-400 text-sm">
+                      Optional
+                    </div>
+                  </div>
+                </div>
+
+                {/* GUIDELINES */}
+                <div className="md:col-span-2 p-4 bg-[#f6f2ee] rounded-xl">
+                  <h4 className="font-semibold text-[#1c1c1c] mb-3 flex items-center gap-2">
+                    <Icon icon="mdi:information" className="text-[#c0392b]" />
+                    Listing Guidelines
+                  </h4>
+                  <ul className="text-gray-600 text-sm space-y-2">
+                    <li className="flex items-start gap-2">
                       <Icon
-                        icon="mdi:cloud-upload"
-                        className="text-3xl text-[#c0392b]"
+                        icon="mdi:check-circle"
+                        className="text-[#0097a7] mt-0.5"
+                      />
+                      <span>Ensure all images are clear and well-lit</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Icon
+                        icon="mdi:check-circle"
+                        className="text-[#0097a7] mt-0.5"
+                      />
+                      <span>Show all edges and any imperfections</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Icon
+                        icon="mdi:check-circle"
+                        className="text-[#0097a7] mt-0.5"
+                      />
+                      <span>Price your card competitively</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Icon
+                        icon="mdi:check-circle"
+                        className="text-[#0097a7] mt-0.5"
+                      />
+                      <span>Cards will be reviewed within 24 hours</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* SUBMIT BUTTON */}
+                <div className="md:col-span-2">
+                  <CustomButton
+                    label={
+                      <div className="flex items-center justify-center gap-3">
+                        <Icon icon="mdi:send" />
+                        <span>Submit for Review</span>
+                      </div>
+                    }
+                    type="submit"
+                    loading={createCard.isPending}
+                    disabled={!isFormValid || createCard.isPending}
+                    className="w-full bg-linear-to-r from-[#c0392b] via-[#c0392b] to-[#1c1c1c] hover:from-[#1c1c1c] hover:to-[#c0392b] text-white font-bold py-4 rounded-xl text-lg transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  />
+
+                  {createCard.isPending && (
+                    <p className="text-center text-gray-500 mt-3 flex items-center justify-center gap-2">
+                      <Icon icon="mdi:loading" className="animate-spin" />
+                      Submitting your card for review...
+                    </p>
+                  )}
+                </div>
+              </form>
+            </div>
+          ) : (
+            /* My Cards Section */
+            <div className="mt-8 bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-[#fdd18e]/30 overflow-hidden">
+              <div className="bg-linear-to-r from-[#0097a7] via-[#1c1c1c] to-[#0097a7] p-6 md:p-8">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-white">
+                      My Cards
+                    </h2>
+                    <p className="text-gray-300 mt-2">
+                      Track the status of your submitted cards
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 bg-[#0097a7]/20 px-4 py-2 rounded-full">
+                    <Icon
+                      icon="mdi:chart-timeline"
+                      className="text-[#fdd18e]"
+                    />
+                    <span className="text-sm text-white">
+                      {cards.length} card{cards.length !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status Filter and Stats */}
+              <div className="p-6 border-b border-[#f6f2ee]">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  {/* Status Filter */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Icon icon="mdi:filter" className="text-[#0097a7]" />
+                      <span className="font-medium text-[#1c1c1c]">
+                        Filter by:
+                      </span>
+                    </div>
+                    <select
+                      value={selectedStatus}
+                      onChange={(e) => setSelectedStatus(e.target.value)}
+                      className="border border-[#fdd18e] rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0097a7]/30 focus:border-[#0097a7] min-w-[180px]"
+                    >
+                      <option value="pending">
+                        Pending ({getStatusCount("pending")})
+                      </option>
+                      <option value="approved">
+                        Approved ({getStatusCount("approved")})
+                      </option>
+                      <option value="rejected">
+                        Rejected ({getStatusCount("rejected")})
+                      </option>
+                    </select>
+                  </div>
+
+                  {/* Stats Summary */}
+                  <div className="flex items-center gap-6">
+                    <div className="text-center">
+                      <div
+                        className={`text-2xl font-bold ${
+                          selectedStatus === "pending"
+                            ? "text-[#c0392b]"
+                            : "text-gray-400"
+                        }`}
+                      >
+                        {getStatusCount("pending")}
+                      </div>
+                      <div className="text-sm text-gray-500">Pending</div>
+                    </div>
+                    <div className="text-center">
+                      <div
+                        className={`text-2xl font-bold ${
+                          selectedStatus === "approved"
+                            ? "text-[#0097a7]"
+                            : "text-gray-400"
+                        }`}
+                      >
+                        {getStatusCount("approved")}
+                      </div>
+                      <div className="text-sm text-gray-500">Approved</div>
+                    </div>
+                    <div className="text-center">
+                      <div
+                        className={`text-2xl font-bold ${
+                          selectedStatus === "rejected"
+                            ? "text-[#c0392b]"
+                            : "text-gray-400"
+                        }`}
+                      >
+                        {getStatusCount("rejected")}
+                      </div>
+                      <div className="text-sm text-gray-500">Rejected</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Cards Display */}
+              <div className="p-6 md:p-8">
+                {isLoading ? (
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <Icon
+                      icon="mdi:loading"
+                      className="text-4xl text-[#0097a7] animate-spin mb-4"
+                    />
+                    <p className="text-gray-600">Loading your cards...</p>
+                  </div>
+                ) : cards.length > 0 ? (
+                  <>
+                    {/* Status Indicator */}
+                    <div className="mb-6 p-4 rounded-xl bg-gray-50 flex items-center gap-3">
+                      <Icon
+                        icon={
+                          selectedStatus === "pending"
+                            ? "mdi:clock-outline"
+                            : selectedStatus === "approved"
+                            ? "mdi:check-circle-outline"
+                            : "mdi:close-circle-outline"
+                        }
+                        className={`text-xl ${
+                          selectedStatus === "pending"
+                            ? "text-yellow-500"
+                            : selectedStatus === "approved"
+                            ? "text-green-500"
+                            : "text-red-500"
+                        }`}
+                      />
+                      <div>
+                        <h3 className="font-semibold text-[#1c1c1c] capitalize">
+                          {selectedStatus} Cards
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          {selectedStatus === "pending"
+                            ? "Your cards are under review. They will appear on the marketplace once approved."
+                            : selectedStatus === "approved"
+                            ? "Your cards are live on the marketplace and available for purchase."
+                            : "Your cards were not approved for listing. Please check the requirements and try again."}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Cards Grid */}
+                    <OPCardLayout
+                      cards={cards}
+                      view="grid"
+                      isWishlisted={() => false}
+                      onDelete={handleDeleteCard}
+                      showDelete={true}
+                    />
+                    
+                    {/* Delete Loading Indicator */}
+                    {deleteLoading && (
+                      <div className="mt-4 text-center">
+                        <Icon
+                          icon="mdi:loading"
+                          className="text-[#0097a7] animate-spin inline mr-2"
+                        />
+                        <span className="text-gray-600">Deleting card...</span>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mb-6">
+                      <Icon
+                        icon={
+                          selectedStatus === "pending"
+                            ? "mdi:card-outline"
+                            : selectedStatus === "approved"
+                            ? "mdi:cards-outline"
+                            : "mdi:card-remove-outline"
+                        }
+                        className="text-3xl text-gray-400"
                       />
                     </div>
-                    <p className="text-[#1c1c1c] font-medium mb-2">
-                      Click to upload or drag and drop
+                    <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                      No {selectedStatus} cards found
+                    </h3>
+                    <p className="text-gray-500 max-w-md mb-6">
+                      {selectedStatus === "pending"
+                        ? "You haven't submitted any cards for review yet. Click on 'Sell Card' to list your first card!"
+                        : selectedStatus === "approved"
+                        ? "You don't have any approved cards yet. Your submitted cards will appear here once approved by our team."
+                        : "Great! You don't have any rejected cards. Keep up the good work with your submissions."}
                     </p>
-                    <p className="text-gray-500 text-sm">
-                      PNG, JPG, WEBP up to {MAX_FILE_SIZE_MB}MB each
-                    </p>
-                  </label>
-                </div>
-
-                {formState.errors.images && (
-                  <p className="text-red-500 text-sm mt-3 flex items-center gap-2">
-                    <Icon icon="mdi:alert-circle" />
-                    {formState.errors.images.message}
-                  </p>
-                )}
-
-                {/* Image Previews */}
-                {uploadedImages.length > 0 && (
-                  <div className="mt-6">
-                    <h4 className="font-medium text-[#1c1c1c] mb-3">
-                      Uploaded Images ({uploadedImages.length}/{MIN_IMAGES})
-                    </h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-                      {uploadedImages.map((url, index) => (
-                        <div
-                          key={index}
-                          className="relative group cursor-pointer"
-                          onClick={() => setPreviewImage(url)}
-                        >
-                          <div className="aspect-square rounded-xl overflow-hidden border-2 border-transparent group-hover:border-[#0097a7] transition-all duration-300">
-                            <img
-                              src={url}
-                              alt={`preview-${index}`}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          </div>
-                          <div className="absolute top-2 right-2 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <Icon
-                              icon="mdi:eye"
-                              className="text-white text-xs"
-                            />
-                          </div>
-                          <div className="absolute top-2 left-2 w-6 h-6 bg-[#0097a7] rounded-full flex items-center justify-center text-white text-xs font-bold">
-                            {index + 1}
-                          </div>
+                    {selectedStatus === "pending" && (
+                      <button
+                        onClick={() => setActiveTab("sell")}
+                        className="px-6 py-3 bg-linear-to-r from-[#c0392b] to-[#1c1c1c] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity duration-300"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Icon icon="mdi:plus" />
+                          Sell Your First Card
                         </div>
-                      ))}
-                    </div>
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
-
-              {/* DESCRIPTION */}
-              <div className="md:col-span-2">
-                <div className="flex items-center gap-2 mb-3">
-                  <Icon icon="mdi:note-text" className="text-[#0097a7]" />
-                  <label className="font-semibold text-[#1c1c1c] text-lg">
-                    Description
-                  </label>
-                </div>
-                <div className="relative">
-                  <textarea
-                    placeholder="Describe your card in detail (condition, special features, any defects, etc.)"
-                    {...register("description")}
-                    rows={4}
-                    className="w-full px-4 py-3 border border-[#fdd18e] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0097a7]/30 focus:border-[#0097a7] resize-none"
-                  />
-                  <div className="absolute bottom-3 right-3 text-gray-400 text-sm">
-                    Optional
-                  </div>
-                </div>
-              </div>
-
-              {/* GUIDELINES */}
-              <div className="md:col-span-2 p-4 bg-[#f6f2ee] rounded-xl">
-                <h4 className="font-semibold text-[#1c1c1c] mb-3 flex items-center gap-2">
-                  <Icon icon="mdi:information" className="text-[#c0392b]" />
-                  Listing Guidelines
-                </h4>
-                <ul className="text-gray-600 text-sm space-y-2">
-                  <li className="flex items-start gap-2">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="text-[#0097a7] mt-0.5"
-                    />
-                    <span>Ensure all images are clear and well-lit</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="text-[#0097a7] mt-0.5"
-                    />
-                    <span>Show all edges and any imperfections</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="text-[#0097a7] mt-0.5"
-                    />
-                    <span>Price your card competitively</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="text-[#0097a7] mt-0.5"
-                    />
-                    <span>Cards will be reviewed within 24 hours</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* SUBMIT BUTTON */}
-              <div className="md:col-span-2">
-                <CustomButton
-                  label={
-                    <div className="flex items-center justify-center gap-3">
-                      <Icon icon="mdi:send" />
-                      <span>Submit for Review</span>
-                    </div>
-                  }
-                  type="submit"
-                  loading={createCard.isPending}
-                  disabled={!isFormValid || createCard.isPending}
-                  className="w-full bg-linear-to-r from-[#c0392b] via-[#c0392b] to-[#1c1c1c] hover:from-[#1c1c1c] hover:to-[#c0392b] text-white font-bold py-4 rounded-xl text-lg transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                />
-
-                {createCard.isPending && (
-                  <p className="text-center text-gray-500 mt-3 flex items-center justify-center gap-2">
-                    <Icon icon="mdi:loading" className="animate-spin" />
-                    Submitting your card for review...
-                  </p>
-                )}
-              </div>
-            </form>
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
