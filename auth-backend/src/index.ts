@@ -17,11 +17,18 @@ const app = express();
 // connect DB
 connectDB();
 
-// app.use(cors({
-//   origin: process.env.CLIENT_URL || "http://localhost:3000",
-//   credentials: true,
-// }));
-app.use(cors());
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://tcg-marketplace-gilt.vercel.app",
+];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use(cookieParser());
 

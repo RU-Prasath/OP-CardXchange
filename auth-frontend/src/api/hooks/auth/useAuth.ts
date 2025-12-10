@@ -108,7 +108,7 @@ export const useSendOtpApi = () => {
       customToast.success("OTP sent to your email!");
     },
     onError: (err: any) => {
-      customToast.error(err.response?.data?.message || "Failed to send OTP");
+      customToast.error(err?.message || "Failed to send OTP");
     },
   });
 };
