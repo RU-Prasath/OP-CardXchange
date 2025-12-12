@@ -12,17 +12,17 @@ async function createAdmin() {
     await mongoose.connect(MONGO_URI);
     console.log("MongoDB connected");
 
-    const hashed = await bcrypt.hash("Admin@123", 10);
+    const hashed = await bcrypt.hash("Test@123", 10);
 
-    const adminExists = await User.findOne({ email: "admin@example.com" });
+    const adminExists = await User.findOne({ email: "test@gmail.com" });
     if (adminExists) {
       console.log("Admin already exists");
       process.exit(0);
     }
 
     await User.create({
-      fullName: "Admin",
-      email: "admin@example.com",
+      fullName: "Test",
+      email: "test@gmail.com",
       mobile: "0000000000",
       password: hashed,
       isVerified: true,
