@@ -302,196 +302,506 @@
 //   );
 // }
 
+// import { useState } from "react";
+// import { useForm } from "react-hook-form";
+// import { useSendOtpApi, useVerifyOtpApi } from "../../api/hooks/auth/useAuth"; // custom hooks
+// import CustomInput from "../../components/common/UI/CustomInput";
+// import CustomButton from "../../components/common/UI/CustomButton";
+// import { customToast } from "../../utils/customToast";
+// import { useNavigate } from "react-router-dom";
+
+// interface RegisterForm {
+//   fullName: string;
+//   mobile: string;
+//   email: string;
+//   password: string;
+//   confirmPassword: string;
+//   city?: string;
+//   state?: string;
+//   pincode?: string;
+//   profileImage: FileList;
+//   otp?: string;
+// }
+
+// export default function Register() {
+//   const navigate = useNavigate();
+//   const { register, handleSubmit } = useForm<RegisterForm>();
+//   const sendOtpApi = useSendOtpApi();
+//   const verifyOtpApi = useVerifyOtpApi();
+
+//   const [otpSent, setOtpSent] = useState(false);
+//   const [email, setEmail] = useState("");
+
+//   // Step 1: Send OTP
+//   const handleSendOtp = async (data: RegisterForm) => {
+//     if (!data.email) return customToast.info("Please enter email first");
+//     setEmail(data.email);
+//     sendOtpApi.mutate(
+//       { email: data.email },
+//       {
+//         onSuccess: () => {
+//           setOtpSent(true);
+//           // alert("OTP sent to your email. Check inbox!");
+//         },
+//         onError: (err: any) =>
+//           console.error(err.response?.data?.message || "Failed to send OTP"),
+//       }
+//     );
+//   };
+
+//   // Step 2: Verify OTP & Complete Registration
+//   const handleVerifyOtp = async (data: RegisterForm) => {
+//     const formData = new FormData();
+//     formData.append("fullName", data.fullName);
+//     formData.append("mobile", data.mobile);
+//     formData.append("email", email);
+//     formData.append("password", data.password);
+//     formData.append("confirmPassword", data.confirmPassword);
+//     formData.append("city", data.city || "");
+//     formData.append("state", data.state || "");
+//     formData.append("pincode", data.pincode || "");
+//     formData.append("otp", data.otp || "");
+//     if (data.profileImage?.[0])
+//       formData.append("profile", data.profileImage[0]);
+
+//     verifyOtpApi.mutate(formData, {
+//       onSuccess: () => {
+//         customToast.success("Registration successful!");
+//         navigate("/login");
+//       },
+//       onError: (err: any) =>
+//         console.error(err.response?.data?.message || "OTP verification failed"),
+//     });
+//   };
+
+//   return (
+//     <div
+//       className="flex items-center justify-center bg-linear-to-br from-[#0f0f0f] via-[#121212] to-black relative py-10 px-4 overflow-hidden"
+//     >
+//       <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden animate-pulse">
+//         <h1 className="text-center text-[15vw] md:text-[20rem] font-black text-white tracking-wider">
+//           TCG
+//         </h1>
+//       </div>
+
+//       <div className="w-full max-w-3xl bg-[#f6f2ee]/15 backdrop-blur-lg rounded-3xl p-4 md:p-10 shadow-2xl border border-gray-700">
+//         <p className="text-4xl font-bold mb-8 text-[#c0392b] text-center tracking-wide">
+//           Create Pirate
+//         </p>
+
+//         {!otpSent ? (
+//           <form
+//             onSubmit={handleSubmit(handleSendOtp)}
+//             className="grid gap-6 md:grid-cols-2 md:gap-6"
+//           >
+//             <div className="md:col-span-2">
+//               <CustomInput
+//                 label="Email"
+//                 {...register("email", { required: true })}
+//                 className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 md:col-span-2 text-[#f6f2ee]"
+//                 labelClassName="text-[#f6f2ee]"
+//               />
+//               <CustomButton
+//                 label="Send OTP"
+//                 type="submit"
+//                 loading={sendOtpApi.isPending}
+//                 className="w-full bg-[#c0392b] hover:bg-[#e74c3c] text-[#f6f2ee] font-bold py-3 rounded-xl mt-2 shadow-lg transition-all duration-200"
+//               />
+//             </div>
+//           </form>
+//         ) : (
+//           <form
+//             onSubmit={handleSubmit(handleVerifyOtp)}
+//             className="grid gap-6 md:grid-cols-2 md:gap-6"
+//           >
+//             <CustomInput
+//               label="OTP"
+//               {...register("otp", { required: true })}
+//               className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee]"
+//               labelClassName="text-[#f6f2ee]"
+//             />
+//             <CustomInput
+//               label="Full Name"
+//               {...register("fullName", { required: true })}
+//               className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee]"
+//               labelClassName="text-[#f6f2ee]"
+//             />
+//             <CustomInput
+//               label="Mobile Number"
+//               {...register("mobile", { required: true })}
+//               className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee]"
+//               labelClassName="text-[#f6f2ee]"
+//             />
+//             <CustomInput
+//               label="Password"
+//               type="password"
+//               {...register("password", { required: true })}
+//               className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee]"
+//               labelClassName="text-[#f6f2ee]"
+//             />
+//             <CustomInput
+//               label="Confirm Password"
+//               type="password"
+//               {...register("confirmPassword", { required: true })}
+//               className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee]"
+//               labelClassName="text-[#f6f2ee]"
+//             />
+//             <CustomInput
+//               label="City"
+//               {...register("city")}
+//               className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee]"
+//               labelClassName="text-[#f6f2ee]"
+//             />
+//             <CustomInput
+//               label="State"
+//               {...register("state")}
+//               className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee]"
+//               labelClassName="text-[#f6f2ee]"
+//             />
+//             <CustomInput
+//               label="Pincode"
+//               {...register("pincode")}
+//               className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee]"
+//               labelClassName="text-[#f6f2ee]"
+//             />
+//             <CustomInput
+//               type="file"
+//               label="Profile Image"
+//               {...register("profileImage")}
+//               className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee]"
+//               labelClassName="text-[#f6f2ee]"
+//             />
+
+//             <div className="md:col-span-2">
+//               <CustomButton
+//                 label="Verify OTP & Register"
+//                 type="submit"
+//                 loading={verifyOtpApi.isPending}
+//                 className="w-full bg-[#c0392b] hover:bg-[#c0392b]/60 text-[#f6f2ee] font-bold py-3 rounded-xl mt-2 shadow-lg transition-all duration-200"
+//               />
+//             </div>
+//           </form>
+//         )}
+
+//         <p className="text-center text-[#f6f2ee] mt-6 text-sm">
+//           Already have an account?{" "}
+//           <a
+//             href="/login"
+//             className="text-[#c0392b] font-semibold hover:underline hover:text-[#c0392b]/60 transition-colors duration-200"
+//           >
+//             Login
+//           </a>
+//         </p>
+//       </div>
+//     </div>
+//   );
+// }
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useSendOtpApi, useVerifyOtpApi } from "../../api/hooks/auth/useAuth"; // custom hooks
+import { useSendOtpApi, useVerifyOtpApi } from "../../api/hooks/auth/useAuth";
 import CustomInput from "../../components/common/UI/CustomInput";
 import CustomButton from "../../components/common/UI/CustomButton";
 import { customToast } from "../../utils/customToast";
-import { useNavigate } from "react-router-dom";
 
 interface RegisterForm {
+  email: string;
   fullName: string;
   mobile: string;
-  email: string;
   password: string;
   confirmPassword: string;
-  city?: string;
-  state?: string;
-  pincode?: string;
-  profileImage: FileList;
-  otp?: string;
+  city: string;
+  state: string;
+  pincode: string;
+  otp: string;
 }
 
 export default function Register() {
-  const navigate = useNavigate();
-  const { register, handleSubmit } = useForm<RegisterForm>();
+  const [step, setStep] = useState<"email" | "details">("email");
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterForm>();
+  
   const sendOtpApi = useSendOtpApi();
   const verifyOtpApi = useVerifyOtpApi();
-
-  const [otpSent, setOtpSent] = useState(false);
-  const [email, setEmail] = useState("");
+  
+  const email = watch("email");
 
   // Step 1: Send OTP
-  const handleSendOtp = async (data: RegisterForm) => {
-    if (!data.email) return customToast.info("Please enter email first");
-    setEmail(data.email);
-    sendOtpApi.mutate(
-      { email: data.email },
-      {
-        onSuccess: () => {
-          setOtpSent(true);
-          // alert("OTP sent to your email. Check inbox!");
-        },
-        onError: (err: any) =>
-          console.error(err.response?.data?.message || "Failed to send OTP"),
-      }
-    );
+  const handleSendOtp = async () => {
+    if (!email) {
+      customToast.error("Email is required");
+      return;
+    }
+    
+    try {
+      await sendOtpApi.mutateAsync({ email });
+      setStep("details");
+      customToast.success("OTP sent to your email!");
+    } catch (error: any) {
+      customToast.error(error.response?.data?.message || "Failed to send OTP");
+    }
   };
 
-  // Step 2: Verify OTP & Complete Registration
-  const handleVerifyOtp = async (data: RegisterForm) => {
-    const formData = new FormData();
-    formData.append("fullName", data.fullName);
-    formData.append("mobile", data.mobile);
-    formData.append("email", email);
-    formData.append("password", data.password);
-    formData.append("confirmPassword", data.confirmPassword);
-    formData.append("city", data.city || "");
-    formData.append("state", data.state || "");
-    formData.append("pincode", data.pincode || "");
-    formData.append("otp", data.otp || "");
-    if (data.profileImage?.[0])
-      formData.append("profile", data.profileImage[0]);
+  // Handle profile image change
+  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setProfileImage(e.target.files[0]);
+    }
+  };
 
-    verifyOtpApi.mutate(formData, {
-      onSuccess: () => {
-        customToast.success("Registration successful!");
-        navigate("/login");
-      },
-      onError: (err: any) =>
-        console.error(err.response?.data?.message || "OTP verification failed"),
-    });
+  // Step 2: Complete Registration
+  const onSubmit = async (data: RegisterForm) => {
+    try {
+      const formData = new FormData();
+      
+      // Add all form data
+      formData.append("email", data.email);
+      formData.append("otp", data.otp);
+      formData.append("fullName", data.fullName);
+      formData.append("mobile", data.mobile);
+      formData.append("password", data.password);
+      formData.append("confirmPassword", data.confirmPassword);
+      formData.append("city", data.city || "");
+      formData.append("state", data.state || "");
+      formData.append("pincode", data.pincode || "");
+      
+      // Add profile image if exists
+      if (profileImage) {
+        formData.append("profile", profileImage);
+      }
+
+      await verifyOtpApi.mutateAsync(formData);
+    } catch (error: any) {
+      customToast.error(error.response?.data?.message || "Registration failed");
+    }
   };
 
   return (
-    <div
-      className="flex items-center justify-center bg-linear-to-br from-[#0f0f0f] via-[#121212] to-black relative py-10 px-4 overflow-hidden"
-    >
+    <div className="flex items-center justify-center bg-linear-to-br from-[#0f0f0f] via-[#121212] to-black relative py-10 px-4 overflow-hidden">
+      {/* GLOWING BACKGROUND TEXT */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden animate-pulse">
         <h1 className="text-center text-[15vw] md:text-[20rem] font-black text-white tracking-wider">
           TCG
         </h1>
       </div>
 
-      <div className="w-full max-w-3xl bg-[#f6f2ee]/15 backdrop-blur-lg rounded-3xl p-4 md:p-10 shadow-2xl border border-gray-700">
-        <p className="text-4xl font-bold mb-8 text-[#c0392b] text-center tracking-wide">
-          Create Pirate
+      {/* REGISTER CARD */}
+      <div className="w-full max-w-3xl bg-[#f6f2ee]/15 backdrop-blur-lg rounded-3xl p-4 md:p-10 shadow-2xl border border-gray-700 relative z-10">
+        <p className="text-4xl font-extrabold mb-8 text-[#c0392b] text-center tracking-wide drop-shadow-[0_0_12px_#c0392b70]">
+          Register
         </p>
 
-        {!otpSent ? (
-          <form
-            onSubmit={handleSubmit(handleSendOtp)}
-            className="grid gap-6 md:grid-cols-2 md:gap-6"
-          >
+        {step === "email" ? (
+          // STEP 1: Email and OTP Request
+          <div className="space-y-6">
             <div className="md:col-span-2">
               <CustomInput
                 label="Email"
-                {...register("email", { required: true })}
-                className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 md:col-span-2 text-[#f6f2ee]"
+                type="email"
+                {...register("email", { 
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: "Invalid email address"
+                  }
+                })}
+                className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee] bg-black/20 backdrop-blur-md"
                 labelClassName="text-[#f6f2ee]"
-              />
-              <CustomButton
-                label="Send OTP"
-                type="submit"
-                loading={sendOtpApi.isPending}
-                className="w-full bg-[#c0392b] hover:bg-[#e74c3c] text-[#f6f2ee] font-bold py-3 rounded-xl mt-2 shadow-lg transition-all duration-200"
+                error={errors.email?.message}
               />
             </div>
-          </form>
-        ) : (
-          <form
-            onSubmit={handleSubmit(handleVerifyOtp)}
-            className="grid gap-6 md:grid-cols-2 md:gap-6"
-          >
-            <CustomInput
-              label="OTP"
-              {...register("otp", { required: true })}
-              className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee]"
-              labelClassName="text-[#f6f2ee]"
-            />
-            <CustomInput
-              label="Full Name"
-              {...register("fullName", { required: true })}
-              className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee]"
-              labelClassName="text-[#f6f2ee]"
-            />
-            <CustomInput
-              label="Mobile Number"
-              {...register("mobile", { required: true })}
-              className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee]"
-              labelClassName="text-[#f6f2ee]"
-            />
-            <CustomInput
-              label="Password"
-              type="password"
-              {...register("password", { required: true })}
-              className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee]"
-              labelClassName="text-[#f6f2ee]"
-            />
-            <CustomInput
-              label="Confirm Password"
-              type="password"
-              {...register("confirmPassword", { required: true })}
-              className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee]"
-              labelClassName="text-[#f6f2ee]"
-            />
-            <CustomInput
-              label="City"
-              {...register("city")}
-              className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee]"
-              labelClassName="text-[#f6f2ee]"
-            />
-            <CustomInput
-              label="State"
-              {...register("state")}
-              className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee]"
-              labelClassName="text-[#f6f2ee]"
-            />
-            <CustomInput
-              label="Pincode"
-              {...register("pincode")}
-              className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee]"
-              labelClassName="text-[#f6f2ee]"
-            />
-            <CustomInput
-              type="file"
-              label="Profile Image"
-              {...register("profileImage")}
-              className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee]"
-              labelClassName="text-[#f6f2ee]"
-            />
 
             <div className="md:col-span-2">
               <CustomButton
-                label="Verify OTP & Register"
-                type="submit"
-                loading={verifyOtpApi.isPending}
-                className="w-full bg-[#c0392b] hover:bg-[#c0392b]/60 text-[#f6f2ee] font-bold py-3 rounded-xl mt-2 shadow-lg transition-all duration-200"
+                label="Send OTP"
+                onClick={handleSendOtp}
+                loading={sendOtpApi.isPending}
+                className="w-full bg-[#c0392b] hover:bg-[#e74c3c] text-[#f6f2ee] font-bold py-3 rounded-xl mt-2 shadow-[0_0_25px_#c0392b80] hover:shadow-[0_0_40px_#e74c3c] transition-all duration-300"
               />
             </div>
+
+            <p className="text-center text-[#f6f2ee] text-sm">
+              Already have an account?{" "}
+              <a
+                href="/login"
+                className="text-[#c0392b] font-semibold hover:underline hover:text-[#e74c3c] transition-all duration-200"
+              >
+                Login
+              </a>
+            </p>
+          </div>
+        ) : (
+          // STEP 2: Complete Registration Form
+          <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6 md:grid-cols-2 md:gap-6">
+            {/* OTP Field */}
+            <div className="md:col-span-2">
+              <CustomInput
+                label="OTP"
+                type="text"
+                {...register("otp", { 
+                  required: "OTP is required",
+                  pattern: {
+                    value: /^\d{4}$/,
+                    message: "OTP must be 4 digits"
+                  }
+                })}
+                placeholder="Enter OTP sent to your email"
+                className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee] bg-black/20 backdrop-blur-md"
+                labelClassName="text-[#f6f2ee]"
+                error={errors.otp?.message}
+              />
+            </div>
+
+            {/* Full Name */}
+            <div className="md:col-span-2">
+              <CustomInput
+                label="Full Name"
+                {...register("fullName", { 
+                  required: "Full name is required",
+                  minLength: {
+                    value: 2,
+                    message: "Full name must be at least 2 characters"
+                  }
+                })}
+                className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee] bg-black/20 backdrop-blur-md"
+                labelClassName="text-[#f6f2ee]"
+                error={errors.fullName?.message}
+              />
+            </div>
+
+            {/* Mobile */}
+            <div>
+              <CustomInput
+                label="Mobile"
+                type="tel"
+                {...register("mobile", { 
+                  required: "Mobile number is required",
+                  pattern: {
+                    value: /^\d{10}$/,
+                    message: "Mobile number must be 10 digits"
+                  }
+                })}
+                className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee] bg-black/20 backdrop-blur-md"
+                labelClassName="text-[#f6f2ee]"
+                error={errors.mobile?.message}
+              />
+            </div>
+
+            {/* Profile Image Upload */}
+            <div>
+              <label className="block text-sm font-medium text-[#f6f2ee] mb-2">
+                Profile Image
+              </label>
+              <div className="mt-1 flex items-center">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfileChange}
+                  className="block w-full text-sm text-[#f6f2ee] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#c0392b] file:text-[#f6f2ee] hover:file:bg-[#e74c3c] transition-all duration-200"
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <CustomInput
+                label="Password"
+                type="password"
+                {...register("password", { 
+                  required: "Password is required",
+                  minLength: {
+                    value: 6,
+                    message: "Password must be at least 6 characters"
+                  }
+                })}
+                className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee] bg-black/20 backdrop-blur-md"
+                labelClassName="text-[#f6f2ee]"
+                error={errors.password?.message}
+              />
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <CustomInput
+                label="Confirm Password"
+                type="password"
+                {...register("confirmPassword", { 
+                  required: "Confirm password is required",
+                  validate: value => value === watch('password') || "Passwords do not match"
+                })}
+                className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee] bg-black/20 backdrop-blur-md"
+                labelClassName="text-[#f6f2ee]"
+                error={errors.confirmPassword?.message}
+              />
+            </div>
+
+            {/* City */}
+            <div>
+              <CustomInput
+                label="City"
+                {...register("city")}
+                className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee] bg-black/20 backdrop-blur-md"
+                labelClassName="text-[#f6f2ee]"
+              />
+            </div>
+
+            {/* State */}
+            <div>
+              <CustomInput
+                label="State"
+                {...register("state")}
+                className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee] bg-black/20 backdrop-blur-md"
+                labelClassName="text-[#f6f2ee]"
+              />
+            </div>
+
+            {/* Pincode */}
+            <div className="md:col-span-2">
+              <CustomInput
+                label="Pincode"
+                {...register("pincode")}
+                className="focus:border-[#c0392b] focus:ring-[#c0392b]/40 text-[#f6f2ee] bg-black/20 backdrop-blur-md"
+                labelClassName="text-[#f6f2ee]"
+              />
+            </div>
+
+            {/* Back and Submit Buttons */}
+            <div className="md:col-span-2 flex gap-4">
+              <CustomButton
+                label="Back"
+                type="button"
+                onClick={() => setStep("email")}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-[#f6f2ee] font-bold py-3 rounded-xl transition-all duration-300"
+              />
+              <CustomButton
+                label="Complete Registration"
+                type="submit"
+                loading={verifyOtpApi.isPending}
+                className="flex-1 bg-[#c0392b] hover:bg-[#e74c3c] text-[#f6f2ee] font-bold py-3 rounded-xl shadow-[0_0_25px_#c0392b80] hover:shadow-[0_0_40px_#e74c3c] transition-all duration-300"
+              />
+            </div>
+
+            <div className="md:col-span-2 text-center">
+              <button
+                type="button"
+                onClick={handleSendOtp}
+                className="text-sm text-[#c0392b] font-semibold hover:underline hover:text-[#e74c3c] transition-all duration-200"
+              >
+                Resend OTP
+              </button>
+            </div>
+
+            <p className="md:col-span-2 text-center text-[#f6f2ee] text-sm">
+              Already have an account?{" "}
+              <a
+                href="/login"
+                className="text-[#c0392b] font-semibold hover:underline hover:text-[#e74c3c] transition-all duration-200"
+              >
+                Login
+              </a>
+            </p>
           </form>
         )}
-
-        <p className="text-center text-[#f6f2ee] mt-6 text-sm">
-          Already have an account?{" "}
-          <a
-            href="/login"
-            className="text-[#c0392b] font-semibold hover:underline hover:text-[#c0392b]/60 transition-colors duration-200"
-          >
-            Login
-          </a>
-        </p>
       </div>
     </div>
   );

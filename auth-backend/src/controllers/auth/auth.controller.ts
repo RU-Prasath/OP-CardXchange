@@ -487,35 +487,17 @@ export const sendEmailOtp = async (req: Request, res: Response) => {
       });
     }
 
+    const normalizedEmail = email.toLowerCase();
+
     // Check if user exists and is verified
     const existingUser = await User.findOne({
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       isVerified: true,
     });
 
     if (existingUser) {
       return res.status(400).json({
-        message: "Email already registered and verified",
-      });
-    }
-
-    // Find or create temporary user
-    let user = await User.findOne({ email: email.toLowerCase() });
-
-    if (!user) {
-      // Create temporary user
-      const tempPassword = `Temp@${Math.random().toString(36).slice(2, 10)}`;
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(tempPassword, salt);
-
-      user = await User.create({
-        email: email.toLowerCase(),
-        fullName: "Temporary User",
-        mobile: "0000000000",
-        password: hashedPassword,
-        isVerified: false,
-        emailOtp: undefined,
-        emailOtpExpires: undefined,
+        message: "Email already registered and verified. Please login instead.",
       });
     }
 
@@ -524,32 +506,156 @@ export const sendEmailOtp = async (req: Request, res: Response) => {
     const salt = await bcrypt.genSalt(10);
     const hashedOtp = await bcrypt.hash(otp, salt);
 
+    // Find or create temporary user
+    let user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+      // Create temporary user
+      const tempPassword = `Temp@${Math.random().toString(36).slice(2, 10)}`;
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(tempPassword, salt);
+
+      user = await User.create({
+        email: normalizedEmail,
+        fullName: "Temporary User",
+        mobile: "0000000000",
+        password: hashedPassword,
+        isVerified: false,
+      });
+    }
+
     // Save OTP to user
     user.emailOtp = hashedOtp;
-    user.emailOtpExpires = new Date(Date.now() + 10 * 60 * 1000);
+    user.emailOtpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
     await user.save();
 
-    // Send email
-    const html = `
-      <p>Your OTP for email verification is: <strong>${otp}</strong></p>
-      <p>Valid for 10 minutes.</p>
-      <p>If you didn't request this, please ignore this email.</p>
-    `;
+    // Send email with better error handling
+    try {
+      const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">Email Verification</h2>
+          <p>Your OTP for email verification is:</p>
+          <div style="background: #f4f4f4; padding: 20px; text-align: center; margin: 20px 0;">
+            <h1 style="margin: 0; color: #c0392b; font-size: 32px;">${otp}</h1>
+          </div>
+          <p><strong>Valid for 10 minutes.</strong></p>
+          <p>If you didn't request this, please ignore this email.</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+          <p style="font-size: 12px; color: #666;">This is an automated message, please do not reply.</p>
+        </div>
+      `;
 
-    await sendEmail(user.email, "Email Verification OTP", html);
+      await sendEmail(user.email, "Email Verification OTP", html);
 
-    return res.status(200).json({
-      message: "OTP sent to email",
-      email: user.email,
-    });
+      return res.status(200).json({
+        success: true,
+        message: "OTP sent to email",
+        email: user.email,
+      });
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError);
+
+      // Clean up the OTP since email failed
+      user.emailOtp = undefined;
+      user.emailOtpExpires = undefined;
+      await user.save();
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send OTP email. Please try again.",
+        error:
+          process.env.NODE_ENV === "development"
+            ? emailError instanceof Error
+              ? emailError.message
+              : String(emailError)
+            : undefined,
+      });
+    }
   } catch (error: any) {
     console.error("sendEmailOtp error:", error);
     res.status(500).json({
-      message: "Failed to send OTP",
+      success: false,
+      message: "Failed to process OTP request",
       error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
+
+// export const sendEmailOtp = async (req: Request, res: Response) => {
+//   try {
+//     const { email } = req.body;
+
+//     // Validate email
+//     const { error } = emailOtpSchema.validate({ email });
+//     if (error) {
+//       return res.status(400).json({
+//         message: error.details[0]?.message || "Invalid email",
+//       });
+//     }
+
+//     // Check if user exists and is verified
+//     const existingUser = await User.findOne({
+//       email: email.toLowerCase(),
+//       isVerified: true,
+//     });
+
+//     if (existingUser) {
+//       return res.status(400).json({
+//         message: "Email already registered and verified",
+//       });
+//     }
+
+//     // Find or create temporary user
+//     let user = await User.findOne({ email: email.toLowerCase() });
+
+//     if (!user) {
+//       // Create temporary user
+//       const tempPassword = `Temp@${Math.random().toString(36).slice(2, 10)}`;
+//       const salt = await bcrypt.genSalt(10);
+//       const hashedPassword = await bcrypt.hash(tempPassword, salt);
+
+//       user = await User.create({
+//         email: email.toLowerCase(),
+//         fullName: "Temporary User",
+//         mobile: "0000000000",
+//         password: hashedPassword,
+//         isVerified: false,
+//         emailOtp: undefined,
+//         emailOtpExpires: undefined,
+//       });
+//     }
+
+//     // Generate OTP
+//     const otp = Math.floor(1000 + Math.random() * 9000).toString();
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedOtp = await bcrypt.hash(otp, salt);
+
+//     // Save OTP to user
+//     user.emailOtp = hashedOtp;
+//     user.emailOtpExpires = new Date(Date.now() + 10 * 60 * 1000);
+//     await user.save();
+
+//     // Send email
+//     const html = `
+//       <p>Your OTP for email verification is: <strong>${otp}</strong></p>
+//       <p>Valid for 10 minutes.</p>
+//       <p>If you didn't request this, please ignore this email.</p>
+//     `;
+
+//     await sendEmail(user.email, "Email Verification OTP", html);
+
+//     return res.status(200).json({
+//       message: "OTP sent to email",
+//       email: user.email,
+//     });
+//   } catch (error: any) {
+//     console.error("sendEmailOtp error:", error);
+//     res.status(500).json({
+//       message: "Failed to send OTP",
+//       error: process.env.NODE_ENV === "development" ? error.message : undefined,
+//     });
+//   }
+// };
 
 export const verifyEmailOtp = async (req: Request, res: Response) => {
   try {
@@ -709,4 +815,3 @@ export const verifyEmailOtpWithUpload = [
 //     res.status(500).json({ message: "Server error" });
 //   }
 // };
-
