@@ -13,20 +13,23 @@ function createTransporter() {
 }
 
 export async function sendOTP(email: string, otp: string): Promise<void> {
-  const transporter = createTransporter();
+  return sendOTPEmail(email, otp);
+}
 
+export async function sendOTPEmail(email: string, otp: string): Promise<void> {
+  const transporter = createTransporter();
   await transporter.sendMail({
-    from: `"${process.env.SMTP_NAME || 'Portfolio Admin'}" <${process.env.SMTP_USER}>`,
+    from: `"FolioForge" <${process.env.SMTP_USER}>`,
     to: email,
-    subject: 'Your Portfolio Admin OTP',
+    subject: 'Your FolioForge login code',
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background: #0f172a; color: #f1f5f9; border-radius: 8px;">
-        <h2 style="color: #10b981; margin-bottom: 16px;">Portfolio Admin Access</h2>
-        <p style="margin-bottom: 16px;">Your one-time password (OTP) for admin login:</p>
-        <div style="background: #1e293b; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
-          <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #10b981;">${otp}</span>
+      <div style="font-family:Inter,sans-serif;max-width:480px;margin:0 auto;background:#0A0D14;color:#ECEEF3;border-radius:16px;padding:40px;border:1px solid rgba(255,255,255,0.1);">
+        <h2 style="font-size:24px;font-weight:700;margin-bottom:8px;">Your login code</h2>
+        <p style="color:#A6ACBE;margin-bottom:32px;">Enter this code to sign in. It expires in 5 minutes.</p>
+        <div style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:24px;text-align:center;margin-bottom:32px;">
+          <span style="font-family:monospace;font-size:40px;font-weight:700;letter-spacing:12px;color:#fff;">${otp}</span>
         </div>
-        <p style="color: #94a3b8; font-size: 14px;">This OTP is valid for 10 minutes. Do not share it with anyone.</p>
+        <p style="color:#6B7185;font-size:13px;">If you did not request this, ignore this email.</p>
       </div>
     `,
   });

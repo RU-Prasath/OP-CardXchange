@@ -1,56 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/db';
+import dbConnect from '@/lib/db';
 import User from '@/lib/models/User';
 import OTP from '@/lib/models/OTP';
-import { sendOTP } from '@/lib/mailer';
+import { generateOTP } from '@/lib/auth';
+import { sendOTPEmail } from '@/lib/mailer';
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const { email } = await request.json();
+    await dbConnect();
+    const { email } = await req.json();
 
-    if (!email || typeof email !== 'string') {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ success: false, error: 'Invalid email' }, { status: 400 });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
     const superAdminEmail = process.env.SUPER_ADMIN_EMAIL?.toLowerCase();
 
-    await connectDB();
-
-    // Check if user exists or is super admin
     const user = await User.findOne({ email: normalizedEmail });
+
     if (!user && normalizedEmail !== superAdminEmail) {
-      return NextResponse.json({ error: 'Email not authorized' }, { status: 403 });
+      return NextResponse.json({ success: false, error: 'No account found. Contact your administrator.' }, { status: 404 });
     }
 
-    // Invalidate any existing unused OTPs for this email
-    await OTP.updateMany(
-      { email: normalizedEmail, used: false },
-      { $set: { used: true } }
-    );
+    if (user && !user.isActive) {
+      return NextResponse.json({ success: false, error: 'Your account is inactive. Contact admin.' }, { status: 403 });
+    }
 
-    // Generate 6-digit OTP
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    await OTP.updateMany({ email: normalizedEmail, used: false }, { $set: { used: true } });
 
-    await OTP.create({ email: normalizedEmail, code, expiresAt, used: false });
+    const code = generateOTP();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-    // Send email — fall back to console in dev if SMTP fails
+    await OTP.create({ email: normalizedEmail, code, expiresAt });
+
     try {
-      await sendOTP(normalizedEmail, code);
-    } catch (mailErr) {
+      await sendOTPEmail(normalizedEmail, code);
+    } catch {
       if (process.env.NODE_ENV === 'development') {
-        console.log('\n============================================');
-        console.log(`  DEV MODE — OTP for ${normalizedEmail}: ${code}`);
-        console.log('============================================\n');
+        console.log(`\n[DEV OTP] ${normalizedEmail}: ${code}\n`);
       } else {
-        throw mailErr;
+        throw new Error('Email delivery failed');
       }
     }
 
     return NextResponse.json({ success: true, message: 'OTP sent to your email' });
-  } catch (error) {
-    console.error('Send OTP error:', error);
-    return NextResponse.json({ error: 'Failed to send OTP' }, { status: 500 });
+  } catch (err) {
+    console.error('send-otp error:', err);
+    return NextResponse.json({ success: false, error: 'Failed to send OTP' }, { status: 500 });
   }
 }

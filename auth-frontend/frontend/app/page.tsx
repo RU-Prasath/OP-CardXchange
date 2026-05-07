@@ -1,61 +1,36 @@
-import type { Metadata } from 'next';
-import { connectDB } from '@/lib/db';
-import Content from '@/lib/models/Content';
-import User from '@/lib/models/User';
-import ClientPortfolio from './ClientPortfolio';
-import { buildColorVars } from '@/lib/buildColorVars';
+import LandingNav from '@/components/landing/LandingNav';
+import Hero from '@/components/landing/Hero';
+import Stats from '@/components/landing/Stats';
+import TemplateShowcase from '@/components/landing/TemplateShowcase';
+import Features from '@/components/landing/Features';
+import HowItWorks from '@/components/landing/HowItWorks';
+import Pricing from '@/components/landing/Pricing';
+import Testimonials from '@/components/landing/Testimonials';
+import FAQ from '@/components/landing/FAQ';
+import CTA from '@/components/landing/CTA';
+import Footer from '@/components/landing/Footer';
 
-export async function generateMetadata(): Promise<Metadata> {
-  try {
-    await connectDB();
-    const hero = await Content.findOne({ section: 'hero', userEmail: '' });
-    const data = hero?.data as { name?: string; title?: string; subtitle?: string } | undefined;
-    const name = data?.name || 'Portfolio';
-    const role = data?.title || '';
-    return {
-      title: role ? `${name} — ${role}` : name,
-      description: data?.subtitle || '',
-    };
-  } catch {
-    return { title: 'Portfolio' };
-  }
-}
-
-async function getAllContent() {
-  try {
-    await connectDB();
-    const sections = ['hero', 'about', 'skills', 'experience', 'projects', 'contact', 'colors'];
-    const contents = await Content.find({ section: { $in: sections }, userEmail: '' });
-
-    const data: Record<string, Record<string, unknown>> = {};
-    contents.forEach((c) => {
-      data[c.section] = c.data as Record<string, unknown>;
-    });
-    return data;
-  } catch (error) {
-    console.error('Failed to fetch content:', error);
-    return {};
-  }
-}
-
-export const revalidate = 0;
-
-export default async function Home() {
-  const content = await getAllContent();
-  const colorCSS = buildColorVars((content.colors ?? {}) as Parameters<typeof buildColorVars>[0]);
-
-  await connectDB();
-  const superAdmin = await User.findOne({ isSuperAdmin: true });
-  const createdYear = superAdmin?.createdAt
-    ? new Date(superAdmin.createdAt).getFullYear()
-    : new Date().getFullYear();
-
+export default function LandingPage() {
   return (
-    <>
-      {colorCSS && (
-        <style dangerouslySetInnerHTML={{ __html: colorCSS }} />
-      )}
-      <ClientPortfolio content={content} createdYear={createdYear} />
-    </>
+    <main className="relative">
+      {/* Grid backdrop */}
+      <div className="fixed inset-0 pointer-events-none z-0"
+        style={{
+          backgroundImage:'linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)',
+          backgroundSize:'56px 56px',
+          maskImage:'radial-gradient(ellipse 80% 60% at 50% 0%,#000 30%,transparent 80%)',
+        }}/>
+      <LandingNav />
+      <Hero />
+      <Stats />
+      <TemplateShowcase />
+      <Features />
+      <HowItWorks />
+      <Pricing />
+      <Testimonials />
+      <FAQ />
+      <CTA />
+      <Footer />
+    </main>
   );
 }

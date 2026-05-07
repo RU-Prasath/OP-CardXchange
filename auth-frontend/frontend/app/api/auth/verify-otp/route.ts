@@ -1,24 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/db';
+import dbConnect from '@/lib/db';
 import User from '@/lib/models/User';
 import OTP from '@/lib/models/OTP';
-import { signJWT } from '@/lib/auth';
+import { signToken, COOKIE_NAME } from '@/lib/auth';
 
-const ALL_SECTIONS = ['hero', 'about', 'projects', 'experience', 'skills', 'colors', 'contact'];
+function emailToUsername(email: string): string {
+  return email.split('@')[0].toLowerCase().replace(/[^a-z0-9-]/g, '-').slice(0, 30);
+}
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const { email, otp } = await request.json();
+    await dbConnect();
+    const { email, otp } = await req.json();
 
     if (!email || !otp) {
-      return NextResponse.json({ error: 'Email and OTP are required' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Email and OTP are required' }, { status: 400 });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    await connectDB();
-
-    // Find OTP
     const otpDoc = await OTP.findOne({
       email: normalizedEmail,
       code: otp.toString(),
@@ -27,65 +27,77 @@ export async function POST(request: NextRequest) {
     });
 
     if (!otpDoc) {
-      return NextResponse.json({ error: 'Invalid or expired OTP' }, { status: 401 });
+      return NextResponse.json({ success: false, error: 'Invalid or expired OTP' }, { status: 401 });
     }
 
-    // Mark OTP as used
     otpDoc.used = true;
     await otpDoc.save();
 
     const superAdminEmail = process.env.SUPER_ADMIN_EMAIL?.toLowerCase();
     const isSuperAdmin = normalizedEmail === superAdminEmail;
 
-    // Find or create user
     let user = await User.findOne({ email: normalizedEmail });
 
-    if (!user) {
-      // Create super admin if it's the super admin email
+    if (!user && isSuperAdmin) {
       user = await User.create({
         email: normalizedEmail,
-        isSuperAdmin,
-        permissions: {
-          visibleScreens: isSuperAdmin ? ALL_SECTIONS : [],
-          editableSections: isSuperAdmin ? ALL_SECTIONS : [],
-        },
-        createdAt: new Date(),
+        username: 'superadmin',
+        role: 'superadmin',
+        isActive: true,
       });
     }
 
-    // Update lastLogin
-    user.lastLogin = new Date();
-    if (isSuperAdmin && !user.isSuperAdmin) {
-      user.isSuperAdmin = true;
-      user.permissions.visibleScreens = ALL_SECTIONS;
-      user.permissions.editableSections = ALL_SECTIONS;
+    if (!user) {
+      return NextResponse.json({ success: false, error: 'Account not found' }, { status: 404 });
     }
+
+    if (!user.isActive) {
+      return NextResponse.json({ success: false, error: 'Account inactive' }, { status: 403 });
+    }
+
+    // Backfill username if missing (users created with old schema)
+    if (!user.username) {
+      const base = isSuperAdmin ? 'superadmin' : emailToUsername(normalizedEmail);
+      // ensure uniqueness
+      let candidate = base;
+      let counter = 1;
+      while (await User.findOne({ username: candidate, _id: { $ne: user._id } })) {
+        candidate = `${base}${counter++}`;
+      }
+      user.username = candidate;
+    }
+
+    // Backfill role if old schema used isSuperAdmin boolean
+    if (!user.role || (user as unknown as Record<string, unknown>).isSuperAdmin) {
+      user.role = isSuperAdmin ? 'superadmin' : 'user';
+    }
+
+    user.lastLogin = new Date();
     await user.save();
 
-    const payload = {
+    const token = await signToken({
+      userId: user._id.toString(),
       email: user.email,
-      isSuperAdmin: user.isSuperAdmin,
-      permissions: user.permissions,
-    };
-
-    const token = signJWT(payload);
+      role: user.role,
+      username: user.username,
+    });
 
     const response = NextResponse.json({
       success: true,
-      user: payload,
+      user: { email: user.email, role: user.role, username: user.username },
     });
 
-    response.cookies.set('portfolio_session', token, {
+    response.cookies.set(COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      maxAge: 7 * 24 * 60 * 60,
       path: '/',
     });
 
     return response;
-  } catch (error) {
-    console.error('Verify OTP error:', error);
-    return NextResponse.json({ error: 'Verification failed' }, { status: 500 });
+  } catch (err) {
+    console.error('verify-otp error:', err);
+    return NextResponse.json({ success: false, error: 'Verification failed' }, { status: 500 });
   }
 }

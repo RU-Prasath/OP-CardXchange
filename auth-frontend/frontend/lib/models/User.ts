@@ -1,34 +1,25 @@
-import mongoose, { Schema, Document, Model } from 'mongoose';
+import mongoose, { Schema, Document, Model, Types } from 'mongoose';
 
 export interface IUser extends Document {
   email: string;
-  isSuperAdmin: boolean;
-  permissions: {
-    visibleScreens: string[];
-    editableSections: string[];
-  };
+  username: string;
+  role: 'superadmin' | 'user';
+  allocatedTemplate: Types.ObjectId | null;
+  isActive: boolean;
   createdAt: Date;
-  lastLogin: Date;
+  lastLogin: Date | null;
 }
 
 const UserSchema = new Schema<IUser>(
   {
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    isSuperAdmin: { type: Boolean, default: false },
-    permissions: {
-      visibleScreens: {
-        type: [String],
-        default: ['hero', 'about', 'projects', 'experience', 'skills', 'colors', 'contact'],
-      },
-      editableSections: {
-        type: [String],
-        default: [],
-      },
-    },
-    createdAt: { type: Date, default: Date.now },
-    lastLogin: { type: Date },
+    username: { type: String, required: false, unique: true, sparse: true, lowercase: true, trim: true },
+    role: { type: String, enum: ['superadmin', 'user'], default: 'user' },
+    allocatedTemplate: { type: Schema.Types.ObjectId, ref: 'Template', default: null },
+    isActive: { type: Boolean, default: true },
+    lastLogin: { type: Date, default: null },
   },
-  { timestamps: false }
+  { timestamps: true }
 );
 
 const User: Model<IUser> =

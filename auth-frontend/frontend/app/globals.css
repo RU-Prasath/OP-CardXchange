@@ -1,100 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --bg: oklch(0.985 0.004 90);
-  --bg-elev: oklch(0.97 0.005 90);
-  --bg-card: oklch(1 0 0);
-  --fg: oklch(0.18 0.01 90);
-  --fg-muted: oklch(0.45 0.008 90);
-  --fg-faint: oklch(0.62 0.006 90);
-  --line: oklch(0.9 0.005 90);
-  --line-strong: oklch(0.82 0.006 90);
-  --accent: oklch(0.62 0.16 145);
-  --accent-soft: oklch(0.94 0.04 145);
-  --accent-fg: oklch(0.22 0.06 145);
-  --shadow-sm: 0 1px 2px oklch(0.18 0.01 90 / 0.04), 0 1px 1px oklch(0.18 0.01 90 / 0.03);
-  --shadow-md: 0 8px 24px -8px oklch(0.18 0.01 90 / 0.08), 0 2px 6px -2px oklch(0.18 0.01 90 / 0.05);
-  --shadow-lg: 0 24px 48px -16px oklch(0.18 0.01 90 / 0.12), 0 4px 12px -4px oklch(0.18 0.01 90 / 0.06);
-  --grain: 0;
-}
-
-[data-theme="dark"] {
-  --bg: oklch(0.16 0.008 260);
-  --bg-elev: oklch(0.2 0.01 260);
-  --bg-card: oklch(0.22 0.012 260);
-  --fg: oklch(0.96 0.004 90);
-  --fg-muted: oklch(0.7 0.01 260);
-  --fg-faint: oklch(0.52 0.012 260);
-  --line: oklch(0.28 0.012 260);
-  --line-strong: oklch(0.36 0.014 260);
-  --accent: oklch(0.78 0.18 145);
-  --accent-soft: oklch(0.28 0.06 145);
-  --accent-fg: oklch(0.92 0.14 145);
-  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.3);
-  --shadow-md: 0 12px 32px -10px oklch(0 0 0 / 0.5), 0 2px 6px -2px oklch(0 0 0 / 0.3);
-  --shadow-lg: 0 32px 64px -20px oklch(0 0 0 / 0.6), 0 6px 16px -6px oklch(0 0 0 / 0.4);
-  --grain: 0.04;
+  --bg: #0A0D14;
+  --bg-2: #0E121C;
+  --panel: #11151F;
+  --panel-2: #161B27;
+  --line: rgba(255,255,255,0.07);
+  --line-strong: rgba(255,255,255,0.12);
+  --text: #ECEEF3;
+  --text-2: #A6ACBE;
+  --text-3: #6B7185;
+  --cyan: #22D3EE;
+  --indigo: #6366F1;
+  --violet: #A855F7;
+  --pink: #EC4899;
+  --green: #34D399;
+  --amber: #FBBF24;
+  --grad: linear-gradient(135deg, #22D3EE 0%, #6366F1 50%, #A855F7 100%);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
+
 body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   background: var(--bg);
-  color: var(--fg);
-  font-size: 16px;
-  line-height: 1.5;
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
-  transition: background 0.3s ease, color 0.3s ease;
   overflow-x: hidden;
-  position: relative;
-}
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(#n)' opacity='1'/></svg>");
-  opacity: var(--grain);
-  z-index: 100;
-  mix-blend-mode: overlay;
-}
-.mono { font-family: 'Geist Mono', ui-monospace, monospace; }
-a { color: inherit; text-decoration: none; }
-button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
-
-/* Reveal animations */
-.reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.7, 0.3, 1); }
-.reveal.in { opacity: 1; transform: translateY(0); }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-@keyframes spin { to { transform: rotate(360deg); } }
-.spin { animation: spin 1s linear infinite; }
-
-/* ── Responsive: About ── */
-@media (max-width: 768px) {
-  .about-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+  letter-spacing: -0.005em;
 }
 
-/* ── Responsive: Skills ── */
-@media (max-width: 900px) {
-  .skills-grid .skill-card { grid-column: span 6 !important; }
-}
-@media (max-width: 600px) {
-  .skills-grid { grid-template-columns: 1fr !important; }
-  .skills-grid .skill-card { grid-column: span 1 !important; }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+
+.grad-text {
+  background: linear-gradient(135deg, #22D3EE 0%, #6366F1 50%, #A855F7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* ── Responsive: Experience ── */
-@media (max-width: 700px) {
-  .exp-item { grid-template-columns: 1fr !important; gap: 16px !important; }
-  .exp-bullets { grid-template-columns: 1fr !important; }
+@keyframes blink { 50% { opacity: 0; } }
+.blink { animation: blink 1s infinite; }
+
+@layer base {
+  a { color: inherit; text-decoration: none; }
 }
 
-/* ── Responsive: Hero stats ── */
-@media (max-width: 640px) {
-  .hero-stats { grid-template-columns: repeat(2, 1fr) !important; }
+@layer components {
+  .btn-grad {
+    @apply relative inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[10px] font-semibold text-sm text-[#0A0D14] transition-all;
+    background: linear-gradient(135deg, #22D3EE 0%, #6366F1 50%, #A855F7 100%);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.1) inset, 0 8px 24px -8px rgba(99,102,241,0.6);
+  }
+  .btn-grad:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.15) inset, 0 12px 32px -8px rgba(99,102,241,0.8);
+  }
+  .btn-grad::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255,255,255,0.3), transparent 50%);
+    pointer-events: none;
+  }
+  .btn-secondary-ff {
+    @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] font-semibold text-sm text-white border border-white/[0.12] bg-white/[0.04] transition-all;
+  }
+  .btn-secondary-ff:hover { @apply bg-white/[0.08] border-white/[0.18]; }
+  .card-panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+  }
+  .eyebrow-tag {
+    @apply inline-flex items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-white/60 px-3 py-1.5 rounded-full border border-white/[0.07] bg-white/[0.02];
+  }
 }

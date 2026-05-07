@@ -1,13 +1,8 @@
 import { NextResponse } from 'next/server';
-
-export async function GET() {
-  const response = NextResponse.json({ success: true });
-  response.cookies.delete('portfolio_session');
-  return response;
-}
+import { COOKIE_NAME } from '@/lib/auth';
 
 export async function POST() {
   const response = NextResponse.json({ success: true });
-  response.cookies.delete('portfolio_session');
+  response.cookies.delete(COOKIE_NAME);
   return response;
 }

@@ -22,6 +22,11 @@ if (!global.mongoose) {
   global.mongoose = cached;
 }
 
+// Default export alias for new code
+export default async function dbConnect(): Promise<typeof mongoose> {
+  return connectDB();
+}
+
 export async function connectDB(): Promise<typeof mongoose> {
   if (cached.conn) {
     return cached.conn;

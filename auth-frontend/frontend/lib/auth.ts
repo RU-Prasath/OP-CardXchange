@@ -1,44 +1,38 @@
-import jwt from 'jsonwebtoken';
-import { NextRequest } from 'next/server';
+import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
+import type { JWTPayload } from '@/types';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret';
+const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'folioforge-secret-key-change-in-prod');
+export const COOKIE_NAME = 'ff_token';
 
-export interface JWTPayload {
-  email: string;
-  isSuperAdmin: boolean;
-  permissions: {
-    visibleScreens: string[];
-    editableSections: string[];
-  };
+export async function signToken(payload: JWTPayload): Promise<string> {
+  return new SignJWT({ ...payload })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setExpirationTime('7d')
+    .setIssuedAt()
+    .sign(SECRET);
 }
 
-export function signJWT(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
-}
-
-export function verifyJWT(token: string): JWTPayload | null {
+export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const { payload } = await jwtVerify(token, SECRET);
+    return payload as unknown as JWTPayload;
   } catch {
     return null;
   }
 }
 
-export function getSession(request?: NextRequest): JWTPayload | null {
-  let token: string | undefined;
-
-  if (request) {
-    token = request.cookies.get('portfolio_session')?.value;
-  } else {
-    try {
-      const cookieStore = cookies();
-      token = cookieStore.get('portfolio_session')?.value;
-    } catch {
-      return null;
-    }
+export async function getSession(): Promise<JWTPayload | null> {
+  try {
+    const cookieStore = cookies();
+    const token = cookieStore.get(COOKIE_NAME)?.value;
+    if (!token) return null;
+    return verifyToken(token);
+  } catch {
+    return null;
   }
+}
 
-  if (!token) return null;
-  return verifyJWT(token);
+export function generateOTP(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
 }
