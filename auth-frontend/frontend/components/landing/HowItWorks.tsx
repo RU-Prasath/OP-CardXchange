@@ -40,7 +40,7 @@ const steps = [
     desc: 'Share your portfolio URL with the world.',
     visual: (
       <div className="flex flex-col items-center gap-2.5">
-        <div className="font-mono text-xs px-3 py-2 rounded-lg bg-black/40 border border-white/[0.07] text-white/40 w-full text-center">
+        <div className="font-mono text-xs px-3 py-2 rounded-lg bg-black/40 border border-white/[0.07] text-white/40 w-full text-center truncate overflow-hidden">
           folioforge.com/portfolio/taylor
         </div>
         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-mono">
@@ -61,7 +61,7 @@ export default function HowItWorks() {
           <div className="eyebrow-tag mb-5 inline-flex"><span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22D3EE]"/>How it works</div>
           <h2 className="section-heading max-w-2xl mx-auto">Three steps from blank<br/>to live portfolio.</h2>
         </div>
-        <div className="grid md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {steps.map(s => (
             <div key={s.num} className="card-panel p-7">
               <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm text-[#0A0D14] mb-5 shadow-[0_0_20px_-4px_rgba(99,102,241,0.6)]" style={{background:'linear-gradient(135deg,#22D3EE,#6366F1,#A855F7)'}}>{s.num}</div>

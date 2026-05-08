@@ -1,9 +1,14 @@
 {
   "pages": {
-    "/page": [
+    "/super-admin/users/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+      "static/chunks/app/super-admin/users/page.js"
+    ],
+    "/super-admin/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/super-admin/layout.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -11,50 +16,100 @@
       "static/css/css-app_globals_css.css",
       "static/chunks/app/layout.js"
     ],
-    "/admin/(dashboard)/permissions/page": [
+    "/not-found": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/(dashboard)/permissions/page.js"
+      "static/chunks/app/not-found.js"
     ],
-    "/admin/(dashboard)/layout": [
+    "/portfolio/[username]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/(dashboard)/layout.js"
+      "static/chunks/app/portfolio/[username]/page.js"
     ],
-    "/p/[slug]/page": [
+    "/portfolio/[username]/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/p/[slug]/page.js"
+      "static/chunks/app/portfolio/[username]/layout.js"
     ],
-    "/admin/login/page": [
+    "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/login/page.js"
+      "static/chunks/app/page.js"
     ],
-    "/admin/login/layout": [
+    "/dashboard/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/login/layout.js"
+      "static/chunks/app/dashboard/page.js"
     ],
-    "/admin/(dashboard)/page": [
+    "/dashboard/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/(dashboard)/page.js"
+      "static/chunks/app/dashboard/layout.js"
     ],
-    "/admin/(dashboard)/hero/page": [
+    "/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/(dashboard)/hero/page.js"
+      "static/chunks/app/login/page.js"
     ],
-    "/admin/(dashboard)/projects/page": [
+    "/dashboard/editor/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/(dashboard)/projects/page.js"
+      "static/chunks/app/dashboard/editor/page.js"
     ],
-    "/admin/(dashboard)/experience/page": [
+    "/dashboard/editor/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/(dashboard)/experience/page.js"
+      "static/chunks/app/dashboard/editor/layout.js"
+    ],
+    "/dashboard/editor/[section]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/editor/[section]/page.js"
+    ],
+    "/super-admin/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/super-admin/page.js"
+    ],
+    "/super-admin/templates/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/super-admin/templates/page.js"
+    ],
+    "/super-admin/pricing/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/super-admin/pricing/page.js"
+    ],
+    "/super-admin/testimonials/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/super-admin/testimonials/page.js"
+    ],
+    "/super-admin/settings/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/super-admin/settings/page.js"
+    ],
+    "/preview/[slug]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/preview/[slug]/page.js"
+    ],
+    "/templates/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/templates/page.js"
+    ],
+    "/dashboard/profile/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/profile/page.js"
+    ],
+    "/dashboard/settings/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/settings/page.js"
     ]
   }
 }

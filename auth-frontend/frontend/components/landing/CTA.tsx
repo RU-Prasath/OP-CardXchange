@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import SmartCTAButton from './SmartCTAButton';
 
 export default function CTA() {
   return (
@@ -16,8 +16,7 @@ export default function CTA() {
             </h2>
             <p className="text-white/50 text-lg max-w-lg mx-auto mb-8">It takes about 12 minutes. We&apos;ll be honest if it takes longer.</p>
             <div className="flex gap-3 justify-center flex-wrap mb-8">
-              <Link href="/login" className="btn-grad text-base px-6 py-3">Start building free →</Link>
-              <Link href="#" className="btn-secondary-ff text-base px-6 py-3">📖 Read the docs</Link>
+              <SmartCTAButton label="Start building free →" className="btn-grad text-base px-6 py-3"/>
             </div>
             <div className="flex gap-7 justify-center flex-wrap text-sm text-white/30">
               <span className="flex items-center gap-1.5"><span className="text-emerald-400">✓</span> Free forever plan</span>

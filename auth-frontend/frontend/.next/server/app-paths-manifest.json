@@ -1,9 +1,18 @@
 {
+  "/preview/[slug]/page": "app/preview/[slug]/page.js",
   "/page": "app/page.js",
-  "/api/admin/me/route": "app/api/admin/me/route.js",
-  "/api/admin/content/[section]/route": "app/api/admin/content/[section]/route.js",
-  "/admin/login/page": "app/admin/login/page.js",
-  "/admin/(dashboard)/hero/page": "app/admin/(dashboard)/hero/page.js",
-  "/admin/(dashboard)/projects/page": "app/admin/(dashboard)/projects/page.js",
-  "/admin/(dashboard)/experience/page": "app/admin/(dashboard)/experience/page.js"
+  "/api/auth/me/route": "app/api/auth/me/route.js",
+  "/api/landing/stats/route": "app/api/landing/stats/route.js",
+  "/api/landing/templates/route": "app/api/landing/templates/route.js",
+  "/api/landing/settings/route": "app/api/landing/settings/route.js",
+  "/api/landing/pricing/route": "app/api/landing/pricing/route.js",
+  "/api/landing/testimonials/route": "app/api/landing/testimonials/route.js",
+  "/api/portfolio/template-config/route": "app/api/portfolio/template-config/route.js",
+  "/api/portfolio/content/route": "app/api/portfolio/content/route.js",
+  "/portfolio/[username]/page": "app/portfolio/[username]/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/super-admin/users/page": "app/super-admin/users/page.js",
+  "/dashboard/settings/page": "app/dashboard/settings/page.js",
+  "/dashboard/editor/page": "app/dashboard/editor/page.js",
+  "/dashboard/editor/[section]/page": "app/dashboard/editor/[section]/page.js"
 }

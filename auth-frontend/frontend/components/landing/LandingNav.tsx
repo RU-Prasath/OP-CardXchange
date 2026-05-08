@@ -14,8 +14,8 @@ export default function LandingNav() {
   const dashHref = auth?.role === 'superadmin' ? '/super-admin' : '/dashboard';
 
   return (
-    <div className="sticky top-0 z-50 py-4 container mx-auto px-6">
-      <nav className="flex items-center justify-between px-5 py-2.5 rounded-2xl nav-glass shadow-[0_1px_0_rgba(255,255,255,0.04)_inset,0_8px_24px_-12px_rgba(0,0,0,0.6)] bg-[#0A0D14]/80 backdrop-blur-xl">
+    <div className="sticky top-0 left-0 right-0 z-50 px-4 md:px-8 py-3">
+      <nav className="flex items-center justify-between px-4 md:px-6 py-2.5 mx-auto w-full max-w-[1440px] rounded-2xl nav-glass bg-[#0A0D14]/80 backdrop-blur-xl shadow-[0_1px_0_rgba(255,255,255,0.04)_inset,0_8px_32px_-8px_rgba(0,0,0,0.7)] border border-white/[0.07]">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2.5 font-bold tracking-tight text-base">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center font-mono font-bold text-[13px] text-[#0A0D14] shadow-[0_0_24px_-4px_rgba(99,102,241,0.6)] relative overflow-hidden" style={{background:'linear-gradient(135deg,#22D3EE,#6366F1,#A855F7)'}}>
@@ -45,22 +45,22 @@ export default function LandingNav() {
         </div>
 
         {/* Mobile toggle */}
-        <button className="md:hidden text-white/60 p-2" onClick={() => setOpen(!open)}>
+        <button className="md:hidden text-white/60 p-2" onClick={() => setOpen(!open)} aria-label="Menu">
           {open ? <X size={20}/> : <Menu size={20}/>}
         </button>
       </nav>
 
       {open && (
-        <div className="md:hidden mt-2 rounded-2xl card-panel p-4 flex flex-col gap-2">
+        <div className="md:hidden absolute left-0 right-0 mt-0 rounded-b-2xl card-panel p-4 flex flex-col gap-2 shadow-2xl bg-[#0A0D14]/95 backdrop-blur-xl border-t-0 border border-white/[0.08] z-50">
           {['Templates','Features','Pricing','FAQ'].map(l => (
             <Link key={l} href={`#${l.toLowerCase()}`} className="text-sm px-3 py-2 text-white/60 hover:text-white rounded-lg" onClick={() => setOpen(false)}>{l}</Link>
           ))}
           {auth?.authenticated ? (
-            <Link href={dashHref} className="btn-grad text-center mt-2 flex items-center justify-center gap-1.5" onClick={() => setOpen(false)}>
+            <Link href={dashHref} className="btn-grad text-center mt-2 flex items-center justify-center gap-1.5 px-4 py-2.5" onClick={() => setOpen(false)}>
               <LayoutDashboard size={13}/> Dashboard
             </Link>
           ) : (
-            <Link href="/login" className="btn-grad text-center mt-2">Sign in</Link>
+            <Link href="/login" className="btn-grad text-center mt-2 px-4 py-2.5" onClick={() => setOpen(false)}>Sign in</Link>
           )}
         </div>
       )}

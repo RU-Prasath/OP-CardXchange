@@ -59,6 +59,10 @@ const PROJECT_VISUALS = [
 export default function MarenTemplate({ content, username }: Props) {
   const [dark, setDark] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showAllExp, setShowAllExp] = useState(false);
+  const [showAllProj, setShowAllProj] = useState(false);
+  const EXP_LIMIT = 3;
+  const PROJ_LIMIT = 4;
   const c = content;
 
   // Content-driven dark mode defaults (user-editable)
@@ -139,12 +143,16 @@ export default function MarenTemplate({ content, username }: Props) {
       .maren-exp-item { grid-template-columns: 1fr !important; gap: 16px !important; }
       .maren-exp-bullets { grid-template-columns: 1fr !important; }
       .maren-projects-grid { grid-template-columns: 1fr !important; }
-      .maren-contact-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
-      .maren-contact-wrap { padding: 32px !important; }
+      .maren-contact-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+      .maren-contact-wrap { padding: 28px 20px !important; }
       .maren-hero-stats { grid-template-columns: repeat(2,1fr) !important; }
+      .maren-section-subtitle { display: none !important; }
+      .maren-project-tag { white-space: normal !important; word-break: break-word !important; }
+      .maren-contact-value { font-size: 13px !important; word-break: break-all !important; white-space: normal !important; overflow: visible !important; text-overflow: clip !important; }
     }
     @media (max-width: 480px) {
       .maren-skills-grid { grid-template-columns: 1fr !important; }
+      .maren-contact-wrap { padding: 24px 16px !important; border-radius: 16px !important; }
     }
   `;
 
@@ -167,51 +175,64 @@ export default function MarenTemplate({ content, username }: Props) {
   const initial = name.charAt(0).toUpperCase();
 
   // Skills
-  const skillCategories = [
-    { title: 'Languages', key: 'skillLang' },
-    { title: 'Frameworks & UI', key: 'skillFramework' },
-    { title: 'Backend & Data', key: 'skillBackend' },
-    { title: 'Tooling', key: 'skillTooling' },
-    { title: 'Platform & Ops', key: 'skillPlatform' },
-    { title: 'Craft', key: 'skillCraft' },
-  ];
+  // Skills — read from JSON first, fall back to old fields
+  function parseJ<T>(key: string, fallback: T[]): T[] {
+    if (!c[key]) return fallback;
+    try { return JSON.parse(c[key]); } catch { return fallback; }
+  }
+  const skillsJsonArr = parseJ<{ category: string; items: string }>('skillsJson', []);
+  const skillCategories = skillsJsonArr.length > 0
+    ? skillsJsonArr.map(s => ({ title: s.category, items: pl(s.items) }))
+    : [
+        { title: 'Languages',       items: pl(c.skillLang) },
+        { title: 'Frameworks & UI', items: pl(c.skillFramework) },
+        { title: 'Backend & Data',  items: pl(c.skillBackend) },
+        { title: 'Tooling',         items: pl(c.skillTooling) },
+        { title: 'Platform & Ops',  items: pl(c.skillPlatform) },
+        { title: 'Craft',           items: pl(c.skillCraft) },
+      ].filter(s => s.items.length > 0);
 
-  // Experience
-  const experiences = [
-    {
-      period: c.exp1Period,
-      nowLabel: c.exp1Now,
-      durationLabel: c.exp1Duration,
-      role: c.exp1Role,
-      company: c.exp1Company,
-      summary: c.exp1Summary,
-      bullets: lines(c.exp1Bullets),
-      stack: pl(c.exp1Stack),
-      isCurrent: !!c.exp1Now,
-    },
-    {
-      period: c.exp2Period,
-      nowLabel: c.exp2Now,
-      durationLabel: c.exp2Duration,
-      role: c.exp2Role,
-      company: c.exp2Company,
-      summary: c.exp2Summary,
-      bullets: lines(c.exp2Bullets),
-      stack: pl(c.exp2Stack),
-      isCurrent: false,
-    },
-  ].filter((e) => e.role || e.company);
+  // Experience — read from JSON first, fall back to old fields
+  const expJsonArr = parseJ<{ period: string; nowLabel: string; duration: string; role: string; company: string; summary: string; bullets: string; stack: string; isCurrent: boolean }>('expJson', []);
+  const experiences = expJsonArr.length > 0
+    ? expJsonArr.map(e => ({
+        period: e.period, nowLabel: e.nowLabel, durationLabel: e.duration,
+        role: e.role, company: e.company, summary: e.summary,
+        bullets: lines(e.bullets), stack: pl(e.stack),
+        isCurrent: !!e.isCurrent,
+      }))
+    : [
+        {
+          period: c.exp1Period, nowLabel: c.exp1Now, durationLabel: c.exp1Duration,
+          role: c.exp1Role, company: c.exp1Company, summary: c.exp1Summary,
+          bullets: lines(c.exp1Bullets), stack: pl(c.exp1Stack),
+          isCurrent: !!c.exp1Now,
+        },
+        {
+          period: c.exp2Period, nowLabel: c.exp2Now, durationLabel: c.exp2Duration,
+          role: c.exp2Role, company: c.exp2Company, summary: c.exp2Summary,
+          bullets: lines(c.exp2Bullets), stack: pl(c.exp2Stack),
+          isCurrent: false,
+        },
+      ].filter((e) => e.role || e.company);
 
-  // Projects
-  const projects = [1, 2, 3, 4].map((i) => ({
-    title: c[`proj${i}Title`],
-    tag: c[`proj${i}Tag`],
-    desc: c[`proj${i}Desc`],
-    stack: pl(c[`proj${i}Stack`]),
-    liveUrl: c[`proj${i}LiveUrl`],
-    githubUrl: c[`proj${i}GithubUrl`],
-    visual: PROJECT_VISUALS[(i - 1) % PROJECT_VISUALS.length],
-  })).filter((p) => p.title);
+  // Projects — read from JSON first, fall back to old fields
+  const projJsonArr = parseJ<{ title: string; tag: string; desc: string; stack: string; liveUrl: string; githubUrl: string }>('projJson', []);
+  const projects = projJsonArr.length > 0
+    ? projJsonArr.map((p, i) => ({
+        title: p.title, tag: p.tag, desc: p.desc,
+        stack: pl(p.stack), liveUrl: p.liveUrl, githubUrl: p.githubUrl,
+        visual: PROJECT_VISUALS[i % PROJECT_VISUALS.length],
+      })).filter(p => p.title)
+    : [1, 2, 3, 4].map((i) => ({
+        title: c[`proj${i}Title`],
+        tag: c[`proj${i}Tag`],
+        desc: c[`proj${i}Desc`],
+        stack: pl(c[`proj${i}Stack`]),
+        liveUrl: c[`proj${i}LiveUrl`],
+        githubUrl: c[`proj${i}GithubUrl`],
+        visual: PROJECT_VISUALS[(i - 1) % PROJECT_VISUALS.length],
+      })).filter((p) => p.title);
 
   const monoFont = "'Geist Mono', ui-monospace, monospace";
 
@@ -220,6 +241,7 @@ export default function MarenTemplate({ content, username }: Props) {
     alignItems: 'center',
     gap: '16px',
     marginBottom: '12px',
+    flexWrap: 'wrap',
   };
 
   const sectionNumStyle: React.CSSProperties = {
@@ -573,6 +595,24 @@ export default function MarenTemplate({ content, username }: Props) {
             >
               Get in touch
             </a>
+            {c.resumeUrl && (
+              <a
+                href={c.resumeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  padding: '12px 28px', borderRadius: '10px', background: 'var(--bg-elev)',
+                  color: 'var(--fg)', fontWeight: 500, fontSize: '15px',
+                  border: '1px solid var(--line)', textDecoration: 'none',
+                  display: 'inline-flex', alignItems: 'center', gap: '8px',
+                  transition: 'border-color 0.2s',
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent)'; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--line)'; }}
+              >
+                📄 Resume (PDF)
+              </a>
+            )}
           </div>
 
           {/* Stats */}
@@ -623,10 +663,10 @@ export default function MarenTemplate({ content, username }: Props) {
       <section id="about" style={{ padding: '120px 0' }}>
         <div style={{ maxWidth: '1120px', margin: '0 auto', padding: '0 32px' }}>
           <div style={sectionHeaderStyle}>
-            <span style={sectionNumStyle}>01 / About</span>
+            <span style={sectionNumStyle}>{c.aboutSectionLabel || '01 / About'}</span>
             <div style={dividerStyle} />
           </div>
-          <h2 style={sectionTitleStyle}>A short version of a longer story.</h2>
+          <h2 style={sectionTitleStyle}>{c.aboutHeading || 'A short version of a longer story.'}</h2>
 
           <div
             className="maren-about-grid"
@@ -737,18 +777,18 @@ export default function MarenTemplate({ content, username }: Props) {
       <section id="skills" style={{ padding: '120px 0', background: 'var(--bg-elev)' }}>
         <div style={{ maxWidth: '1120px', margin: '0 auto', padding: '0 32px' }}>
           <div style={sectionHeaderStyle}>
-            <span style={sectionNumStyle}>02 / Skills</span>
+            <span style={sectionNumStyle}>{c.skillsSectionLabel || '02 / Skills'}</span>
             <div style={dividerStyle} />
-            <span style={sectionNumStyle}>Calibrated by what I&apos;ve shipped</span>
+            <span className="maren-section-subtitle" style={sectionNumStyle}>Calibrated by what I&apos;ve shipped</span>
           </div>
-          <h2 style={sectionTitleStyle}>The toolkit I reach for first.</h2>
+          <h2 style={sectionTitleStyle}>{c.skillsHeading || 'The toolkit I reach for first.'}</h2>
 
           <div
             className="maren-skills-grid"
             style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}
           >
             {skillCategories.map((cat, i) => {
-              const skills = pl(c[cat.key]);
+              const skills = cat.items;
               return (
                 <div
                   key={i}
@@ -814,13 +854,13 @@ export default function MarenTemplate({ content, username }: Props) {
       <section id="experience" style={{ padding: '120px 0' }}>
         <div style={{ maxWidth: '1120px', margin: '0 auto', padding: '0 32px' }}>
           <div style={sectionHeaderStyle}>
-            <span style={sectionNumStyle}>03 / Experience</span>
+            <span style={sectionNumStyle}>{c.expSectionLabel || '03 / Experience'}</span>
             <div style={dividerStyle} />
           </div>
-          <h2 style={sectionTitleStyle}>Where I&apos;ve done the work.</h2>
+          <h2 style={sectionTitleStyle}>{c.expHeading || "Where I've done the work."}</h2>
 
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {experiences.length > 0 ? experiences.map((job, i) => (
+            {experiences.length > 0 ? (showAllExp ? experiences : experiences.slice(0, EXP_LIMIT)).map((job, i) => (
               <div
                 key={i}
                 className="maren-exp-item"
@@ -870,7 +910,7 @@ export default function MarenTemplate({ content, username }: Props) {
                       {job.role}
                     </span>
                     <span style={{ fontFamily: monoFont, fontSize: '13px', color: 'var(--fg-faint)' }}>
-                      {job.company} · Full-time
+                      {job.company} · {(job as any).employmentType || 'Full-time'}
                     </span>
                   </div>
 
@@ -944,6 +984,24 @@ export default function MarenTemplate({ content, username }: Props) {
               </div>
             )}
             <div style={{ borderTop: '1px solid var(--line)' }} />
+            {experiences.length > EXP_LIMIT && (
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '32px' }}>
+                <button
+                  onClick={() => setShowAllExp(s => !s)}
+                  style={{
+                    padding: '10px 22px', borderRadius: '10px',
+                    background: 'var(--bg-elev)', color: 'var(--fg)',
+                    border: '1px solid var(--line)', fontSize: '14px', fontWeight: 500,
+                    cursor: 'pointer', fontFamily: 'inherit',
+                    transition: 'border-color 0.2s, background 0.2s',
+                  }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent)'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--line)'; }}
+                >
+                  {showAllExp ? 'Show less ↑' : `Show ${experiences.length - EXP_LIMIT} more ↓`}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -952,17 +1010,21 @@ export default function MarenTemplate({ content, username }: Props) {
       <section id="projects" style={{ padding: '120px 0', background: 'var(--bg-elev)' }}>
         <div style={{ maxWidth: '1120px', margin: '0 auto', padding: '0 32px' }}>
           <div style={sectionHeaderStyle}>
-            <span style={sectionNumStyle}>04 / Selected Work</span>
+            <span style={sectionNumStyle}>{c.projSectionLabel || '04 / Selected Work'}</span>
             <div style={dividerStyle} />
-            <span style={sectionNumStyle}>Personal + professional</span>
+            <span className="maren-section-subtitle" style={sectionNumStyle}>Personal + professional</span>
           </div>
-          <h2 style={sectionTitleStyle}>Selected work I&apos;m proud of.</h2>
+          <h2 style={sectionTitleStyle}>{c.projHeading || "Selected work I'm proud of."}</h2>
 
           <div
             className="maren-projects-grid"
             style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}
           >
-            {projects.length > 0 ? projects.map((project, i) => (
+            {projects.length > 0 ? (() => {
+              const reversed = [...projects].reverse();
+              const visible = showAllProj ? reversed : reversed.slice(0, PROJ_LIMIT);
+              return visible;
+            })().map((project, i) => (
               <div
                 key={i}
                 style={{
@@ -1012,6 +1074,7 @@ export default function MarenTemplate({ content, username }: Props) {
                     </h3>
                     {project.tag && (
                       <span
+                        className="maren-project-tag"
                         style={{
                           fontFamily: monoFont,
                           fontSize: '10px',
@@ -1021,8 +1084,8 @@ export default function MarenTemplate({ content, username }: Props) {
                           borderRadius: '4px',
                           padding: '3px 8px',
                           color: 'var(--fg-faint)',
-                          flexShrink: 0,
                           marginTop: '4px',
+                          maxWidth: '100%',
                         }}
                       >
                         {project.tag}
@@ -1123,6 +1186,24 @@ export default function MarenTemplate({ content, username }: Props) {
               </div>
             )}
           </div>
+          {projects.length > PROJ_LIMIT && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '32px' }}>
+              <button
+                onClick={() => setShowAllProj(s => !s)}
+                style={{
+                  padding: '10px 22px', borderRadius: '10px',
+                  background: 'var(--bg-card)', color: 'var(--fg)',
+                  border: '1px solid var(--line)', fontSize: '14px', fontWeight: 500,
+                  cursor: 'pointer', fontFamily: 'inherit',
+                  transition: 'border-color 0.2s, background 0.2s',
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent)'; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--line)'; }}
+              >
+                {showAllProj ? 'Show less ↑' : `Show ${projects.length - PROJ_LIMIT} more ↓`}
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -1157,7 +1238,7 @@ export default function MarenTemplate({ content, username }: Props) {
               {/* Left */}
               <div>
                 <div style={{ fontFamily: monoFont, fontSize: '12px', color: 'var(--fg-faint)', marginBottom: '12px' }}>
-                  05 / Contact
+                  {c.contactSectionLabel || '05 / Contact'}
                 </div>
                 <h2
                   style={{
@@ -1219,7 +1300,7 @@ export default function MarenTemplate({ content, username }: Props) {
                         <div style={{ fontFamily: monoFont, fontSize: '10px', color: 'var(--fg-faint)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '2px' }}>
                           {ch.label}
                         </div>
-                        <div style={{ fontSize: '14px', color: 'var(--fg-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <div className="maren-contact-value" style={{ fontSize: '14px', color: 'var(--fg-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {ch.value}
                         </div>
                       </div>

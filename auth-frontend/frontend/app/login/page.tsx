@@ -1,17 +1,28 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Mail, Shield } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+
+interface SiteContact { contactEmail: string; contactPhone: string; }
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState(['','','','','','']);
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [loading, setLoading] = useState(false);
+  const [noAccountOpen, setNoAccountOpen] = useState(false);
+  const [siteContact, setSiteContact] = useState<SiteContact>({ contactEmail: '', contactPhone: '' });
   const router = useRouter();
   const { toast } = useToast();
+
+  useEffect(() => {
+    fetch('/api/landing/settings').then(r => r.json()).then(d => {
+      if (d.success) setSiteContact(d.data);
+    }).catch(() => {});
+  }, []);
 
   async function sendOTP() {
     if (!email) return;
@@ -26,6 +37,8 @@ export default function LoginPage() {
       if (data.success) {
         setStep('otp');
         toast({ title: 'Code sent', description: `Check ${email} for your 6-digit code.`, variant: 'default' });
+      } else if (res.status === 404 || (data.error && data.error.toLowerCase().includes('no account'))) {
+        setNoAccountOpen(true);
       } else {
         toast({ title: 'Error', description: data.error || 'Failed to send code', variant: 'destructive' });
       }
@@ -171,6 +184,41 @@ export default function LoginPage() {
         {/* Security note */}
         <p className="text-center text-xs text-white/20 mt-6">Secured with 256-bit encryption · Codes expire in 5 minutes</p>
       </div>
+
+      {/* No account modal */}
+      <Dialog open={noAccountOpen} onOpenChange={setNoAccountOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Account not found</DialogTitle>
+            <DialogDescription>To login please connect using number or email.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="p-4 rounded-xl border border-white/[0.07] bg-white/[0.02] space-y-3">
+              {siteContact.contactEmail && (
+                <div className="flex items-center gap-3">
+                  <span className="text-lg">📧</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium">Email</div>
+                    <a href={`mailto:${siteContact.contactEmail}`} className="text-sm text-white/60 hover:text-white font-mono break-all">{siteContact.contactEmail}</a>
+                  </div>
+                </div>
+              )}
+              {siteContact.contactPhone && (
+                <div className="flex items-center gap-3">
+                  <span className="text-lg">📞</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium">Phone / WhatsApp</div>
+                    <a href={`tel:${siteContact.contactPhone}`} className="text-sm text-white/60 hover:text-white font-mono">{siteContact.contactPhone}</a>
+                  </div>
+                </div>
+              )}
+              {!siteContact.contactEmail && !siteContact.contactPhone && (
+                <p className="text-sm text-white/40">Please contact your administrator for access.</p>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

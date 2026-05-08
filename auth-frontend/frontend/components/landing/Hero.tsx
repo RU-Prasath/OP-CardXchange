@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import SmartCTAButton from './SmartCTAButton';
 
 export default function Hero() {
   return (
@@ -16,7 +17,7 @@ export default function Hero() {
 
         {/* Headline */}
         <h1 className="text-5xl md:text-7xl font-extrabold leading-[1.02] tracking-[-0.04em] max-w-[920px] mx-auto mb-6">
-          Build your premium developer<br/>
+          Build your premium<br/>
           portfolio <span className="grad-text">in minutes.</span>
         </h1>
 
@@ -27,7 +28,7 @@ export default function Hero() {
 
         {/* CTAs */}
         <div className="flex gap-3 justify-center flex-wrap mb-7">
-          <Link href="/login" className="btn-grad text-base px-6 py-3">Start building free →</Link>
+          <SmartCTAButton label="Start building free →" className="btn-grad text-base px-6 py-3"/>
           <Link href="#templates" className="btn-secondary-ff text-base px-6 py-3">▶ View templates</Link>
         </div>
 

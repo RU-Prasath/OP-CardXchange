@@ -1,4 +1,4 @@
-// File: /home/prasath/E-drive/New folder/Portfolio/frontend/app/api/auth/send-otp/route.ts
+// File: /home/prasath/E-drive/Portfolio/frontend/app/api/auth/send-otp/route.ts
 import * as entry from '../../../../../../app/api/auth/send-otp/route.js'
 import type { NextRequest } from 'next/server.js'
 

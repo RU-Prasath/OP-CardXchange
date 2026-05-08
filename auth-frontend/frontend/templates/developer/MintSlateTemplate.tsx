@@ -101,7 +101,7 @@ const CSS = `
     mask-image:radial-gradient(ellipse 70% 90% at 50% 0%,#000,transparent 80%);
     -webkit-mask-image:radial-gradient(ellipse 70% 90% at 50% 0%,#000,transparent 80%);
     opacity:.35;pointer-events:none;}
-  .ms-hero-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:1.5rem;align-items:stretch;position:relative;}
+  .ms-hero-grid{display:grid;grid-template-columns:.9fr 1.4fr;gap:1.5rem;align-items:stretch;position:relative;}
   .ms-card{background:var(--card);border:1px solid var(--bdr);border-radius:1.125rem;
     box-shadow:var(--sh);position:relative;overflow:hidden;}
   .ms-bio-card{padding:2.25rem 2rem;}
@@ -110,6 +110,23 @@ const CSS = `
   .ms-bio-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
     background:linear-gradient(90deg,transparent,var(--p),var(--ph),transparent);
     background-size:200% 100%;animation:ms-shimmer 5s linear infinite;}
+  .ms-photo-card{padding:0;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(160deg,var(--ps) 0%,var(--pf) 100%);min-height:340px;position:relative;}
+  .ms-photo-card::before{content:'';position:absolute;inset:0;
+    background-image:linear-gradient(rgba(255,255,255,.4) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.4) 1px,transparent 1px);
+    background-size:24px 24px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,#000,transparent 90%);
+    -webkit-mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,#000,transparent 90%);opacity:.4;}
+  .ms-photo-card .ms-photo-img{width:80%;max-width:280px;aspect-ratio:1;border-radius:50%;
+    object-fit:cover;border:6px solid var(--card);box-shadow:0 16px 40px -12px rgba(15,118,110,.35);
+    position:relative;z-index:1;}
+  .ms-photo-placeholder{width:80%;max-width:280px;aspect-ratio:1;border-radius:50%;
+    background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;
+    display:grid;place-items:center;font-family:'JetBrains Mono',monospace;
+    font-size:5rem;font-weight:700;border:6px solid var(--card);
+    box-shadow:0 16px 40px -12px rgba(15,118,110,.35);position:relative;z-index:1;}
+  .ms-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1.5rem;}
+  .ms-stats-row .ms-stat{padding:1.25rem 1.4rem;}
   .ms-eyebrow{display:inline-flex;align-items:center;gap:8px;padding:5px 12px;
     background:var(--ps);color:var(--pd);font-size:.74rem;font-weight:600;
     border-radius:999px;font-family:'JetBrains Mono',monospace;margin-bottom:1.5rem;
@@ -305,6 +322,8 @@ const CSS = `
   .ms-proj-btn.ghost{color:var(--tx);border-color:var(--bdrs);background:var(--card);}
   .ms-proj-btn.ghost:hover{border-color:var(--p);color:var(--ph);}
   .ms-proj-btn.disabled{opacity:.4;cursor:default;pointer-events:none;}
+  .ms-show-more-btn{display:inline-flex;align-items:center;gap:6px;padding:.6rem 1.4rem;border-radius:8px;border:1px solid var(--bdrs);background:var(--card);color:var(--tx2);font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:500;cursor:pointer;transition:border-color .2s,color .2s;}
+  .ms-show-more-btn:hover{border-color:var(--p);color:var(--ph);}
 
 
   /* ── Testimonials ── */
@@ -392,6 +411,8 @@ const CSS = `
   }
   @media(max-width:900px){
     .ms-hero-grid{grid-template-columns:1fr;}
+    .ms-photo-card{min-height:240px;padding:1.5rem;}
+    .ms-stats-row{grid-template-columns:repeat(2,1fr);}
     .ms-tools-grid{grid-template-columns:1fr 1fr;}
     .ms-section-head{grid-template-columns:auto 1fr;gap:1rem;}
     .ms-section-meta{display:none;}
@@ -442,6 +463,12 @@ export default function MintSlateTemplate({ content: c }: Props) {
   const [toastMsg, setToastMsg] = useState('');
   const [toastShow, setToastShow] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [showAllExp, setShowAllExp] = useState(false);
+  const [showAllProj, setShowAllProj] = useState(false);
+  const [showAllTest, setShowAllTest] = useState(false);
+  const MS_EXP_LIMIT = 3;
+  const MS_PROJ_LIMIT = 4;
+  const MS_TEST_LIMIT = 4;
   const toastTimer = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
@@ -519,8 +546,8 @@ export default function MintSlateTemplate({ content: c }: Props) {
     parseJ<{ role: string; company: string; tagline: string; period: string; duration: string; isCurrent: boolean; bullets: string; stack: string }>('expJson', [])
       .map(e => ({ ...e, bullets: ls(e.bullets), stack: pl(e.stack) }));
 
-  const projects: { title: string; year: string; emoji: string; desc: string; stack: string[]; impact: string; challenge: string; liveUrl: string; githubUrl: string }[] =
-    parseJ<{ title: string; year: string; emoji: string; desc: string; stack: string; impact: string; challenge: string; liveUrl: string; githubUrl: string }>('projJson', [])
+  const projects: { title: string; year: string; image: string; desc: string; stack: string[]; impact: string; challenge: string; liveUrl: string; githubUrl: string }[] =
+    parseJ<{ title: string; year: string; image: string; desc: string; stack: string; impact: string; challenge: string; liveUrl: string; githubUrl: string }>('projJson', [])
       .map(p => ({ ...p, stack: pl(p.stack) }));
 
   const testimonials: { quote: string; initials: string; name: string; role: string }[] =
@@ -595,22 +622,17 @@ export default function MintSlateTemplate({ content: c }: Props) {
         <div className="ms-container">
           <div className="ms-hero-grid">
 
-            {/* Bio card */}
-            <div className="ms-card ms-bio-card ms-reveal">
-              {photoUrl && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: '1.5rem' }}>
-                  <img src={photoUrl} alt={name}
-                    style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover',
-                      border: '3px solid var(--ps)', boxShadow: '0 4px 14px -4px rgba(45,212,191,.4)', flexShrink: 0 }}/>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '1.05rem', letterSpacing: '-.01em', color: 'var(--tx)' }}>{name}</div>
-                    <div style={{ fontSize: '.84rem', color: 'var(--tx2)' }}>{title}</div>
-                  </div>
-                </div>
-              )}
-              <span className="ms-eyebrow"><span className="ms-pulse" />{availability}</span>
+            {/* Photo card on LEFT */}
+            <div className="ms-card ms-photo-card ms-reveal">
+              {photoUrl
+                ? <img src={photoUrl} alt={name} className="ms-photo-img" />
+                : <div className="ms-photo-placeholder">{initials}</div>}
+            </div>
+
+            {/* Bio card on RIGHT */}
+            <div className="ms-card ms-bio-card ms-reveal" style={{ animationDelay: '.1s' }}>
               <h1 className="ms-h1">
-                {!photoUrl && <>{name}<br /></>}
+                {name}<br />
                 <em>— {c.heroTagline || 'builds things that ship.'}</em>
               </h1>
               <p className="ms-role-pill">
@@ -649,49 +671,24 @@ export default function MintSlateTemplate({ content: c }: Props) {
               )}
             </div>
 
-            {/* Stats card */}
-            <div className="ms-card ms-stats-card ms-reveal" style={{ animationDelay: '.12s' }}>
-              <div className="ms-stats-head">
-                <h3>📈 By the numbers</h3>
-                <span className="ms-mono" style={{ fontSize: '.7rem', color: 'var(--tx3)' }}>
-                  {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                </span>
-              </div>
-              <div className="ms-stats-grid">
-                {(stats.length > 0 ? stats : [
-                  { num: '5+', label: 'Years Experience' },
-                  { num: '30+', label: 'Projects Shipped' },
-                  { num: '99%', label: 'Uptime Record' },
-                  { num: '12', label: 'OSS Contributions' },
-                ]).map((s, i) => (
-                  <div key={i} className="ms-stat">
-                    <div className="ms-stat-num">{s.num}</div>
-                    <div className="ms-stat-label">{s.label}</div>
-                  </div>
-                ))}
-              </div>
-              {(c.githubUrl || c.linkedinUrl) && (
-                <div style={{ display: 'flex', gap: 8, marginTop: '1rem', paddingTop: '1rem', borderTop: '1px dashed var(--bdr)' }}>
-                  {c.githubUrl && (
-                    <a href={c.githubUrl} target="_blank" rel="noopener noreferrer" className="ms-icon-btn" title="GitHub">
-                      <GithubIcon />
-                    </a>
-                  )}
-                  {c.linkedinUrl && (
-                    <a href={c.linkedinUrl} target="_blank" rel="noopener noreferrer" className="ms-icon-btn" title="LinkedIn">
-                      <LinkedinIcon />
-                    </a>
-                  )}
-                  {c.twitterUrl && (
-                    <a href={c.twitterUrl} target="_blank" rel="noopener noreferrer" className="ms-icon-btn" title="Twitter/X">
-                      <XIcon />
-                    </a>
-                  )}
-                </div>
-              )}
-            </div>
-
           </div>
+
+          {/* Stats row BELOW hero */}
+          {(stats.length > 0 || true) && (
+            <div className="ms-stats-row ms-reveal" style={{ animationDelay: '.2s' }}>
+              {(stats.length > 0 ? stats : [
+                { num: '5+', label: 'Years Experience' },
+                { num: '30+', label: 'Projects Shipped' },
+                { num: '99%', label: 'Uptime Record' },
+                { num: '12', label: 'OSS Contributions' },
+              ]).map((s, i) => (
+                <div key={i} className="ms-stat ms-card">
+                  <div className="ms-stat-num">{s.num}</div>
+                  <div className="ms-stat-label">{s.label}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -767,15 +764,18 @@ export default function MintSlateTemplate({ content: c }: Props) {
           </div>
 
           <div className="ms-timeline">
-            {(experiences.length > 0 ? experiences : [
-              {
-                role: 'Full-Stack Engineer', company: 'Acme Inc', isCurrent: true,
-                tagline: 'Building scalable web infrastructure for a growing product team.',
-                period: '2023 – Present', duration: '~2 years · current',
-                bullets: ['Reduced API latency by **40%** via caching layer', 'Led migration to TypeScript with **100%** coverage'],
-                stack: ['React', 'TypeScript', 'Node.js', 'PostgreSQL'],
-              },
-            ]).map((job, i) => (
+            {(experiences.length > 0
+              ? (showAllExp ? experiences : experiences.slice(0, MS_EXP_LIMIT))
+              : [
+                {
+                  role: 'Full-Stack Engineer', company: 'Acme Inc', isCurrent: true,
+                  tagline: 'Building scalable web infrastructure for a growing product team.',
+                  period: '2023 – Present', duration: '~2 years · current',
+                  bullets: ['Reduced API latency by **40%** via caching layer', 'Led migration to TypeScript with **100%** coverage'],
+                  stack: ['React', 'TypeScript', 'Node.js', 'PostgreSQL'],
+                },
+              ]
+            ).map((job, i) => (
               <article key={i} className={`ms-exp-card ms-reveal${job.isCurrent ? ' current' : ''}`} style={{ animationDelay: `${i * .1}s` }}>
                 <div className="ms-exp-head">
                   <div>
@@ -805,6 +805,13 @@ export default function MintSlateTemplate({ content: c }: Props) {
                 )}
               </article>
             ))}
+            {experiences.length > MS_EXP_LIMIT && (
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
+                <button onClick={() => setShowAllExp(s => !s)} className="ms-show-more-btn">
+                  {showAllExp ? 'Show less ↑' : `Show ${experiences.length - MS_EXP_LIMIT} more ↓`}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -822,16 +829,24 @@ export default function MintSlateTemplate({ content: c }: Props) {
           </div>
 
           <div className="ms-projects-grid">
-            {(projects.length > 0 ? projects : [
-              { title: 'DevFlow', year: '2024', emoji: '🚀', impact: '10k MAU', desc: 'Developer workflow tool integrating GitHub, Linear, and Slack.', stack: ['React', 'TypeScript', 'Node.js'], challenge: 'Real-time collaboration at scale', liveUrl: '', githubUrl: '' },
-              { title: 'PerfPulse', year: '2023', emoji: '⚡', impact: '2k npm/mo', desc: 'Lightweight performance monitoring SDK for Next.js apps.', stack: ['TypeScript', 'ClickHouse'], challenge: '<1kb bundle overhead', liveUrl: '', githubUrl: '' },
-              { title: 'SchemaForge', year: '2023', emoji: '🔧', impact: '5k GitHub ⭐', desc: 'Visual database schema designer with TypeScript type generation.', stack: ['React', 'SQLite'], challenge: 'Accurate type inference across SQL dialects', liveUrl: '', githubUrl: '' },
-            ]).map((p, i) => (
+            {(projects.length > 0
+              ? (showAllProj ? [...projects].reverse() : [...projects].reverse().slice(0, MS_PROJ_LIMIT))
+              : [
+                { title: 'DevFlow', year: '2024', image: '', impact: '10k MAU', desc: 'Developer workflow tool integrating GitHub, Linear, and Slack.', stack: ['React', 'TypeScript', 'Node.js'], challenge: 'Real-time collaboration at scale', liveUrl: '', githubUrl: '' },
+                { title: 'PerfPulse', year: '2023', image: '', impact: '2k npm/mo', desc: 'Lightweight performance monitoring SDK for Next.js apps.', stack: ['TypeScript', 'ClickHouse'], challenge: '<1kb bundle overhead', liveUrl: '', githubUrl: '' },
+                { title: 'SchemaForge', year: '2023', image: '', impact: '5k GitHub ⭐', desc: 'Visual database schema designer with TypeScript type generation.', stack: ['React', 'SQLite'], challenge: 'Accurate type inference across SQL dialects', liveUrl: '', githubUrl: '' },
+              ]
+            ).map((p, i) => (
               <article key={i} className="ms-project ms-reveal" style={{ animationDelay: `${i * .08}s` }}>
-                <div className="ms-project-visual" style={{ background: PROJECT_GRADIENTS[i % PROJECT_GRADIENTS.length] }}>
-                  <span className="ms-project-num">{String(i+1).padStart(2,'0')} / {p.title?.toUpperCase().slice(0, 12)}</span>
-                  <span className="ms-project-emoji">{p.emoji}</span>
-                  {p.impact && <span className="ms-project-impact">⚡ {p.impact}</span>}
+                <div className="ms-project-visual" style={p.image ? { background: 'var(--bg2)', padding: 0, overflow: 'hidden' } : { background: PROJECT_GRADIENTS[i % PROJECT_GRADIENTS.length] }}>
+                  {p.image
+                    ? <img src={p.image} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}/>
+                    : <>
+                        <span className="ms-project-num">{String(i+1).padStart(2,'0')} / {p.title?.toUpperCase().slice(0, 12)}</span>
+                        <span className="ms-project-emoji">🚀</span>
+                      </>
+                  }
+                  {p.impact && <span className="ms-project-impact" style={p.image ? { position: 'absolute', bottom: 8, right: 8 } : {}}>⚡ {p.impact}</span>}
                 </div>
                 <div className="ms-project-body">
                   <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
@@ -857,6 +872,13 @@ export default function MintSlateTemplate({ content: c }: Props) {
               </article>
             ))}
           </div>
+          {projects.length > MS_PROJ_LIMIT && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
+              <button onClick={() => setShowAllProj(s => !s)} className="ms-show-more-btn">
+                {showAllProj ? 'Show less ↑' : `Show ${projects.length - MS_PROJ_LIMIT} more ↓`}
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -874,7 +896,7 @@ export default function MintSlateTemplate({ content: c }: Props) {
               <div className="ms-section-meta"><span className="ping">●</span> {testimonials.length} references<br />▾ available on request</div>
             </div>
             <div className="ms-test-grid">
-              {testimonials.map((t, i) => (
+              {(showAllTest ? testimonials : testimonials.slice(0, MS_TEST_LIMIT)).map((t, i) => (
                 <div key={i} className="ms-test ms-reveal" style={{ animationDelay: `${i * .08}s` }}>
                   <p>&ldquo;{t.quote}&rdquo;</p>
                   <div className="ms-test-author">
@@ -887,6 +909,13 @@ export default function MintSlateTemplate({ content: c }: Props) {
                 </div>
               ))}
             </div>
+            {testimonials.length > MS_TEST_LIMIT && (
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
+                <button onClick={() => setShowAllTest(s => !s)} className="ms-show-more-btn">
+                  {showAllTest ? 'Show less ↑' : `Show ${testimonials.length - MS_TEST_LIMIT} more ↓`}
+                </button>
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -897,7 +926,7 @@ export default function MintSlateTemplate({ content: c }: Props) {
           <div className="ms-section-head">
             <span className="ms-eyebrow-tag"><span className="num">0{testimonials.length > 0 ? '5' : '4'}</span>Get in touch</span>
             <div>
-              <h2 className="ms-section-title">Let&apos;s <span className="mint">{contactHeading}</span></h2>
+              <h2 className="ms-section-title"><span className="mint">{contactHeading}</span></h2>
               <p className="ms-section-sub">{c.contactSub || 'Picking up freelance & full-time work. The form is fine — email is faster.'}</p>
             </div>
             <div className="ms-section-meta"><span className="ping">●</span> replies within 24h<br />▾ async-friendly</div>

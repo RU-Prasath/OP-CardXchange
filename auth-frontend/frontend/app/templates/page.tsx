@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Eye, ArrowLeft } from 'lucide-react';
+import { Eye, ArrowLeft, LayoutDashboard } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface Template { _id: string; name: string; slug: string; category: string; pricingType: 'free'|'paid'; thumbnail: string; }
@@ -49,8 +49,10 @@ export default function TemplatesPage() {
   const [freeModal, setFreeModal] = useState(false);
   const [selectedTpl, setSelectedTpl] = useState('');
   const [siteContact, setSiteContact] = useState<SiteContact>({ contactEmail: '', contactPhone: '' });
+  const [auth, setAuth] = useState<{ authenticated: boolean; role?: string } | null>(null);
 
   useEffect(() => {
+    fetch('/api/auth/me').then(r => r.json()).then(setAuth).catch(() => setAuth({ authenticated: false }));
     fetch('/api/landing/templates').then(r => r.json()).then(d => {
       if (d.success) setTemplates(d.data);
       setLoading(false);
@@ -78,7 +80,10 @@ export default function TemplatesPage() {
               Folioforge
             </Link>
           </div>
-          <Link href="/login" className="btn-grad text-xs px-4 py-2">Sign in →</Link>
+          {auth?.authenticated
+            ? <Link href={auth.role === 'superadmin' ? '/super-admin' : '/dashboard'} className="btn-grad text-xs px-4 py-2 flex items-center gap-1.5"><LayoutDashboard size={12}/> Dashboard →</Link>
+            : <Link href="/login" className="btn-grad text-xs px-4 py-2">Sign in →</Link>
+          }
         </div>
       </div>
 

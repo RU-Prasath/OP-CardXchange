@@ -3,6 +3,7 @@ import dbConnect from '@/lib/db';
 import User from '@/lib/models/User';
 import Portfolio from '@/lib/models/Portfolio';
 import Template from '@/lib/models/Template';
+import '@/lib/models/PricingPlan'; // register schema for populate
 import { getSession } from '@/lib/auth';
 
 async function requireSuperAdmin(req: NextRequest) {
@@ -26,7 +27,10 @@ export async function GET(req: NextRequest) {
   if (search) query.email = { $regex: search, $options: 'i' };
   if (filterActive !== null && filterActive !== '') query.isActive = filterActive === 'true';
 
-  const users = await User.find(query).populate('allocatedTemplate', 'name slug category').sort({ createdAt: -1 });
+  const users = await User.find(query)
+    .populate('allocatedTemplate', 'name slug category pricingType')
+    .populate('pricingPlanId', 'tier monthlyPrice yearlyPrice')
+    .sort({ createdAt: -1 });
   return NextResponse.json({ success: true, data: users });
 }
 
@@ -35,7 +39,7 @@ export async function POST(req: NextRequest) {
   if (guard) return guard;
 
   await dbConnect();
-  const { email, username, templateId } = await req.json();
+  const { email, username, phone, templateId, plan, planBilling, pricingPlanId, paidAmount } = await req.json();
 
   if (!email || !username) {
     return NextResponse.json({ success: false, error: 'Email and username required' }, { status: 400 });
@@ -46,7 +50,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'Email or username already taken' }, { status: 409 });
   }
 
-  const user = await User.create({ email, username, role: 'user', allocatedTemplate: templateId || null, isActive: true });
+  const user = await User.create({
+    email, username, phone: phone || '', role: 'user',
+    allocatedTemplate: templateId || null, isActive: true,
+    plan: plan || 'free', planBilling: planBilling || 'monthly',
+    planStartDate: new Date(),
+    pricingPlanId: pricingPlanId || null,
+    paidAmount: paidAmount || 0,
+  });
 
   if (templateId) {
     const template = await Template.findById(templateId);

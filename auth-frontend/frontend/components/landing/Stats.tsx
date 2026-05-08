@@ -14,7 +14,7 @@ export default function Stats() {
     { label: 'Active portfolios', value: stats.activePortfolios.toLocaleString(), trend: 'live right now', icon: '🌐' },
     { label: 'Templates', value: stats.templateCount.toString(), trend: 'hand-crafted', icon: '⚡' },
     { label: 'Developers', value: stats.developerCount >= 1000 ? `${(stats.developerCount/1000).toFixed(0)}k+` : `${stats.developerCount}+`, trend: 'and growing', icon: '🚀' },
-    { label: 'Avg lighthouse', value: `${stats.avgLighthouse}/100`, trend: 'performance score', icon: '⭐' },
+    { label: 'Avg lighthouse', value: `${stats.avgLighthouse}`, trend: 'performance score', icon: '⭐' },
   ] : [
     { label: 'Active portfolios', value: '—', trend: 'loading…', icon: '🌐' },
     { label: 'Templates', value: '—', trend: 'loading…', icon: '⚡' },

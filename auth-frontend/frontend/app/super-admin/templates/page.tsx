@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Plus, Eye, EyeOff, Trash2, DollarSign, Gift, ExternalLink, Pencil, Upload } from 'lucide-react';
+import { Plus, Eye, EyeOff, Trash2, DollarSign, Gift, ExternalLink, Pencil, Upload, Search } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +22,7 @@ export default function TemplatesPage() {
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [form, setForm] = useState({ name: '', slug: '', category: 'developer', pricingType: 'free', frontendPath: 'developer/AuroraTemplate', thumbnail: '' });
   const [editDefaultContent, setEditDefaultContent] = useState('');
+  const [search, setSearch] = useState('');
   const [saving, setSaving] = useState(false);
   const [thumbUploading, setThumbUploading] = useState(false);
   const thumbRef = useRef<HTMLInputElement>(null);
@@ -100,6 +101,12 @@ export default function TemplatesPage() {
     toast({ title: 'Deleted' });
   }
 
+  const filtered = templates.filter(t => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return t.name.toLowerCase().includes(q) || t.slug.toLowerCase().includes(q) || t.category.toLowerCase().includes(q);
+  });
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
@@ -112,12 +119,22 @@ export default function TemplatesPage() {
         </button>
       </div>
 
+      {/* Search */}
+      <div className="relative mb-6 max-w-sm">
+        <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30"/>
+        <input
+          value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="Search by name, slug, category…"
+          className="w-full h-10 pl-9 pr-4 rounded-xl border border-white/[0.07] bg-white/[0.03] text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+        />
+      </div>
+
       <div className="grid md:grid-cols-3 gap-4">
         {loading ? (
           <div className="col-span-3 text-center py-16 text-white/30 text-sm">Loading…</div>
-        ) : templates.length === 0 ? (
-          <div className="col-span-3 card-panel p-12 text-center text-white/30 text-sm">No templates yet.</div>
-        ) : templates.map(t => (
+        ) : filtered.length === 0 ? (
+          <div className="col-span-3 card-panel p-12 text-center text-white/30 text-sm">{templates.length === 0 ? 'No templates yet.' : 'No templates match your search.'}</div>
+        ) : filtered.map(t => (
           <div key={t._id} className="card-panel overflow-hidden hover:border-white/[0.12] transition-colors">
             <div className="aspect-[4/3] border-b border-white/[0.07] relative overflow-hidden" style={{background: 'linear-gradient(135deg,rgba(99,102,241,0.15),rgba(168,85,247,0.15))'}}>
               {t.thumbnail ? <img src={t.thumbnail} alt={t.name} className="w-full h-full object-cover"/> :

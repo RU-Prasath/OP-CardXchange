@@ -16,5 +16,5 @@ export async function GET() {
   const config = getTemplateConfig(slug);
   if (!config) return NextResponse.json({ success: false, error: 'Config not found' }, { status: 404 });
 
-  return NextResponse.json({ success: true, data: { slug, sections: config.sections } });
+  return NextResponse.json({ success: true, data: { slug, sections: config.sections, defaultContent: config.defaultContent } });
 }

@@ -4,20 +4,34 @@ import { getSession } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import User from '@/lib/models/User';
 import Portfolio from '@/lib/models/Portfolio';
+import SiteSettings from '@/lib/models/SiteSettings';
 import '@/lib/models/Template'; // register schema for populate
-import { ExternalLink, Edit3, Eye, Layers } from 'lucide-react';
+import { ExternalLink, Edit3, Eye, Layers, Clock, AlertTriangle } from 'lucide-react';
 
 export default async function DashboardPage() {
   const session = await getSession();
   if (!session) redirect('/login');
 
   await dbConnect();
-  const user = await User.findById(session.userId).populate('allocatedTemplate', 'name category slug');
-  const portfolio = await Portfolio.findOne({ user: session.userId });
+  const [user, portfolio, settings] = await Promise.all([
+    User.findById(session.userId).populate('allocatedTemplate', 'name category slug'),
+    Portfolio.findOne({ user: session.userId }),
+    SiteSettings.findOne(),
+  ]);
 
   if (!user) redirect('/login');
 
   const template = user.allocatedTemplate as { name: string; category: string; slug: string } | null;
+
+  // Plan expiry calculation
+  function getRemainingDays(): number | null {
+    if (!user || (user.plan || 'free') !== 'paid' || !user.planStartDate) return null;
+    const durationDays = user.planBilling === 'yearly' ? 365 : 30;
+    const expiry = new Date(user.planStartDate.getTime() + durationDays * 24 * 60 * 60 * 1000);
+    return Math.max(0, Math.ceil((expiry.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+  }
+  const remaining = getRemainingDays();
+  const contactPhone = settings?.contactPhone || '';
 
   return (
     <div>
@@ -34,6 +48,30 @@ export default async function DashboardPage() {
         </div>
       ) : (
         <div className="space-y-5">
+          {/* Plan expiry banner */}
+          {remaining !== null && remaining <= 7 && (
+            <div className={`card-panel p-4 flex items-center gap-3 border ${remaining <= 3 ? 'border-red-500/50 bg-red-500/5' : 'border-amber-500/40 bg-amber-500/5'}`}>
+              {remaining <= 3 ? <AlertTriangle size={18} className="text-red-400 shrink-0"/> : <Clock size={18} className="text-amber-400 shrink-0"/>}
+              <div className="flex-1">
+                <p className={`text-sm font-semibold ${remaining <= 3 ? 'text-red-300' : 'text-amber-300'}`}>
+                  {remaining === 0 ? 'Your plan has expired' : `Your plan expires in ${remaining} day${remaining === 1 ? '' : 's'}`}
+                </p>
+                <p className="text-xs text-white/40 mt-0.5">
+                  Please renew your portfolio by contacting admin{contactPhone ? ` at ${contactPhone}` : ''}.
+                </p>
+              </div>
+              <span className={`text-2xl font-bold font-mono shrink-0 ${remaining <= 3 ? 'text-red-400' : 'text-amber-400'}`}>{remaining}d</span>
+            </div>
+          )}
+          {remaining !== null && remaining > 7 && (
+            <div className="card-panel p-4 flex items-center gap-3">
+              <Clock size={16} className="text-cyan-400 shrink-0"/>
+              <div>
+                <p className="text-sm text-white/70">Plan active · <span className="text-white font-semibold">{remaining} days</span> remaining</p>
+                <p className="text-xs text-white/30 mt-0.5 capitalize">{user.planBilling || 'monthly'} · {user.plan} plan</p>
+              </div>
+            </div>
+          )}
           {/* Portfolio card */}
           <div className="card-panel p-6 flex items-center justify-between gap-6 flex-wrap">
             <div className="flex items-center gap-4">
