@@ -1,0 +1,176 @@
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import { adminApi } from "../../services/api";
+
+const SECTIONS = [
+  { key: "general", label: "General", fields: [
+    { key: "site_name", label: "Site Name" },
+    { key: "site_tagline", label: "Tagline" },
+    { key: "hero_heading", label: "Hero Heading", multiline: true },
+    { key: "hero_subheading", label: "Hero Subheading" },
+  ]},
+  { key: "stats", label: "Statistics", fields: [
+    { key: "stat_projects", label: "Projects Count (e.g. 500+)" },
+    { key: "stat_years", label: "Years Experience (e.g. 15+)" },
+    { key: "stat_clients", label: "Happy Clients (e.g. 450+)" },
+    { key: "stat_awards", label: "Awards Won (e.g. 20+)" },
+  ]},
+  { key: "contact", label: "Contact Info", fields: [
+    { key: "phone", label: "Phone Number" },
+    { key: "whatsapp", label: "WhatsApp Number (with country code, no +)" },
+    { key: "email", label: "Email Address" },
+    { key: "address", label: "Address", multiline: true },
+    { key: "business_hours", label: "Business Hours" },
+    { key: "map_embed", label: "Google Maps Embed URL", multiline: true },
+  ]},
+  { key: "social", label: "Social Media", fields: [
+    { key: "instagram", label: "Instagram URL" },
+    { key: "facebook", label: "Facebook URL" },
+    { key: "youtube", label: "YouTube URL" },
+  ]},
+];
+
+export default function SettingsPage() {
+  const [activeSection, setActiveSection] = useState("general");
+  const [formData, setFormData] = useState({});
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data } = useQuery({ queryKey: ["admin-settings"], queryFn: () => adminApi.getSettings() });
+
+  useEffect(() => {
+    if (data?.data?.settings) {
+      setFormData(data.data.settings);
+    }
+  }, [data]);
+
+  const { mutate: saveSettings, isPending } = useMutation({
+    mutationFn: (settings) => adminApi.updateSettings(settings),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["settings"]);
+      toast.success("Settings saved successfully");
+    },
+    onError: () => toast.error("Failed to save settings"),
+  });
+
+  const currentSection = SECTIONS.find((s) => s.key === activeSection);
+
+  const handleSave = () => {
+    const settingsArray = Object.entries(formData).map(([key, value]) => ({
+      key,
+      value,
+      group: SECTIONS.find((s) => s.fields.some((f) => f.key === key))?.key || "general",
+    }));
+    saveSettings(settingsArray);
+  };
+
+  const handleLogoUpload = async () => {
+    if (!logoFile) return;
+    setLogoUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("image", logoFile);
+      await adminApi.uploadLogo(fd);
+      toast.success("Logo uploaded successfully");
+      setLogoFile(null);
+    } catch { toast.error("Logo upload failed"); } finally { setLogoUploading(false); }
+  };
+
+  return (
+    <div>
+      <div className="mb-8">
+        <h1 className="font-display text-3xl text-white mb-1">Settings</h1>
+        <p className="text-silver/40 text-sm">Manage website content and configuration</p>
+      </div>
+
+      <div className="grid lg:grid-cols-5 gap-6">
+        {/* Section Nav */}
+        <div className="lg:col-span-1">
+          <div className="bg-[#0a0e17] border border-white/5 p-2">
+            {SECTIONS.map((s) => (
+              <button
+                key={s.key}
+                onClick={() => setActiveSection(s.key)}
+                className={`w-full text-left px-3 py-2.5 text-sm rounded transition-all ${
+                  activeSection === s.key ? "bg-gold/10 text-gold" : "text-silver/50 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                {s.label}
+              </button>
+            ))}
+            <button
+              onClick={() => setActiveSection("logo")}
+              className={`w-full text-left px-3 py-2.5 text-sm rounded transition-all ${
+                activeSection === "logo" ? "bg-gold/10 text-gold" : "text-silver/50 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              Logo
+            </button>
+          </div>
+        </div>
+
+        {/* Form */}
+        <div className="lg:col-span-4 bg-[#0a0e17] border border-white/5 p-6">
+          {activeSection === "logo" ? (
+            <div>
+              <h3 className="font-display text-xl text-white mb-6">Logo Upload</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-silver/40 text-xs uppercase tracking-widest block mb-2">Upload New Logo</label>
+                  <input type="file" accept="image/*" onChange={(e) => setLogoFile(e.target.files[0])} className="text-silver/50 text-sm" />
+                  <p className="text-silver/30 text-xs mt-1">Supported: JPG, PNG, WEBP. Max 10MB.</p>
+                </div>
+                {logoFile && (
+                  <div>
+                    <p className="text-silver/40 text-xs mb-2">Preview:</p>
+                    <img src={URL.createObjectURL(logoFile)} className="h-20 object-contain" />
+                  </div>
+                )}
+                <button
+                  onClick={handleLogoUpload}
+                  disabled={!logoFile || logoUploading}
+                  className="btn-primary text-xs py-2.5 px-6 disabled:opacity-60"
+                >
+                  {logoUploading ? "Uploading..." : "Upload Logo"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <h3 className="font-display text-xl text-white mb-6">{currentSection?.label}</h3>
+              <div className="space-y-5">
+                {currentSection?.fields.map((field) => (
+                  <div key={field.key}>
+                    <label className="text-silver/40 text-xs uppercase tracking-widest block mb-1.5">{field.label}</label>
+                    {field.multiline ? (
+                      <textarea
+                        value={formData[field.key] || ""}
+                        onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
+                        rows={3}
+                        className="input-dark resize-none"
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={formData[field.key] || ""}
+                        onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
+                        className="input-dark"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-8 pt-6 border-t border-white/5">
+                <button onClick={handleSave} disabled={isPending} className="btn-primary text-xs py-2.5 px-8 disabled:opacity-60">
+                  {isPending ? "Saving..." : "Save Settings"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
