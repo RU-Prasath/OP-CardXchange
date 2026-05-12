@@ -19,6 +19,15 @@ interface MintExpEntry   { role: string; company: string; tagline: string; perio
 interface MintProjEntry  { title: string; year: string; image: string; desc: string; stack: string; impact: string; challenge: string; liveUrl: string; githubUrl: string; }
 interface TestEntry  { quote: string; initials: string; name: string; role: string; }
 
+// Apex types
+interface ApexSkillEntry { category: string; items: string; }
+interface ApexProfEntry  { name: string; level: number; }
+interface ApexExpEntry   { period: string; nowLabel: string; duration: string; role: string; company: string; summary: string; bullets: string; stack: string; isCurrent: boolean; }
+interface ApexProjEntry  { title: string; tag: string; desc: string; stack: string; liveUrl: string; githubUrl: string; }
+interface ApexEduEntry   { school: string; degree: string; period: string; detail: string; }
+interface ApexCertEntry  { name: string; issuer: string; year: string; url: string; }
+interface ApexTestEntry  { quote: string; author: string; role: string; }
+
 // ── Parse helpers ──
 function parseStats(content: Record<string, string>): StatEntry[] {
   if (content.heroStatsJson) { try { return JSON.parse(content.heroStatsJson); } catch {} }
@@ -68,6 +77,19 @@ export default function DynamicSectionPage() {
   const [mintProjs, setMintProjs] = useState<MintProjEntry[]>([]);
   const [tests,     setTests]     = useState<TestEntry[]>([]);
 
+  // Maren education widgets
+  const [marenEdu,   setMarenEdu]   = useState<ApexEduEntry[]>([]);
+  const [marenCerts, setMarenCerts] = useState<ApexCertEntry[]>([]);
+
+  // Apex widgets
+  const [apexSkills, setApexSkills] = useState<ApexSkillEntry[]>([]);
+  const [apexProfs,  setApexProfs]  = useState<ApexProfEntry[]>([]);
+  const [apexExps,   setApexExps]   = useState<ApexExpEntry[]>([]);
+  const [apexProjs,  setApexProjs]  = useState<ApexProjEntry[]>([]);
+  const [apexEdu,    setApexEdu]    = useState<ApexEduEntry[]>([]);
+  const [apexCerts,  setApexCerts]  = useState<ApexCertEntry[]>([]);
+  const [apexTests,  setApexTests]  = useState<ApexTestEntry[]>([]);
+
   // Upload
   const resumeRef  = useRef<HTMLInputElement>(null);
   const photoRef   = useRef<HTMLInputElement>(null);
@@ -94,6 +116,15 @@ export default function DynamicSectionPage() {
         setMintExps(parseJson<MintExpEntry>(c.expJson, []));
         setMintProjs(parseJson<MintProjEntry>(c.projJson, []));
         setTests(parseJson<TestEntry>(c.testJson, []));
+        setMarenEdu(parseJson<ApexEduEntry>(c.educationJson, []));
+        setMarenCerts(parseJson<ApexCertEntry>(c.certsJson, []));
+        setApexSkills(parseJson<ApexSkillEntry>(c.skillsJson, []));
+        setApexProfs(parseJson<ApexProfEntry>(c.proficienciesJson, []));
+        setApexExps(parseJson<ApexExpEntry>(c.expJson, []));
+        setApexProjs(parseJson<ApexProjEntry>(c.projJson, []));
+        setApexEdu(parseJson<ApexEduEntry>(c.educationJson, []));
+        setApexCerts(parseJson<ApexCertEntry>(c.certsJson, []));
+        setApexTests(parseJson<ApexTestEntry>(c.testimonialsJson, []));
       }
       if (configRes.success) {
         setTemplateSlug(configRes.data.slug);
@@ -139,9 +170,13 @@ export default function DynamicSectionPage() {
     }
 
     if (templateSlug === 'maren') {
-      if (sectionKey === 'skills')     merged.skillsJson = JSON.stringify(skills);
-      if (sectionKey === 'experience') merged.expJson    = JSON.stringify(marenExps);
-      if (sectionKey === 'projects')   merged.projJson   = JSON.stringify(marenProjs);
+      if (sectionKey === 'skills')     merged.skillsJson    = JSON.stringify(skills);
+      if (sectionKey === 'experience') merged.expJson       = JSON.stringify(marenExps);
+      if (sectionKey === 'projects')   merged.projJson      = JSON.stringify(marenProjs);
+      if (sectionKey === 'education') {
+        merged.educationJson = JSON.stringify(marenEdu);
+        merged.certsJson     = JSON.stringify(marenCerts);
+      }
     }
 
     if (templateSlug === 'mintslate') {
@@ -149,6 +184,20 @@ export default function DynamicSectionPage() {
       if (sectionKey === 'experience')   merged.expJson   = JSON.stringify(mintExps);
       if (sectionKey === 'projects')     merged.projJson  = JSON.stringify(mintProjs);
       if (sectionKey === 'testimonials') merged.testJson  = JSON.stringify(tests);
+    }
+
+    if (templateSlug === 'apex') {
+      if (sectionKey === 'skills') {
+        merged.skillsJson        = JSON.stringify(apexSkills);
+        merged.proficienciesJson = JSON.stringify(apexProfs);
+      }
+      if (sectionKey === 'experience')   merged.expJson          = JSON.stringify(apexExps);
+      if (sectionKey === 'projects')     merged.projJson         = JSON.stringify(apexProjs);
+      if (sectionKey === 'education') {
+        merged.educationJson = JSON.stringify(apexEdu);
+        merged.certsJson     = JSON.stringify(apexCerts);
+      }
+      if (sectionKey === 'testimonials') merged.testimonialsJson = JSON.stringify(apexTests);
     }
 
     const res  = await fetch('/api/portfolio/content', {
@@ -179,9 +228,13 @@ export default function DynamicSectionPage() {
   );
 
   const showStatsWidget = sectionKey === 'hero' && templateSlug !== 'mintslate';
+  const apexJsonKeys = new Set(['skillsJson','proficienciesJson','expJson','projJson','educationJson','certsJson','testimonialsJson']);
+  const marenEduJsonKeys = new Set(['educationJson','certsJson']);
   const fields = section.fields.filter(f => {
     if (showStatsWidget && /^stat\d(Num|Unit|Label)$/.test(f.key)) return false;
     if (/^aboutPara\d$/.test(f.key)) return false;
+    if (templateSlug === 'apex' && apexJsonKeys.has(f.key)) return false;
+    if (templateSlug === 'maren' && sectionKey === 'education' && marenEduJsonKeys.has(f.key)) return false;
     return true;
   });
   const isThemeSection = sectionKey === 'theme';
@@ -449,6 +502,67 @@ export default function DynamicSectionPage() {
         </Card>
       )}
 
+      {/* ── Maren: Education & Certifications widget ── */}
+      {templateSlug === 'maren' && sectionKey === 'education' && (<>
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Education</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Degrees, institutions, and study details</p>
+            </div>
+            <button onClick={() => setMarenEdu(e => [...e, { school: '', degree: '', period: '', detail: '' }])} className={addBtn}>
+              <Plus size={12}/> Add Entry
+            </button>
+          </div>
+          <div className="space-y-4">
+            {marenEdu.map((edu, i) => (
+              <div key={i} className="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Entry {i + 1}</span>
+                  <button onClick={() => setMarenEdu(e => e.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><Label>Institution</Label><input value={edu.school} onChange={e => setMarenEdu(es => es.map((x, j) => j===i ? {...x, school: e.target.value} : x))} placeholder="Technical University of Berlin" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Degree / Program</Label><input value={edu.degree} onChange={e => setMarenEdu(es => es.map((x, j) => j===i ? {...x, degree: e.target.value} : x))} placeholder="B.Sc. Computer Science" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Period</Label><input value={edu.period} onChange={e => setMarenEdu(es => es.map((x, j) => j===i ? {...x, period: e.target.value} : x))} placeholder="2020 – 2024" className={`${fieldInput} w-full`}/></div>
+                </div>
+                <div><Label>Detail / Notes</Label>
+                  <textarea value={edu.detail} onChange={e => setMarenEdu(es => es.map((x, j) => j===i ? {...x, detail: e.target.value} : x))} rows={2} placeholder="GPA, clubs, achievements, thesis topic…" className={taInput}/>
+                </div>
+              </div>
+            ))}
+            {marenEdu.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No education entries yet. Click &quot;Add Entry&quot; to start.</p>}
+          </div>
+        </Card>
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Certifications</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Courses, certificates, and credentials</p>
+            </div>
+            <button onClick={() => setMarenCerts(c => [...c, { name: '', issuer: '', year: '', url: '' }])} className={addBtn}>
+              <Plus size={12}/> Add Certification
+            </button>
+          </div>
+          <div className="space-y-3">
+            {marenCerts.map((cert, i) => (
+              <div key={i} className="p-3 rounded-lg border border-gray-200 bg-gray-50 space-y-2">
+                <div className="flex items-center gap-2">
+                  <input value={cert.name} onChange={e => setMarenCerts(cs => cs.map((x, j) => j===i ? {...x, name: e.target.value} : x))} placeholder="Certification name" className={fieldInput}/>
+                  <button onClick={() => setMarenCerts(cs => cs.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="col-span-2"><input value={cert.issuer} onChange={e => setMarenCerts(cs => cs.map((x, j) => j===i ? {...x, issuer: e.target.value} : x))} placeholder="Issuing body (e.g. Meta · Coursera)" className={`${fieldInput} w-full`}/></div>
+                  <div><input value={cert.year} onChange={e => setMarenCerts(cs => cs.map((x, j) => j===i ? {...x, year: e.target.value} : x))} placeholder="Year" className={`${fieldInput} w-full`}/></div>
+                  <div className="col-span-3"><input type="url" value={cert.url} onChange={e => setMarenCerts(cs => cs.map((x, j) => j===i ? {...x, url: e.target.value} : x))} placeholder="Certificate URL (optional)" className={`${fieldInput} w-full`}/></div>
+                </div>
+              </div>
+            ))}
+            {marenCerts.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No certifications yet. Click &quot;Add Certification&quot; to start.</p>}
+          </div>
+        </Card>
+      </>)}
+
       {/* ── MintSlate: Tools widget ── */}
       {templateSlug === 'mintslate' && sectionKey === 'skills' && (
         <Card>
@@ -608,6 +722,242 @@ export default function DynamicSectionPage() {
               </div>
             ))}
             {mintProjs.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No projects yet. Click &quot;Add Project&quot; to get started.</p>}
+          </div>
+        </Card>
+      )}
+
+      {/* ── Apex: Skills widget ── */}
+      {templateSlug === 'apex' && sectionKey === 'skills' && (<>
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Skill Categories</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Add categories like Languages, Frameworks, etc. — comma-separated items</p>
+            </div>
+            <button onClick={() => setApexSkills(s => [...s, { category: '', items: '' }])} className={addBtn}>
+              <Plus size={12}/> Add Category
+            </button>
+          </div>
+          <div className="space-y-3">
+            {apexSkills.map((sk, i) => (
+              <div key={i} className="p-3 rounded-lg border border-gray-200 bg-gray-50 space-y-2">
+                <div className="flex items-center gap-2">
+                  <input value={sk.category} onChange={e => setApexSkills(ss => ss.map((x, j) => j===i ? {...x, category: e.target.value} : x))}
+                    placeholder="Category (e.g. Languages)" className={fieldInput}/>
+                  <button onClick={() => setApexSkills(ss => ss.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+                </div>
+                <textarea value={sk.items} onChange={e => setApexSkills(ss => ss.map((x, j) => j===i ? {...x, items: e.target.value} : x))}
+                  placeholder="Items comma-separated (e.g. TypeScript, JavaScript, Python)" rows={2} className={taInput}/>
+              </div>
+            ))}
+            {apexSkills.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No skill categories yet. Click &quot;Add Category&quot; to start.</p>}
+          </div>
+        </Card>
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Core Mastery</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Key skills shown with a mastery level bar (1–5)</p>
+            </div>
+            <button onClick={() => setApexProfs(p => [...p, { name: '', level: 3 }])} className={addBtn}>
+              <Plus size={12}/> Add Skill
+            </button>
+          </div>
+          <div className="space-y-2">
+            {apexProfs.map((pr, i) => (
+              <div key={i} className="flex items-center gap-2 p-3 rounded-lg border border-gray-200 bg-gray-50">
+                <input value={pr.name} onChange={e => setApexProfs(ps => ps.map((x, j) => j===i ? {...x, name: e.target.value} : x))}
+                  placeholder="Skill name (e.g. React / Next.js)" className={fieldInput}/>
+                <select value={pr.level} onChange={e => setApexProfs(ps => ps.map((x, j) => j===i ? {...x, level: Number(e.target.value)} : x))}
+                  className="px-2 py-1.5 rounded-md border border-gray-200 bg-white text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                  {[1,2,3,4,5].map(n => <option key={n} value={n}>{n} / 5</option>)}
+                </select>
+                <button onClick={() => setApexProfs(ps => ps.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+              </div>
+            ))}
+            {apexProfs.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No mastery skills yet. Click &quot;Add Skill&quot; to start.</p>}
+          </div>
+        </Card>
+      </>)}
+
+      {/* ── Apex: Experience widget ── */}
+      {templateSlug === 'apex' && sectionKey === 'experience' && (
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Experience Entries</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Add as many roles as you need</p>
+            </div>
+            <button onClick={() => setApexExps(e => [...e, { period: '', nowLabel: '', duration: '', role: '', company: '', summary: '', bullets: '', stack: '', isCurrent: false }])} className={addBtn}>
+              <Plus size={12}/> Add Role
+            </button>
+          </div>
+          <div className="space-y-4">
+            {apexExps.map((exp, i) => (
+              <div key={i} className="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Role {i + 1}</span>
+                  <button onClick={() => setApexExps(e => e.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><Label>Role / Title</Label><input value={exp.role} onChange={e => setApexExps(es => es.map((x, j) => j===i ? {...x, role: e.target.value} : x))} placeholder="Frontend Engineer" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Company</Label><input value={exp.company} onChange={e => setApexExps(es => es.map((x, j) => j===i ? {...x, company: e.target.value} : x))} placeholder="Acme Labs · Series A SaaS" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Period</Label><input value={exp.period} onChange={e => setApexExps(es => es.map((x, j) => j===i ? {...x, period: e.target.value} : x))} placeholder="Jan 2025 – Present" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Duration label</Label><input value={exp.duration} onChange={e => setApexExps(es => es.map((x, j) => j===i ? {...x, duration: e.target.value} : x))} placeholder="11 months" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>&quot;Now&quot; label (if current)</Label><input value={exp.nowLabel} onChange={e => setApexExps(es => es.map((x, j) => j===i ? {...x, nowLabel: e.target.value} : x))} placeholder="Present" className={`${fieldInput} w-full`}/></div>
+                  <div className="flex items-end gap-2 pb-0.5">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={exp.isCurrent} onChange={e => setApexExps(es => es.map((x, j) => j===i ? {...x, isCurrent: e.target.checked} : x))} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"/>
+                      <span className="text-sm text-gray-700">Current role</span>
+                    </label>
+                  </div>
+                </div>
+                <div><Label>Summary</Label>
+                  <textarea value={exp.summary} onChange={e => setApexExps(es => es.map((x, j) => j===i ? {...x, summary: e.target.value} : x))} rows={2} placeholder="Short overview of your impact in this role" className={taInput}/>
+                </div>
+                <div><Label>Bullets (one per line)</Label>
+                  <textarea value={exp.bullets} onChange={e => setApexExps(es => es.map((x, j) => j===i ? {...x, bullets: e.target.value} : x))} rows={4} placeholder={"Redesigned onboarding → +28% activation\nMigrated design system across 80+ components"} className={taInput}/>
+                </div>
+                <div><Label>Tech stack (comma-separated)</Label>
+                  <input value={exp.stack} onChange={e => setApexExps(es => es.map((x, j) => j===i ? {...x, stack: e.target.value} : x))} placeholder="TypeScript, React, Next.js, Postgres" className={`${fieldInput} w-full`}/>
+                </div>
+              </div>
+            ))}
+            {apexExps.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No experience entries yet. Click &quot;Add Role&quot; to start.</p>}
+          </div>
+        </Card>
+      )}
+
+      {/* ── Apex: Projects widget ── */}
+      {templateSlug === 'apex' && sectionKey === 'projects' && (
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Projects</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Add as many projects as you need</p>
+            </div>
+            <button onClick={() => setApexProjs(p => [...p, { title: '', tag: '', desc: '', stack: '', liveUrl: '', githubUrl: '' }])} className={addBtn}>
+              <Plus size={12}/> Add Project
+            </button>
+          </div>
+          <div className="space-y-4">
+            {apexProjs.map((proj, i) => (
+              <div key={i} className="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Project {i + 1}</span>
+                  <button onClick={() => setApexProjs(p => p.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><Label>Title</Label><input value={proj.title} onChange={e => setApexProjs(ps => ps.map((x, j) => j===i ? {...x, title: e.target.value} : x))} placeholder="Project name" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Tag</Label><input value={proj.tag} onChange={e => setApexProjs(ps => ps.map((x, j) => j===i ? {...x, tag: e.target.value} : x))} placeholder="2025 · Solo" className={`${fieldInput} w-full`}/></div>
+                </div>
+                <div><Label>Description</Label>
+                  <textarea value={proj.desc} onChange={e => setApexProjs(ps => ps.map((x, j) => j===i ? {...x, desc: e.target.value} : x))} rows={3} placeholder="What you built and why it matters" className={taInput}/>
+                </div>
+                <div><Label>Tech stack (comma-separated)</Label>
+                  <input value={proj.stack} onChange={e => setApexProjs(ps => ps.map((x, j) => j===i ? {...x, stack: e.target.value} : x))} placeholder="Next.js, TypeScript, Postgres" className={`${fieldInput} w-full`}/>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><Label>Live URL</Label><input type="url" value={proj.liveUrl} onChange={e => setApexProjs(ps => ps.map((x, j) => j===i ? {...x, liveUrl: e.target.value} : x))} placeholder="https://..." className={`${fieldInput} w-full`}/></div>
+                  <div><Label>GitHub URL</Label><input type="url" value={proj.githubUrl} onChange={e => setApexProjs(ps => ps.map((x, j) => j===i ? {...x, githubUrl: e.target.value} : x))} placeholder="https://github.com/..." className={`${fieldInput} w-full`}/></div>
+                </div>
+              </div>
+            ))}
+            {apexProjs.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No projects yet. Click &quot;Add Project&quot; to start.</p>}
+          </div>
+        </Card>
+      )}
+
+      {/* ── Apex: Education & Certifications widget ── */}
+      {templateSlug === 'apex' && sectionKey === 'education' && (<>
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Education</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Degrees, institutions, and study details</p>
+            </div>
+            <button onClick={() => setApexEdu(e => [...e, { school: '', degree: '', period: '', detail: '' }])} className={addBtn}>
+              <Plus size={12}/> Add Entry
+            </button>
+          </div>
+          <div className="space-y-4">
+            {apexEdu.map((edu, i) => (
+              <div key={i} className="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Entry {i + 1}</span>
+                  <button onClick={() => setApexEdu(e => e.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><Label>Institution</Label><input value={edu.school} onChange={e => setApexEdu(es => es.map((x, j) => j===i ? {...x, school: e.target.value} : x))} placeholder="Anna University" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Degree / Program</Label><input value={edu.degree} onChange={e => setApexEdu(es => es.map((x, j) => j===i ? {...x, degree: e.target.value} : x))} placeholder="B.E. in Computer Science" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Period</Label><input value={edu.period} onChange={e => setApexEdu(es => es.map((x, j) => j===i ? {...x, period: e.target.value} : x))} placeholder="2020 – 2024" className={`${fieldInput} w-full`}/></div>
+                </div>
+                <div><Label>Detail / Notes</Label>
+                  <textarea value={edu.detail} onChange={e => setApexEdu(es => es.map((x, j) => j===i ? {...x, detail: e.target.value} : x))} rows={2} placeholder="CGPA, clubs, achievements, highlights…" className={taInput}/>
+                </div>
+              </div>
+            ))}
+            {apexEdu.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No education entries yet. Click &quot;Add Entry&quot; to start.</p>}
+          </div>
+        </Card>
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Certifications</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Courses, certificates, and credentials</p>
+            </div>
+            <button onClick={() => setApexCerts(c => [...c, { name: '', issuer: '', year: '', url: '' }])} className={addBtn}>
+              <Plus size={12}/> Add Certification
+            </button>
+          </div>
+          <div className="space-y-3">
+            {apexCerts.map((cert, i) => (
+              <div key={i} className="p-3 rounded-lg border border-gray-200 bg-gray-50 space-y-2">
+                <div className="flex items-center gap-2">
+                  <input value={cert.name} onChange={e => setApexCerts(cs => cs.map((x, j) => j===i ? {...x, name: e.target.value} : x))} placeholder="Certification name" className={fieldInput}/>
+                  <button onClick={() => setApexCerts(cs => cs.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="col-span-2"><input value={cert.issuer} onChange={e => setApexCerts(cs => cs.map((x, j) => j===i ? {...x, issuer: e.target.value} : x))} placeholder="Issuing body (e.g. Meta · Coursera)" className={`${fieldInput} w-full`}/></div>
+                  <div><input value={cert.year} onChange={e => setApexCerts(cs => cs.map((x, j) => j===i ? {...x, year: e.target.value} : x))} placeholder="Year" className={`${fieldInput} w-full`}/></div>
+                  <div className="col-span-3"><input type="url" value={cert.url} onChange={e => setApexCerts(cs => cs.map((x, j) => j===i ? {...x, url: e.target.value} : x))} placeholder="Certificate URL (optional)" className={`${fieldInput} w-full`}/></div>
+                </div>
+              </div>
+            ))}
+            {apexCerts.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No certifications yet. Click &quot;Add Certification&quot; to start.</p>}
+          </div>
+        </Card>
+      </>)}
+
+      {/* ── Apex: Testimonials widget ── */}
+      {templateSlug === 'apex' && sectionKey === 'testimonials' && (
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Testimonials</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Add kind words from colleagues, clients, or managers</p>
+            </div>
+            <button onClick={() => setApexTests(t => [...t, { quote: '', author: '', role: '' }])} className={addBtn}>
+              <Plus size={12}/> Add Testimonial
+            </button>
+          </div>
+          <div className="space-y-4">
+            {apexTests.map((t, i) => (
+              <div key={i} className="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Testimonial {i + 1}</span>
+                  <button onClick={() => setApexTests(ts => ts.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+                </div>
+                <div><Label>Quote</Label>
+                  <textarea value={t.quote} onChange={e => setApexTests(ts => ts.map((x, j) => j===i ? {...x, quote: e.target.value} : x))} rows={3} placeholder="What they said about working with you…" className={taInput}/>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><Label>Author name</Label><input value={t.author} onChange={e => setApexTests(ts => ts.map((x, j) => j===i ? {...x, author: e.target.value} : x))} placeholder="Priya Menon" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Role / Company</Label><input value={t.role} onChange={e => setApexTests(ts => ts.map((x, j) => j===i ? {...x, role: e.target.value} : x))} placeholder="Engineering Lead · Arcadia Labs" className={`${fieldInput} w-full`}/></div>
+                </div>
+              </div>
+            ))}
+            {apexTests.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No testimonials yet. Click &quot;Add Testimonial&quot; to start.</p>}
           </div>
         </Card>
       )}

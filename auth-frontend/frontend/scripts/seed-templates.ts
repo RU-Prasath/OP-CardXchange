@@ -4,6 +4,7 @@ dotenv.config({ path: '.env.local' });
 import mongoose from 'mongoose';
 import marenConfig from '../configs/template-configs/maren';
 import mintslateConfig from '../configs/template-configs/mintslate';
+import apexConfig from '../configs/template-configs/apex';
 
 const MONGODB_URI = process.env.MONGODB_URI!;
 
@@ -41,6 +42,13 @@ async function seed() {
     thumbnail: '', isPublished: true, pricingType: 'free',
     frontendPath: 'developer/MintSlateTemplate',
     adminConfig: { defaultContent: mintslateConfig.defaultContent },
+  });
+
+  await upsert('apex', {
+    name: 'Apex', slug: 'apex', category: 'developer',
+    thumbnail: '', isPublished: true, pricingType: 'free',
+    frontendPath: 'developer/ApexTemplate',
+    adminConfig: { defaultContent: apexConfig.defaultContent },
   });
 
   await mongoose.disconnect();

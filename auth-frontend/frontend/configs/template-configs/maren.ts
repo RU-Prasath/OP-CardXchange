@@ -67,10 +67,18 @@ const marenConfig: TemplateConfig = {
       ],
     },
     {
+      key: 'education',
+      label: 'Education & Certifications',
+      fields: [
+        { key: 'eduSectionLabel', label: 'Section Label (e.g. "05 / Education")', type: 'text', placeholder: '05 / Education', section: 'education' },
+        { key: 'eduHeading', label: 'Section Heading', type: 'text', placeholder: 'Where I learned to build.', section: 'education' },
+      ],
+    },
+    {
       key: 'contact',
       label: 'Contact',
       fields: [
-        { key: 'contactSectionLabel', label: 'Section Label (e.g. "05 / Contact")', type: 'text', placeholder: '05 / Contact', section: 'contact' },
+        { key: 'contactSectionLabel', label: 'Section Label (e.g. "06 / Contact")', type: 'text', placeholder: '06 / Contact', section: 'contact' },
         { key: 'contactHeadline', label: 'Contact Headline', type: 'text', placeholder: "Got an interesting problem? Let's talk.", section: 'contact' },
         { key: 'contactSub', label: 'Contact Subtext', type: 'textarea', placeholder: "I'm picking up freelance work for Q3 2026 and quietly looking at staff-leaning frontend roles.", section: 'contact' },
         { key: 'contactEmail', label: 'Email Address', type: 'text', placeholder: 'you@example.com', section: 'contact' },
@@ -169,6 +177,18 @@ const marenConfig: TemplateConfig = {
     proj4Tag: '2024 · For fun',
     proj4Desc: 'A daily kerning game for type nerds. Drag the letters until they sit right, get scored against a reference grid.',
     proj4Stack: 'React, Framer Motion, Vercel',
+    eduSectionLabel: '05 / Education',
+    eduHeading: 'Where I learned to build.',
+    educationJson: JSON.stringify([
+      { school: 'Technical University of Berlin', degree: 'B.Sc. Computer Science', period: '2020 – 2024', detail: 'GPA 1.8 · Thesis on reactive UI rendering architectures · Founded the campus web-dev club.' },
+      { school: 'Self-taught · Online', degree: 'Continuous learning', period: '2021 – Now', detail: 'Frontend Masters, Josh Comeau\'s CSS for JS, Kent C. Dodds\' EpicReact, Theo\'s courses. Reading 1 dev book a month.' },
+    ]),
+    certsJson: JSON.stringify([
+      { name: 'AWS Certified Cloud Practitioner', issuer: 'Amazon Web Services', year: '2024', url: '' },
+      { name: 'Accessibility (CPACC)', issuer: 'IAAP', year: '2024', url: '' },
+      { name: 'Epic React (Pro)', issuer: 'Kent C. Dodds', year: '2023', url: '' },
+      { name: 'Meta Front-End Developer', issuer: 'Meta · Coursera', year: '2023', url: '' },
+    ]),
     contactHeadline: "Got an interesting problem? Let's talk.",
     contactSub: "I'm picking up freelance work for Q3 2026 and quietly looking at staff-leaning frontend roles. The form is fine — email is faster.",
     contactEmail: 'maren@example.com',

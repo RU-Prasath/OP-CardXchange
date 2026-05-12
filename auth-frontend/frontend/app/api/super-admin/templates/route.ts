@@ -19,12 +19,12 @@ export async function POST(req: NextRequest) {
 
   await dbConnect();
   const body = await req.json();
-  const { name, slug, category, pricingType, frontendPath, thumbnail } = body;
+  const { name, slug, category, pricingType, monthlyPrice, yearlyPrice, frontendPath, thumbnail } = body;
 
   if (!name || !slug || !category || !frontendPath) {
     return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
   }
 
-  const template = await Template.create({ name, slug, category, pricingType: pricingType || 'free', frontendPath, thumbnail: thumbnail || '', isPublished: false });
+  const template = await Template.create({ name, slug, category, pricingType: pricingType || 'free', monthlyPrice: monthlyPrice || 0, yearlyPrice: yearlyPrice || 0, frontendPath, thumbnail: thumbnail || '', isPublished: false });
   return NextResponse.json({ success: true, data: template }, { status: 201 });
 }

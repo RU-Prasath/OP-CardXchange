@@ -5,15 +5,14 @@ import { useToast } from '@/components/ui/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 
-interface PricingPlan { _id: string; tier: string; monthlyPrice: number; yearlyPrice: number; }
 interface User {
   _id: string; email: string; username: string; phone: string; isActive: boolean;
   allocatedTemplate: { _id: string; name: string; category: string; pricingType: string } | null;
   plan: 'free' | 'paid'; planBilling: 'monthly' | 'yearly'; planStartDate: string | null;
-  pricingPlanId: PricingPlan | null; paidAmount: number;
+  pricingPlanId: { _id: string; tier: string; monthlyPrice: number; yearlyPrice: number } | null; paidAmount: number;
   createdAt: string;
 }
-interface Template { _id: string; name: string; slug: string; category: string; isPublished: boolean; pricingType: 'free' | 'paid'; }
+interface Template { _id: string; name: string; slug: string; category: string; isPublished: boolean; pricingType: 'free' | 'paid'; monthlyPrice: number; yearlyPrice: number; }
 
 function getRemainingDays(planStartDate: string | null, planBilling: 'monthly' | 'yearly'): number {
   if (!planStartDate) return 0;
@@ -47,11 +46,10 @@ function InlineEdit({ value, onSave, type = 'text', prefix }: { value: string; o
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
-  const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
-  const [form, setForm] = useState({ email: '', username: '', phone: '', plan: 'free' as 'free'|'paid', planBilling: 'monthly' as 'monthly'|'yearly', templateId: '', pricingPlanId: '', paidAmount: '' });
+  const [form, setForm] = useState({ email: '', username: '', phone: '', planBilling: 'monthly' as 'monthly'|'yearly', templateId: '' });
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
@@ -66,7 +64,6 @@ export default function UsersPage() {
   useEffect(() => { fetchUsers(); }, [fetchUsers]);
   useEffect(() => {
     fetch('/api/super-admin/templates').then(r => r.json()).then(d => { if (d.success) setTemplates(d.data); });
-    fetch('/api/super-admin/pricing').then(r => r.json()).then(d => { if (d.success) setPricingPlans(d.data); });
     fetch('/api/cron/deactivate-expired').catch(() => {});
   }, []);
 
@@ -78,15 +75,17 @@ export default function UsersPage() {
   async function createUser() {
     if (!form.email || !form.username) return;
     setSaving(true);
+    const selectedTemplate = templates.find(t => t._id === form.templateId);
+    const plan = selectedTemplate?.pricingType === 'paid' ? 'paid' : 'free';
     const res = await fetch('/api/super-admin/users', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, paidAmount: parseFloat(form.paidAmount) || 0 }),
+      body: JSON.stringify({ ...form, plan, paidAmount: 0 }),
     });
     const data = await res.json();
     if (data.success) {
       toast({ title: 'User created', variant: 'default' });
       setCreateOpen(false);
-      setForm({ email: '', username: '', phone: '', plan: 'free', planBilling: 'monthly', templateId: '', pricingPlanId: '', paidAmount: '' });
+      setForm({ email: '', username: '', phone: '', planBilling: 'monthly', templateId: '' });
       fetchUsers();
     } else {
       toast({ title: 'Error', description: data.error, variant: 'destructive' });
@@ -101,7 +100,8 @@ export default function UsersPage() {
     toast({ title: 'User deleted' });
   }
 
-  const availableTemplates = templates.filter(t => t.isPublished && (form.plan === 'paid' ? true : t.pricingType === 'free'));
+  const selectedTemplate = templates.find(t => t._id === form.templateId);
+  const availableTemplates = templates.filter(t => t.isPublished);
 
   // Plan expiry summary cards
   const paidUsers = users.filter(u => (u.plan || 'free') === 'paid' && u.planStartDate);
@@ -183,36 +183,14 @@ export default function UsersPage() {
                   <td className="px-4 py-3.5">
                     <InlineEdit value={u.phone || ''} onSave={v => patch(u._id, { phone: v })} type="tel"/>
                   </td>
-                  {/* Pricing Plan — dropdown */}
+                  {/* Pricing Plan — read-only display derived from template */}
                   <td className="px-4 py-3.5">
-                    <div className="flex flex-col gap-1.5">
-                      <select
-                        value={u.pricingPlanId?._id || ''}
-                        onChange={e => patch(u._id, { pricingPlanId: e.target.value || null })}
-                        className="bg-[#11151F] border border-white/[0.1] rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 min-w-[140px]"
-                        style={{colorScheme:'dark'}}
-                      >
-                        <option value="" className="bg-[#11151F] text-white/50">— Select plan —</option>
-                        {pricingPlans.map(p => (
-                          <option key={p._id} value={p._id} className="bg-[#11151F] text-white">
-                            {p.tier} {p.monthlyPrice > 0 ? `· ₹${p.monthlyPrice}/mo` : '· Free'}
-                          </option>
-                        ))}
-                      </select>
-                      {u.pricingPlanId && (
-                        <div className="flex gap-1">
-                          {(['monthly', 'yearly'] as const).map(b => {
-                            const price = b === 'monthly' ? u.pricingPlanId!.monthlyPrice : u.pricingPlanId!.yearlyPrice;
-                            return (
-                              <button key={b} onClick={() => patch(u._id, { planBilling: b })}
-                                className={`text-[9px] font-mono px-1.5 py-0.5 rounded capitalize transition-all ${(u.planBilling || 'monthly') === b ? 'bg-indigo-500/30 text-indigo-300 border border-indigo-500/40' : 'text-white/30 border border-white/[0.07] hover:text-white'}`}>
-                                {b} {price > 0 ? `₹${price}` : 'Free'}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
+                    <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full capitalize ${(u.plan || 'free') === 'paid' ? 'bg-violet-400/15 text-violet-300' : 'bg-emerald-400/15 text-emerald-300'}`}>
+                      {u.plan || 'free'}
+                    </span>
+                    {(u.plan || 'free') === 'paid' && (
+                      <div className="text-[10px] text-white/40 font-mono mt-0.5 capitalize">{u.planBilling || 'monthly'}</div>
+                    )}
                   </td>
                   {/* Paid Amount — inline editable */}
                   <td className="px-4 py-3.5">
@@ -226,14 +204,23 @@ export default function UsersPage() {
                   </td>
                   {/* Template */}
                   <td className="px-4 py-3.5">
-                    <select value={u.allocatedTemplate?._id || ''} onChange={e => patch(u._id, { templateId: e.target.value })}
-                      className="bg-[#11151F] border border-white/[0.1] rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 min-w-[130px]"
-                      style={{colorScheme:'dark'}}>
-                      <option value="" className="bg-[#11151F] text-white/50">— None —</option>
-                      {templates.filter(t => t.isPublished).map(t => (
-                        <option key={t._id} value={t._id} className="bg-[#11151F] text-white">{t.name} ({t.pricingType})</option>
-                      ))}
-                    </select>
+                    <div className="flex flex-col gap-1">
+                      <select value={u.allocatedTemplate?._id || ''} onChange={e => patch(u._id, { templateId: e.target.value })}
+                        className="bg-[#11151F] border border-white/[0.1] rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 min-w-[150px]"
+                        style={{colorScheme:'dark'}}>
+                        <option value="" style={{background:'#11151F', color:'#ffffff80'}}>— None —</option>
+                        {templates.filter(t => t.isPublished).map(t => (
+                          <option key={t._id} value={t._id} style={{background:'#11151F', color:'#ffffff'}}>
+                            {t.name} · {t.pricingType === 'paid' ? `₹${t.monthlyPrice}/mo` : 'Free'}
+                          </option>
+                        ))}
+                      </select>
+                      {u.allocatedTemplate && (() => {
+                        const tpl = templates.find(t => t._id === u.allocatedTemplate!._id);
+                        if (!tpl || tpl.pricingType !== 'paid') return null;
+                        return <span className="text-[10px] font-mono text-violet-300">₹{tpl.monthlyPrice}/mo · ₹{tpl.yearlyPrice}/yr</span>;
+                      })()}
+                    </div>
                   </td>
                   {/* Status */}
                   <td className="px-4 py-3.5">
@@ -268,59 +255,6 @@ export default function UsersPage() {
         <DialogContent>
           <DialogHeader><DialogTitle>Create new user</DialogTitle></DialogHeader>
           <div className="space-y-4 mt-2">
-            {/* Pricing Plan — card selector with billing toggle */}
-            <div>
-              <label className="text-sm text-white/60 mb-2 block">Pricing Plan *</label>
-              <div className="space-y-2">
-                {pricingPlans.length === 0 && <p className="text-xs text-white/30">No pricing plans configured yet.</p>}
-                {pricingPlans.map(p => {
-                  const isPaid = p.monthlyPrice > 0 || p.yearlyPrice > 0;
-                  const selected = form.pricingPlanId === p._id;
-                  const price = form.planBilling === 'yearly' ? p.yearlyPrice : p.monthlyPrice;
-                  return (
-                    <div key={p._id} onClick={() => setForm(f => ({ ...f, pricingPlanId: p._id, plan: isPaid ? 'paid' : 'free', templateId: '' }))}
-                      className={`cursor-pointer rounded-xl border p-3 transition-all ${selected ? 'border-indigo-500 bg-indigo-500/10' : 'border-white/[0.08] hover:border-white/20'}`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${selected ? 'border-indigo-400' : 'border-white/20'}`}>
-                            {selected && <div className="w-2 h-2 rounded-full bg-indigo-400"/>}
-                          </div>
-                          <span className="text-sm font-semibold text-white">{p.tier}</span>
-                          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${isPaid ? 'bg-violet-400/15 text-violet-300' : 'bg-emerald-400/15 text-emerald-300'}`}>
-                            {isPaid ? 'PAID' : 'FREE'}
-                          </span>
-                        </div>
-                        {isPaid && (
-                          <span className="text-sm font-bold text-white">
-                            {price > 0 ? `₹${price}` : 'Free'}<span className="text-xs text-white/40 font-normal">/{form.planBilling === 'yearly' ? 'yr' : 'mo'}</span>
-                          </span>
-                        )}
-                      </div>
-                      {/* Billing toggle shown inside selected plan */}
-                      {selected && isPaid && (
-                        <div className="flex gap-2 mt-2.5 ml-6">
-                          {(['monthly', 'yearly'] as const).map(b => (
-                            <button key={b} type="button" onClick={e => { e.stopPropagation(); setForm(f => ({ ...f, planBilling: b })); }}
-                              className={`flex-1 py-1.5 rounded-lg text-xs font-medium border transition-all ${form.planBilling === b ? 'border-indigo-500 bg-indigo-500/20 text-white' : 'border-white/[0.08] text-white/40 hover:text-white'}`}>
-                              {b === 'monthly' ? `Monthly · ₹${p.monthlyPrice}` : `Yearly · ₹${p.yearlyPrice}`}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            {/* Paid Amount — shown when paid plan selected */}
-            {form.plan === 'paid' && (
-              <div>
-                <label className="text-sm text-white/60 mb-1.5 block">Amount Paid (₹)</label>
-                <input type="number" value={form.paidAmount} onChange={e => setForm({...form, paidAmount: e.target.value})} placeholder="0"
-                  className="w-full h-10 rounded-xl border border-white/[0.12] bg-white/[0.03] px-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
-              </div>
-            )}
-            <hr className="border-white/[0.07]"/>
             <div>
               <label className="text-sm text-white/60 mb-1.5 block">Email address *</label>
               <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder="user@company.com"
@@ -338,17 +272,30 @@ export default function UsersPage() {
               {form.username && <p className="text-xs text-white/30 mt-1 font-mono">URL: /portfolio/{form.username}</p>}
             </div>
             <div>
-              <label className="text-sm text-white/60 mb-1.5 block">
-                Allocate template
-                {form.pricingPlanId && <span className="ml-2 text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-white/30">{form.plan === 'free' ? 'Free only' : 'All templates'}</span>}
-              </label>
-              <select value={form.templateId} onChange={e => setForm({...form, templateId: e.target.value})}
-                className="w-full h-10 rounded-xl border border-white/[0.12] bg-white/[0.03] px-3 text-sm text-white/70 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <option value="">— No template —</option>
+              <label className="text-sm text-white/60 mb-1.5 block">Allocate template</label>
+              <select value={form.templateId} onChange={e => setForm({...form, templateId: e.target.value, planBilling: 'monthly'})}
+                className="w-full h-10 rounded-xl border border-white/[0.12] bg-[#11151F] px-3 text-sm text-white/70 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                style={{colorScheme:'dark'}}>
+                <option value="" style={{background:'#11151F', color:'#ffffff80'}}>— No template —</option>
                 {availableTemplates.map(t => (
-                  <option key={t._id} value={t._id}>{t.name} ({t.category}) · {t.pricingType}</option>
+                  <option key={t._id} value={t._id} style={{background:'#11151F', color:'#ffffff'}}>
+                    {t.name} ({t.category}) · {t.pricingType === 'paid' ? `₹${t.monthlyPrice}/mo` : 'Free'}
+                  </option>
                 ))}
               </select>
+              {/* Billing picker — only shown when a paid template is selected */}
+              {selectedTemplate?.pricingType === 'paid' && (
+                <div className="flex gap-2 mt-2.5">
+                  {(['monthly', 'yearly'] as const).map(b => (
+                    <button key={b} type="button" onClick={() => setForm(f => ({ ...f, planBilling: b }))}
+                      className={`flex-1 py-2 rounded-xl text-xs font-medium border transition-all ${form.planBilling === b ? 'border-indigo-500 bg-indigo-500/20 text-white' : 'border-white/[0.08] text-white/40 hover:text-white hover:border-white/20'}`}>
+                      {b === 'monthly'
+                        ? `Monthly · ₹${selectedTemplate.monthlyPrice || 0}/mo`
+                        : `Yearly · ₹${selectedTemplate.yearlyPrice || 0}/yr`}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter className="mt-4 flex gap-2">

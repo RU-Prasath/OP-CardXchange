@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Users, Layers, Globe, Settings, LogOut, ChevronLeft, ChevronRight, User, DollarSign, Star } from 'lucide-react';
+import { LayoutDashboard, Users, Layers, Globe, Settings, LogOut, ChevronLeft, ChevronRight, User, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItem { label: string; href: string; icon: React.ReactNode; }
@@ -18,7 +18,6 @@ const superAdminNav: NavItem[] = [
   { label: 'Overview', href: '/super-admin', icon: <LayoutDashboard size={15}/> },
   { label: 'Users', href: '/super-admin/users', icon: <Users size={15}/> },
   { label: 'Templates', href: '/super-admin/templates', icon: <Layers size={15}/> },
-  { label: 'Pricing', href: '/super-admin/pricing', icon: <DollarSign size={15}/> },
   { label: 'Testimonials', href: '/super-admin/testimonials', icon: <Star size={15}/> },
   { label: 'Settings', href: '/super-admin/settings', icon: <Settings size={15}/> },
 ];

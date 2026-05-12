@@ -4,7 +4,6 @@ import Stats from '@/components/landing/Stats';
 import TemplateShowcase from '@/components/landing/TemplateShowcase';
 import Features from '@/components/landing/Features';
 import HowItWorks from '@/components/landing/HowItWorks';
-import Pricing from '@/components/landing/Pricing';
 import Testimonials from '@/components/landing/Testimonials';
 import FAQ from '@/components/landing/FAQ';
 import CTA from '@/components/landing/CTA';
@@ -26,8 +25,7 @@ export default function LandingPage() {
       <TemplateShowcase />
       <Features />
       <HowItWorks />
-      <Pricing />
-      <Testimonials />
+<Testimonials />
       <FAQ />
       <CTA />
       <Footer />

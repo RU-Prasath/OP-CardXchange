@@ -34,12 +34,12 @@ export async function POST(req: NextRequest) {
 
     await OTP.create({ email: normalizedEmail, code, expiresAt });
 
+    console.log(`\n[OTP] ${normalizedEmail}: ${code}\n`);
+
     try {
       await sendOTPEmail(normalizedEmail, code);
     } catch {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`\n[DEV OTP] ${normalizedEmail}: ${code}\n`);
-      } else {
+      if (process.env.NODE_ENV !== 'development') {
         throw new Error('Email delivery failed');
       }
     }

@@ -6,10 +6,10 @@ import { useToast } from '@/components/ui/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 
-interface Template { _id: string; name: string; slug: string; category: string; thumbnail: string; isPublished: boolean; pricingType: 'free' | 'paid'; frontendPath: string; createdAt: string; adminConfig?: { defaultContent?: Record<string, string> }; }
+interface Template { _id: string; name: string; slug: string; category: string; thumbnail: string; isPublished: boolean; pricingType: 'free' | 'paid'; monthlyPrice: number; yearlyPrice: number; frontendPath: string; createdAt: string; adminConfig?: { defaultContent?: Record<string, string> }; }
 
-const CATEGORIES = ['developer','designer','photographer','writer','minimal'];
-const TEMPLATE_PATHS = ['developer/AuroraTemplate','maren/MarenTemplate','designer/BonjourTemplate'];
+const CATEGORIES = ['developer'];
+const TEMPLATE_PATHS = ['developer/MarenTemplate','developer/MintSlateTemplate','developer/ApexTemplate'];
 
 const inputCls = "w-full h-10 rounded-xl border border-white/[0.12] bg-white/[0.03] px-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono";
 const textareaCls = "w-full rounded-xl border border-white/[0.12] bg-white/[0.03] px-3 py-2 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono resize-y min-h-[80px]";
@@ -20,7 +20,7 @@ export default function TemplatesPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
-  const [form, setForm] = useState({ name: '', slug: '', category: 'developer', pricingType: 'free', frontendPath: 'developer/AuroraTemplate', thumbnail: '' });
+  const [form, setForm] = useState({ name: '', slug: '', category: 'developer', pricingType: 'free', monthlyPrice: '', yearlyPrice: '', frontendPath: 'developer/MarenTemplate', thumbnail: '' });
   const [editDefaultContent, setEditDefaultContent] = useState('');
   const [search, setSearch] = useState('');
   const [saving, setSaving] = useState(false);
@@ -54,9 +54,10 @@ export default function TemplatesPage() {
   async function createTemplate() {
     if (!form.name || !form.slug) return;
     setSaving(true);
-    const res = await fetch('/api/super-admin/templates', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+    const payload = { ...form, monthlyPrice: parseFloat(form.monthlyPrice) || 0, yearlyPrice: parseFloat(form.yearlyPrice) || 0 };
+    const res = await fetch('/api/super-admin/templates', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     const data = await res.json();
-    if (data.success) { toast({ title: 'Template created' }); setCreateOpen(false); setForm({ name: '', slug: '', category: 'developer', pricingType: 'free', frontendPath: 'developer/AuroraTemplate', thumbnail: '' }); fetchTemplates(); }
+    if (data.success) { toast({ title: 'Template created' }); setCreateOpen(false); setForm({ name: '', slug: '', category: 'developer', pricingType: 'free', monthlyPrice: '', yearlyPrice: '', frontendPath: 'developer/MarenTemplate', thumbnail: '' }); fetchTemplates(); }
     else toast({ title: 'Error', description: data.error, variant: 'destructive' });
     setSaving(false);
   }
@@ -74,7 +75,17 @@ export default function TemplatesPage() {
     try { defaultContent = JSON.parse(editDefaultContent); } catch { toast({ title: 'Invalid JSON', variant: 'destructive' }); setSaving(false); return; }
     const res = await fetch(`/api/super-admin/templates/${editingTemplate._id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: editingTemplate.name, thumbnail: editingTemplate.thumbnail, frontendPath: editingTemplate.frontendPath, adminConfig: { defaultContent } }),
+      body: JSON.stringify({
+        name: editingTemplate.name,
+        slug: editingTemplate.slug,
+        category: editingTemplate.category,
+        pricingType: editingTemplate.pricingType,
+        monthlyPrice: editingTemplate.monthlyPrice || 0,
+        yearlyPrice: editingTemplate.yearlyPrice || 0,
+        thumbnail: editingTemplate.thumbnail,
+        frontendPath: editingTemplate.frontendPath,
+        adminConfig: { defaultContent },
+      }),
     });
     const data = await res.json();
     if (data.success) { toast({ title: 'Template updated' }); setEditOpen(false); fetchTemplates(); }
@@ -150,6 +161,9 @@ export default function TemplatesPage() {
                 <div>
                   <div className="font-semibold text-sm">{t.name}</div>
                   <div className="text-[11px] text-white/30 font-mono mt-0.5">{t.category} · {t.slug}</div>
+                  {t.pricingType === 'paid' && (
+                    <div className="text-[11px] text-violet-300 font-mono mt-0.5">₹{t.monthlyPrice || 0}/mo · ₹{t.yearlyPrice || 0}/yr</div>
+                  )}
                 </div>
               </div>
               <div className="text-[11px] text-white/30 font-mono mb-4">{t.frontendPath}</div>
@@ -215,11 +229,23 @@ export default function TemplatesPage() {
               </div>
               <div>
                 <label className="text-sm text-white/60 mb-1 block">Pricing</label>
-                <select value={form.pricingType} onChange={e => setForm({...form, pricingType: e.target.value})} className="w-full h-10 rounded-xl border border-white/[0.12] bg-[#11151F] px-3 text-sm text-white/70 focus:outline-none">
+                <select value={form.pricingType} onChange={e => setForm({...form, pricingType: e.target.value, monthlyPrice: '', yearlyPrice: ''})} className="w-full h-10 rounded-xl border border-white/[0.12] bg-[#11151F] px-3 text-sm text-white/70 focus:outline-none">
                   <option value="free">Free</option><option value="paid">Paid</option>
                 </select>
               </div>
             </div>
+            {form.pricingType === 'paid' && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-white/60 mb-1 block">Monthly price (₹)</label>
+                  <input type="number" value={form.monthlyPrice} onChange={e => setForm({...form, monthlyPrice: e.target.value})} placeholder="0" className={inputCls}/>
+                </div>
+                <div>
+                  <label className="text-sm text-white/60 mb-1 block">Yearly price (₹)</label>
+                  <input type="number" value={form.yearlyPrice} onChange={e => setForm({...form, yearlyPrice: e.target.value})} placeholder="0" className={inputCls}/>
+                </div>
+              </div>
+            )}
             <div>
               <label className="text-sm text-white/60 mb-1 block">Frontend component path</label>
               <select value={form.frontendPath} onChange={e => setForm({...form, frontendPath: e.target.value})} className="w-full h-10 rounded-xl border border-white/[0.12] bg-[#11151F] px-3 text-sm text-white/70 focus:outline-none">
@@ -242,10 +268,7 @@ export default function TemplatesPage() {
           <DialogHeader><DialogTitle>Edit template — {editingTemplate?.name}</DialogTitle></DialogHeader>
           {editingTemplate && (
             <div className="space-y-4 mt-2">
-              <div>
-                <label className="text-sm text-white/60 mb-1 block">Name</label>
-                <input value={editingTemplate.name} onChange={e => setEditingTemplate(t => t ? { ...t, name: e.target.value } : t)} className={inputCls}/>
-              </div>
+              {/* Thumbnail */}
               <div>
                 <label className="text-sm text-white/60 mb-1 block">Thumbnail</label>
                 <div className="flex items-center gap-3">
@@ -257,12 +280,52 @@ export default function TemplatesPage() {
                   <input value={editingTemplate.thumbnail} onChange={e => setEditingTemplate(t => t ? { ...t, thumbnail: e.target.value } : t)} placeholder="Image URL" className={`${inputCls} flex-1`}/>
                 </div>
               </div>
+              {/* Name */}
+              <div>
+                <label className="text-sm text-white/60 mb-1 block">Name</label>
+                <input value={editingTemplate.name} onChange={e => setEditingTemplate(t => t ? { ...t, name: e.target.value } : t)} className={inputCls}/>
+              </div>
+              {/* Slug */}
+              <div>
+                <label className="text-sm text-white/60 mb-1 block">Slug</label>
+                <input value={editingTemplate.slug} onChange={e => setEditingTemplate(t => t ? { ...t, slug: e.target.value.toLowerCase().replace(/\s+/g,'-') } : t)} className={inputCls}/>
+              </div>
+              {/* Category + Pricing type */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-white/60 mb-1 block">Category</label>
+                  <select value={editingTemplate.category} onChange={e => setEditingTemplate(t => t ? { ...t, category: e.target.value } : t)} className="w-full h-10 rounded-xl border border-white/[0.12] bg-[#11151F] px-3 text-sm text-white/70 focus:outline-none">
+                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm text-white/60 mb-1 block">Pricing</label>
+                  <select value={editingTemplate.pricingType} onChange={e => setEditingTemplate(t => t ? { ...t, pricingType: e.target.value as 'free'|'paid', monthlyPrice: 0, yearlyPrice: 0 } : t)} className="w-full h-10 rounded-xl border border-white/[0.12] bg-[#11151F] px-3 text-sm text-white/70 focus:outline-none">
+                    <option value="free">Free</option><option value="paid">Paid</option>
+                  </select>
+                </div>
+              </div>
+              {/* Monthly + Yearly price — only when paid */}
+              {editingTemplate.pricingType === 'paid' && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm text-white/60 mb-1 block">Monthly price (₹)</label>
+                    <input type="number" value={editingTemplate.monthlyPrice || 0} onChange={e => setEditingTemplate(t => t ? { ...t, monthlyPrice: parseFloat(e.target.value) || 0 } : t)} placeholder="0" className={inputCls}/>
+                  </div>
+                  <div>
+                    <label className="text-sm text-white/60 mb-1 block">Yearly price (₹)</label>
+                    <input type="number" value={editingTemplate.yearlyPrice || 0} onChange={e => setEditingTemplate(t => t ? { ...t, yearlyPrice: parseFloat(e.target.value) || 0 } : t)} placeholder="0" className={inputCls}/>
+                  </div>
+                </div>
+              )}
+              {/* Frontend path */}
               <div>
                 <label className="text-sm text-white/60 mb-1 block">Frontend path</label>
                 <select value={editingTemplate.frontendPath} onChange={e => setEditingTemplate(t => t ? { ...t, frontendPath: e.target.value } : t)} className="w-full h-10 rounded-xl border border-white/[0.12] bg-[#11151F] px-3 text-sm text-white/70 focus:outline-none">
                   {TEMPLATE_PATHS.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
               </div>
+              {/* Default Content JSON */}
               <div>
                 <label className="text-sm text-white/60 mb-1 block">Default Content (JSON)</label>
                 <p className="text-xs text-white/30 mb-2 font-mono">This content is shown on the preview page and used as default for new users.</p>

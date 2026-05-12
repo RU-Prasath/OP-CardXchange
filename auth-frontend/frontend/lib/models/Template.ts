@@ -7,6 +7,8 @@ export interface ITemplate extends Document {
   thumbnail: string;
   isPublished: boolean;
   pricingType: 'free' | 'paid';
+  monthlyPrice: number;
+  yearlyPrice: number;
   frontendPath: string;
   adminConfig: Record<string, unknown>;
   createdAt: Date;
@@ -25,11 +27,18 @@ const TemplateSchema = new Schema<ITemplate>(
     thumbnail: { type: String, default: '' },
     isPublished: { type: Boolean, default: false },
     pricingType: { type: String, enum: ['free', 'paid'], default: 'free' },
+    monthlyPrice: { type: Number, default: 0 },
+    yearlyPrice: { type: Number, default: 0 },
     frontendPath: { type: String, required: true },
     adminConfig: { type: Schema.Types.Mixed, default: {} },
   },
   { timestamps: true }
 );
+
+// Clear cached model in dev so schema changes take effect without full restart
+if (process.env.NODE_ENV !== 'production' && mongoose.models['Template']) {
+  delete (mongoose.models as Record<string, unknown>)['Template'];
+}
 
 const Template: Model<ITemplate> =
   (mongoose.models.Template as Model<ITemplate>) ||

@@ -9,6 +9,7 @@ interface TemplateProps {
 const templateRegistry: Record<string, ComponentType<TemplateProps>> = {
   'developer/MarenTemplate': dynamic(() => import('./developer/MarenTemplate'), { ssr: true }) as ComponentType<TemplateProps>,
   'developer/MintSlateTemplate': dynamic(() => import('./developer/MintSlateTemplate'), { ssr: true }) as ComponentType<TemplateProps>,
+  'developer/ApexTemplate': dynamic(() => import('./developer/ApexTemplate'), { ssr: true }) as ComponentType<TemplateProps>,
 };
 
 export function getTemplateComponent(frontendPath: string): ComponentType<TemplateProps> | null {

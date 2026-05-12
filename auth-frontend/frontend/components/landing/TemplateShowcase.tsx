@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Eye } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
-interface Template { _id: string; name: string; slug: string; category: string; pricingType: 'free'|'paid'; thumbnail: string; }
+interface Template { _id: string; name: string; slug: string; category: string; pricingType: 'free'|'paid'; monthlyPrice: number; yearlyPrice: number; thumbnail: string; }
 interface SiteContact { contactEmail: string; contactPhone: string; }
 
 const THUMB_STYLES: Record<string, React.ReactNode> = {
@@ -105,9 +105,16 @@ export default function TemplateShowcase() {
                     <div className="font-semibold text-sm mb-1">{tpl.name}</div>
                     <div className="text-[11px] text-white/30 font-mono capitalize">{tpl.category}</div>
                   </div>
-                  <span className={`text-sm font-semibold ${tpl.pricingType === 'free' ? 'text-emerald-400' : 'text-white'}`}>
-                    {tpl.pricingType === 'free' ? 'Free' : 'Paid'}
-                  </span>
+                  <div className="text-right shrink-0">
+                    {tpl.pricingType === 'free' ? (
+                      <span className="text-sm font-semibold text-emerald-400">Free</span>
+                    ) : (
+                      <div>
+                        <div className="text-sm font-semibold text-white">₹{tpl.monthlyPrice || 0}<span className="text-xs text-white/40 font-normal">/mo</span></div>
+                        <div className="text-[10px] text-white/30 font-mono">₹{tpl.yearlyPrice || 0}/yr</div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

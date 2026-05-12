@@ -149,6 +149,7 @@ export default function MarenTemplate({ content, username }: Props) {
       .maren-section-subtitle { display: none !important; }
       .maren-project-tag { white-space: normal !important; word-break: break-word !important; }
       .maren-contact-value { font-size: 13px !important; word-break: break-all !important; white-space: normal !important; overflow: visible !important; text-overflow: clip !important; }
+      .maren-edu-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
     }
     @media (max-width: 480px) {
       .maren-skills-grid { grid-template-columns: 1fr !important; }
@@ -168,7 +169,8 @@ export default function MarenTemplate({ content, username }: Props) {
     { num: '02', href: '#skills', label: 'Skills' },
     { num: '03', href: '#experience', label: 'Experience' },
     { num: '04', href: '#projects', label: 'Work' },
-    { num: '05', href: '#contact', label: 'Contact' },
+    { num: '05', href: '#education', label: 'Education' },
+    { num: '06', href: '#contact', label: 'Contact' },
   ];
 
   const name = c.name || 'Your Name';
@@ -233,6 +235,10 @@ export default function MarenTemplate({ content, username }: Props) {
         githubUrl: c[`proj${i}GithubUrl`],
         visual: PROJECT_VISUALS[(i - 1) % PROJECT_VISUALS.length],
       })).filter((p) => p.title);
+
+  // Education & Certifications
+  const educationArr = parseJ<{ school: string; degree: string; period: string; detail: string }>('educationJson', []);
+  const certsArr = parseJ<{ name: string; issuer: string; year: string; url: string }>('certsJson', []);
 
   const monoFont = "'Geist Mono', ui-monospace, monospace";
 
@@ -1207,8 +1213,177 @@ export default function MarenTemplate({ content, username }: Props) {
         </div>
       </section>
 
+      {/* Education & Certifications */}
+      <section id="education" style={{ padding: '120px 0' }}>
+        <div style={{ maxWidth: '1120px', margin: '0 auto', padding: '0 32px' }}>
+          <div style={sectionHeaderStyle}>
+            <span style={sectionNumStyle}>{c.eduSectionLabel || '05 / Education'}</span>
+            <div style={dividerStyle} />
+          </div>
+          <h2 style={sectionTitleStyle}>{c.eduHeading || 'Where I learned to build.'}</h2>
+
+          <div
+            className="maren-edu-grid"
+            style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '64px', alignItems: 'start' }}
+          >
+            {/* Education entries */}
+            <div>
+              <div style={{ fontFamily: monoFont, fontSize: '11px', color: 'var(--fg-faint)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '24px' }}>
+                Degrees &amp; Study
+              </div>
+              {educationArr.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  {educationArr.map((edu, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        padding: '24px',
+                        borderRadius: '14px',
+                        border: '1px solid var(--line)',
+                        background: 'var(--bg-card)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        transition: 'border-color 0.2s, box-shadow 0.2s',
+                        marginBottom: i < educationArr.length - 1 ? '12px' : 0,
+                      }}
+                      onMouseEnter={(e) => {
+                        const el = e.currentTarget as HTMLElement;
+                        el.style.borderColor = 'var(--accent)';
+                        el.style.boxShadow = 'var(--shadow-md)';
+                      }}
+                      onMouseLeave={(e) => {
+                        const el = e.currentTarget as HTMLElement;
+                        el.style.borderColor = 'var(--line)';
+                        el.style.boxShadow = 'none';
+                      }}
+                    >
+                      {/* Accent left bar */}
+                      <div style={{ position: 'absolute', left: 0, top: '16px', bottom: '16px', width: '3px', borderRadius: '0 2px 2px 0', background: 'var(--accent)', opacity: 0.7 }} />
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                        <div>
+                          <div style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.01em', marginBottom: '2px' }}>
+                            {edu.degree}
+                          </div>
+                          <div style={{ fontFamily: monoFont, fontSize: '12px', color: 'var(--fg-muted)' }}>
+                            {edu.school}
+                          </div>
+                        </div>
+                        {edu.period && (
+                          <span style={{
+                            fontFamily: monoFont, fontSize: '11px', color: 'var(--accent-fg)',
+                            background: 'var(--accent-soft)', border: '1px solid color-mix(in oklch, var(--accent) 30%, transparent)',
+                            padding: '3px 10px', borderRadius: '6px', whiteSpace: 'nowrap', flexShrink: 0,
+                          }}>
+                            {edu.period}
+                          </span>
+                        )}
+                      </div>
+                      {edu.detail && (
+                        <p style={{ fontSize: '13.5px', color: 'var(--fg-faint)', lineHeight: 1.6, marginTop: '10px' }}>
+                          {edu.detail}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ padding: '32px', borderRadius: '14px', border: '1px dashed var(--line)', color: 'var(--fg-faint)', fontFamily: monoFont, fontSize: '13px', textAlign: 'center' }}>
+                  Add education entries in the admin panel
+                </div>
+              )}
+            </div>
+
+            {/* Certifications */}
+            <div>
+              <div style={{ fontFamily: monoFont, fontSize: '11px', color: 'var(--fg-faint)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '24px' }}>
+                Certifications
+              </div>
+              {certsArr.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {certsArr.map((cert, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '14px',
+                        padding: '16px 20px',
+                        borderRadius: '12px',
+                        border: '1px solid var(--line)',
+                        background: 'var(--bg-card)',
+                        transition: 'border-color 0.2s, background 0.2s',
+                      }}
+                      onMouseEnter={(e) => {
+                        const el = e.currentTarget as HTMLElement;
+                        el.style.borderColor = 'var(--line-strong)';
+                        el.style.background = 'var(--bg-elev)';
+                      }}
+                      onMouseLeave={(e) => {
+                        const el = e.currentTarget as HTMLElement;
+                        el.style.borderColor = 'var(--line)';
+                        el.style.background = 'var(--bg-card)';
+                      }}
+                    >
+                      {/* Badge icon */}
+                      <div style={{
+                        width: '38px', height: '38px', borderRadius: '10px', flexShrink: 0,
+                        background: 'var(--accent-soft)', border: '1px solid color-mix(in oklch, var(--accent) 25%, transparent)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" style={{ color: 'var(--accent)' }}>
+                          <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                        </svg>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--fg)', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {cert.name}
+                        </div>
+                        <div style={{ fontFamily: monoFont, fontSize: '11px', color: 'var(--fg-faint)' }}>
+                          {cert.issuer}{cert.year ? ` · ${cert.year}` : ''}
+                        </div>
+                      </div>
+                      {cert.url ? (
+                        <a href={cert.url} target="_blank" rel="noopener noreferrer"
+                          style={{
+                            flexShrink: 0, padding: '5px 12px', borderRadius: '7px',
+                            border: '1px solid var(--line)', background: 'var(--bg-elev)',
+                            fontFamily: monoFont, fontSize: '11px', color: 'var(--fg-muted)',
+                            textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px',
+                            transition: 'border-color 0.15s, color 0.15s',
+                          }}
+                          onMouseEnter={(e) => {
+                            const el = e.currentTarget as HTMLElement;
+                            el.style.borderColor = 'var(--accent)';
+                            el.style.color = 'var(--accent-fg)';
+                          }}
+                          onMouseLeave={(e) => {
+                            const el = e.currentTarget as HTMLElement;
+                            el.style.borderColor = 'var(--line)';
+                            el.style.color = 'var(--fg-muted)';
+                          }}
+                        >
+                          View <ExternalLinkIcon />
+                        </a>
+                      ) : (
+                        <span style={{ flexShrink: 0, fontFamily: monoFont, fontSize: '11px', color: 'var(--accent)', padding: '4px 8px', borderRadius: '6px', background: 'var(--accent-soft)' }}>
+                          {cert.year}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ padding: '32px', borderRadius: '14px', border: '1px dashed var(--line)', color: 'var(--fg-faint)', fontFamily: monoFont, fontSize: '13px', textAlign: 'center' }}>
+                  Add certifications in the admin panel
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Contact */}
-      <section id="contact" style={{ padding: '120px 0' }}>
+      <section id="contact" style={{ padding: '120px 0', background: 'var(--bg-elev)' }}>
         <div style={{ maxWidth: '1120px', margin: '0 auto', padding: '0 32px' }}>
           <div
             className="maren-contact-wrap"

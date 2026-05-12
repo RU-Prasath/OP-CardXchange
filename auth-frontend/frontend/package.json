@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "seed": "ts-node --project tsconfig.json -e \"require('./scripts/seed.ts')\""
+    "seed": "ts-node --project tsconfig.json -e \"require('./scripts/seed.ts')\"",
+    "seed-templates": "ts-node --project scripts/tsconfig.json scripts/seed-templates.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",
