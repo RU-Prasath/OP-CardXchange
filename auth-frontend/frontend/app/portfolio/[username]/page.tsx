@@ -31,7 +31,8 @@ async function getData(username: string) {
     remaining = Math.max(0, Math.ceil((expiry.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
   }
 
-  return { user, portfolio, template, remaining, contactPhone: settings?.contactPhone || '' };
+  const isPaid = (user.plan || 'free') === 'paid';
+  return { user, portfolio, template, remaining, contactPhone: settings?.contactPhone || '', isPaid };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -60,6 +61,7 @@ export default async function PortfolioPage({ params }: Props) {
       <TemplateComponent
         content={data.portfolio.content as Record<string, string>}
         username={params.username}
+        hideBranding={data.isPaid}
       />
     </>
   );

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { adminApi } from "../../services/api";
 import { formatDate } from "../../utils/helpers";
 import { Target, Sparkles, Mail, Building2 } from "lucide-react";
+import DbStorageWidget from "../components/DbStorageWidget";
 
 function StatCard({ label, value, Icon, link, color = "gold" }) {
   return (
@@ -53,6 +54,11 @@ export default function Dashboard() {
           <StatCard label="Projects" value={stats.totalProjects} Icon={Building2} link="/admin/projects" />
         </div>
       )}
+
+      {/* DB Storage */}
+      <div className="mb-6">
+        <DbStorageWidget />
+      </div>
 
       {/* Recent Data */}
       <div className="grid lg:grid-cols-2 gap-6">

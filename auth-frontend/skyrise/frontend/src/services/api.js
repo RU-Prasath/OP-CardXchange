@@ -47,6 +47,7 @@ export const adminApi = {
   login: (data) => api.post("/admin/login", data),
   getProfile: () => api.get("/admin/profile"),
   getDashboard: () => api.get("/admin/dashboard"),
+  getDbStats: () => api.get("/admin/db-stats"),
 
   // Leads
   getLeads: (params) => api.get("/leads", { params }),

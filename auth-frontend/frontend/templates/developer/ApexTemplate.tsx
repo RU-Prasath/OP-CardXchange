@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 
-interface Props { content: Record<string, string>; username: string; }
+interface Props { content: Record<string, string>; username: string; hideBranding?: boolean; }
 
 function pl(v?: string) { return v ? v.split(',').map(s => s.trim()).filter(Boolean) : []; }
 function ls(v?: string) { return v ? v.split('\n').map(s => s.trim()).filter(Boolean) : []; }
@@ -50,7 +50,7 @@ const PROJECT_GRADIENTS = [
   'linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #a855f7 100%)',
 ];
 
-export default function ApexTemplate({ content }: Props) {
+export default function ApexTemplate({ content, hideBranding }: Props) {
   const c = content;
   const [dark, setDark] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -1140,7 +1140,7 @@ export default function ApexTemplate({ content }: Props) {
       {/* ── Footer ── */}
       <footer>
         <div className="apx-shell apx-footer">
-          <span>{name} · Built with FolioForge</span>
+          <span>{hideBranding ? name : `${name} · Built with FolioForge`}</span>
           <div className="apx-footer-socials">
             {c.githubUrl && <a href={c.githubUrl} target="_blank" rel="noopener noreferrer"><Github s={16} /></a>}
             {c.linkedinUrl && <a href={c.linkedinUrl} target="_blank" rel="noopener noreferrer"><Linkedin s={16} /></a>}

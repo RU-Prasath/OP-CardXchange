@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 
-interface Props { content: Record<string, string>; username: string; }
+interface Props { content: Record<string, string>; username: string; hideBranding?: boolean; }
 
 function pl(v?: string) { return v ? v.split(',').map(s => s.trim()).filter(Boolean) : []; }
 function ls(v?: string) { return v ? v.split('\n').map(s => s.trim()).filter(Boolean) : []; }
@@ -457,7 +457,7 @@ const PROJECT_GRADIENTS = [
 ];
 const FALLBACK_EMOJIS = ['🚀','⚡','🔧','🎨','🌱','📊','🛠️','✨'];
 
-export default function MintSlateTemplate({ content: c }: Props) {
+export default function MintSlateTemplate({ content: c, hideBranding }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
@@ -989,8 +989,8 @@ export default function MintSlateTemplate({ content: c }: Props) {
           <span>© {new Date().getFullYear()} {name}</span>
           <span className="sep">·</span>
           <span>Mint Slate</span>
-          <span className="sep">·</span>
-          <span>Powered by FolioForge</span>
+          {!hideBranding && <><span className="sep">·</span>
+          <span>Powered by FolioForge</span></>}
           <span className="sep">·</span>
           <span className="v">v2.0</span>
         </div>

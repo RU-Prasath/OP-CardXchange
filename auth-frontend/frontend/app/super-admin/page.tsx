@@ -3,6 +3,7 @@ import User from '@/lib/models/User';
 import Template from '@/lib/models/Template';
 import Portfolio from '@/lib/models/Portfolio';
 import { Users, Layers, Globe, TrendingUp } from 'lucide-react';
+import DbStorageWidget from './_components/DbStorageWidget';
 
 async function getDashboardStats() {
   await dbConnect();
@@ -43,8 +44,8 @@ export default async function SuperAdminDashboard() {
         ))}
       </div>
 
-      <div className="grid md:grid-cols-2 gap-5">
-        <div className="card-panel p-6">
+      <div className="grid md:grid-cols-3 gap-5 mb-5">
+        <div className="md:col-span-2 card-panel p-6">
           <h2 className="font-semibold mb-4">Quick Actions</h2>
           <div className="space-y-2">
             {[
@@ -59,6 +60,10 @@ export default async function SuperAdminDashboard() {
           </div>
         </div>
 
+        <DbStorageWidget/>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-5">
         <div className="card-panel p-6">
           <h2 className="font-semibold mb-4">Platform Status</h2>
           <div className="space-y-3">

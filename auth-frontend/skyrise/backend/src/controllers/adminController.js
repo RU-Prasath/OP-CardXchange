@@ -3,6 +3,7 @@ const Admin = require("../models/Admin");
 const Lead = require("../models/Lead");
 const Contact = require("../models/Contact");
 const Project = require("../models/Project");
+const mongoose = require("mongoose");
 
 const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || "7d" });
@@ -90,4 +91,24 @@ exports.createAdmin = async (req, res) => {
 exports.getAllAdmins = async (req, res) => {
   const admins = await Admin.find().select("-password").sort({ createdAt: -1 });
   res.json({ success: true, admins });
+};
+
+exports.getDbStats = async (req, res) => {
+  try {
+    const db = mongoose.connection.db;
+    if (!db) return res.status(500).json({ success: false, message: "No DB connection" });
+
+    const stats = await db.command({ dbStats: 1, scale: 1 });
+    res.json({
+      success: true,
+      dataSize: stats.dataSize,
+      storageSize: stats.storageSize,
+      indexSize: stats.indexSize,
+      totalSize: stats.dataSize + stats.indexSize,
+      collections: stats.collections,
+      objects: stats.objects,
+    });
+  } catch {
+    res.status(500).json({ success: false, message: "Failed to fetch DB stats" });
+  }
 };

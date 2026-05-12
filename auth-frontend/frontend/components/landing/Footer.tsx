@@ -32,7 +32,7 @@ export default function Footer() {
         </div>
 
         <div className="flex justify-between items-center pt-6 border-t border-white/[0.07] text-sm text-white/30 flex-wrap gap-4">
-          <span>© 2026 Folioforge Labs · Built by DevHood Tech Team. Contact: 9876543127.</span>
+          <span>© 2026 Folioforge Labs · Built by DevHood Tech Team. Contact: 9360803798.</span>
           <span className="font-mono flex items-center gap-1.5"><span className="text-emerald-400">✓</span> All systems operational</span>
         </div>
       </div>

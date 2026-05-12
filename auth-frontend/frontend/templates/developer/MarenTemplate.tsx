@@ -5,6 +5,7 @@ import { useState } from 'react';
 interface Props {
   content: Record<string, string>;
   username: string;
+  hideBranding?: boolean;
 }
 
 function pl(val: string | undefined): string[] {
@@ -56,7 +57,7 @@ const PROJECT_VISUALS = [
   `linear-gradient(45deg, var(--accent-soft) 0%, transparent 50%), repeating-linear-gradient(45deg, var(--line) 0 1px, transparent 1px 10px), var(--bg-elev)`,
 ];
 
-export default function MarenTemplate({ content, username }: Props) {
+export default function MarenTemplate({ content, username, hideBranding }: Props) {
   const [dark, setDark] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showAllExp, setShowAllExp] = useState(false);
@@ -1564,7 +1565,8 @@ export default function MarenTemplate({ content, username }: Props) {
           }}
         >
           <span style={{ fontFamily: monoFont, fontSize: '12px', color: 'var(--fg-faint)' }}>
-            {name} · Built with FolioForge
+            {!hideBranding && `${name} · Built with FolioForge`}
+            {hideBranding && name}
           </span>
           <div style={{ display: 'flex', gap: '16px' }}>
             {c.githubUrl && (

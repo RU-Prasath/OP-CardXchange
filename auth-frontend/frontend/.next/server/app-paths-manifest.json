@@ -1,10 +1,8 @@
 {
-  "/preview/[slug]/page": "app/preview/[slug]/page.js",
-  "/api/portfolio/content/route": "app/api/portfolio/content/route.js",
-  "/api/portfolio/template-config/route": "app/api/portfolio/template-config/route.js",
+  "/page": "app/page.js",
+  "/api/super-admin/db-stats/route": "app/api/super-admin/db-stats/route.js",
   "/portfolio/[username]/page": "app/portfolio/[username]/page.js",
-  "/super-admin/users/page": "app/super-admin/users/page.js",
-  "/super-admin/templates/page": "app/super-admin/templates/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
+  "/super-admin/page": "app/super-admin/page.js",
+  "/dashboard/editor/page": "app/dashboard/editor/page.js",
   "/dashboard/editor/[section]/page": "app/dashboard/editor/[section]/page.js"
 }

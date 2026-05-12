@@ -4,6 +4,7 @@ import type { ComponentType } from 'react';
 interface TemplateProps {
   content: Record<string, string>;
   username: string;
+  hideBranding?: boolean;
 }
 
 const templateRegistry: Record<string, ComponentType<TemplateProps>> = {
