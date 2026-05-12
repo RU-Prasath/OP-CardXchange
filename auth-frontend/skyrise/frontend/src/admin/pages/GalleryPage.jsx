@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { adminApi } from "../../services/api";
+import { Info } from "lucide-react";
 
-const CATEGORIES = ["all", "projects", "interior", "elevation", "construction"];
+const CATEGORIES = ["projects", "interior", "elevation", "construction"];
 
 export default function GalleryPage() {
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -21,8 +22,12 @@ export default function GalleryPage() {
   });
 
   const handleUpload = async (e) => {
-    const files = [...e.target.files];
-    if (!files.length) return;
+    const allFiles = [...e.target.files];
+    if (!allFiles.length) return;
+    const oversized = allFiles.filter(f => f.size > 5 * 1024 * 1024);
+    if (oversized.length) toast.error(`${oversized.length} file(s) exceed 5 MB and were skipped.`);
+    const files = allFiles.filter(f => f.size <= 5 * 1024 * 1024);
+    if (!files.length) { e.target.value = ""; return; }
     setUploading(true);
     try {
       for (const file of files) {
@@ -48,10 +53,16 @@ export default function GalleryPage() {
           <h1 className="font-display text-3xl text-white mb-1">Gallery</h1>
           <p className="text-silver/40 text-sm">{gallery.length} images</p>
         </div>
-        <label className={`btn-primary text-xs py-2.5 px-5 cursor-pointer ${uploading ? "opacity-60 cursor-not-allowed" : ""}`}>
-          {uploading ? "Uploading..." : "+ Upload Images"}
-          <input type="file" accept="image/*" multiple onChange={handleUpload} className="hidden" disabled={uploading} />
-        </label>
+        <div className="flex flex-col items-end gap-1">
+          <label className={`btn-primary text-xs py-2.5 px-5 cursor-pointer ${uploading ? "opacity-60 cursor-not-allowed" : ""}`}>
+            {uploading ? "Uploading..." : "+ Upload Images"}
+            <input type="file" accept="image/*" multiple onChange={handleUpload} className="hidden" disabled={uploading} />
+          </label>
+          <div className="flex items-center gap-1">
+            <Info size={10} className="text-gold/50" />
+            <p className="text-silver/30 text-[10px]">Recommended: 800×800px (1:1). Max 5 MB each.</p>
+          </div>
+        </div>
       </div>
 
       <div className="flex gap-3 mb-6 flex-wrap">

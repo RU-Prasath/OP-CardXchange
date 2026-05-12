@@ -48,3 +48,14 @@ exports.uploadLogo = async (req, res) => {
   await Settings.findOneAndUpdate({ key: "site_logo" }, { value: logoPath, group: "branding" }, { upsert: true });
   res.json({ success: true, logo: logoPath });
 };
+
+exports.uploadAboutImage = async (req, res) => {
+  if (!req.file) return res.status(400).json({ success: false, message: "No file" });
+
+  const existing = await Settings.findOne({ key: "about_image" });
+  if (existing?.value) deleteFile(existing.value);
+
+  const imagePath = `/uploads/hero/${req.file.filename}`;
+  await Settings.findOneAndUpdate({ key: "about_image" }, { value: imagePath, group: "about" }, { upsert: true });
+  res.json({ success: true, image: imagePath });
+};

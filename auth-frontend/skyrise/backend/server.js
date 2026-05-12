@@ -19,6 +19,7 @@ const testimonialRoutes = require("./src/routes/testimonialRoutes");
 const settingsRoutes = require("./src/routes/settingsRoutes");
 const teamRoutes = require("./src/routes/teamRoutes");
 const galleryRoutes = require("./src/routes/galleryRoutes");
+const heroSlideRoutes = require("./src/routes/heroSlideRoutes");
 
 connectDB();
 
@@ -60,6 +61,7 @@ app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/team", teamRoutes);
 app.use("/api/gallery", galleryRoutes);
+app.use("/api/hero-slides", heroSlideRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => res.json({ status: "OK", message: "Skyrise API running" }));

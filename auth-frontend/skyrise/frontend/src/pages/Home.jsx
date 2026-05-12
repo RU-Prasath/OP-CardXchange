@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -13,34 +13,61 @@ import {
 
 // ── Hero ──────────────────────────────────────────────────────
 function Hero({ settings }) {
+  const { data: slidesData } = useQuery({
+    queryKey: ["hero-slides-public"],
+    queryFn: () => publicApi.getHeroSlides(),
+    staleTime: 300000,
+  });
+  const slides = slidesData?.data?.slides || [];
+
+  const [current, setCurrent] = useState(0);
+  const [fading, setFading] = useState(false);
+
+  const goTo = (idx) => {
+    setFading(true);
+    setTimeout(() => { setCurrent(idx); setFading(false); }, 400);
+  };
+
+  useEffect(() => {
+    if (slides.length <= 1) return;
+    const id = setInterval(() => {
+      setCurrent((prev) => {
+        const next = (prev + 1) % slides.length;
+        setFading(true);
+        setTimeout(() => setFading(false), 400);
+        return next;
+      });
+    }, 5000);
+    return () => clearInterval(id);
+  }, [slides.length]);
+
+  const slide = slides[current] || null;
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Cinematic dark background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-navy to-navy" />
+      {/* Background image layer */}
+      {slide?.image ? (
+        <div
+          key={current}
+          className={`absolute inset-0 bg-cover bg-center transition-opacity duration-700 ${fading ? "opacity-0" : "opacity-100"}`}
+          style={{ backgroundImage: `url(${slide.image})` }}
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-navy to-navy" />
+      )}
+
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/55" />
       <div className="absolute inset-0 opacity-20"
-        style={{
-          backgroundImage: "radial-gradient(ellipse at 20% 50%, rgba(212,175,55,0.15) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(212,175,55,0.08) 0%, transparent 50%)"
-        }}
-      />
-      {/* Grid overlay */}
-      <div className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
-          backgroundSize: "60px 60px"
-        }}
+        style={{ backgroundImage: "radial-gradient(ellipse at 20% 50%, rgba(212,175,55,0.15) 0%, transparent 60%)" }}
       />
 
       {/* Decorative gold lines */}
       <div className="absolute left-8 top-1/3 w-px h-32 bg-gradient-to-b from-transparent via-gold to-transparent opacity-30" />
       <div className="absolute right-8 bottom-1/3 w-px h-24 bg-gradient-to-b from-transparent via-gold to-transparent opacity-20" />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-6"
-        >
+      <div className={`relative z-10 max-w-6xl mx-auto px-6 text-center transition-opacity duration-500 ${fading ? "opacity-0" : "opacity-100"}`}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mb-6">
           <span className="inline-flex items-center gap-3 text-gold text-xs tracking-[0.5em] uppercase">
             <span className="w-12 h-px bg-gold/60" />
             Premium Construction & Interiors
@@ -54,41 +81,45 @@ function Hero({ settings }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
         >
-          {settings?.hero_heading ? (
+          {slide?.heading ? (
+            <span dangerouslySetInnerHTML={{ __html: slide.heading.replace(/\n/g, "<br/>") }} />
+          ) : settings?.hero_heading ? (
             <span dangerouslySetInnerHTML={{ __html: settings.hero_heading.replace(/\n/g, "<br/>") }} />
           ) : (
-            <>
-              Building Spaces<br />
-              That Inspire{" "}
-              <span className="text-transparent bg-clip-text bg-gold-gradient text-shadow-gold">
-                Excellence
-              </span>
-            </>
+            <>Building Spaces<br />That Inspire{" "}<span className="text-transparent bg-clip-text bg-gold-gradient text-shadow-gold">Excellence</span></>
           )}
         </motion.h1>
 
         <motion.p
-          className="text-silver/60 text-lg md:text-xl max-w-2xl mx-auto mb-12 font-light"
+          className="text-silver/70 text-lg md:text-xl max-w-2xl mx-auto mb-12 font-light"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
-          {settings?.hero_subheading || "Skyrise Build & Interiors — where architectural brilliance meets luxury craftsmanship"}
+          {slide?.subheading || settings?.hero_subheading || "Skyrise Build & Interiors — where architectural brilliance meets luxury craftsmanship"}
         </motion.p>
 
-        <motion.div
-          className="flex flex-wrap gap-4 justify-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <Link to="/works" className="btn-primary">
-            Explore Our Works
+        <motion.div className="flex flex-wrap gap-4 justify-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
+          <Link to={slide?.ctaLink || "/works"} className="btn-primary">
+            {slide?.ctaText || "Explore Our Works"}
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6"/></svg>
           </Link>
           <Link to="/contact" className="btn-outline">Get Free Quote</Link>
         </motion.div>
       </div>
+
+      {/* Slide dots */}
+      {slides.length > 1 && (
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              className={`h-1 transition-all duration-300 ${i === current ? "w-8 bg-gold" : "w-3 bg-white/30 hover:bg-white/60"}`}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Scroll indicator */}
       <motion.div
@@ -107,15 +138,21 @@ function Hero({ settings }) {
 // ── Stats ──────────────────────────────────────────────────────
 function Stats({ settings }) {
   const { ref, inView } = useInView({ triggerOnce: true });
-  const stats = [
-    { value: settings?.stat_projects || "500+", label: "Projects Completed", suffix: "" },
-    { value: settings?.stat_years || "15+", label: "Years Experience", suffix: "" },
-    { value: settings?.stat_clients || "450+", label: "Happy Clients", suffix: "" },
-    { value: settings?.stat_awards || "20+", label: "Awards Won", suffix: "" },
+  const allStats = [
+    { key: "stat_projects", label: "Projects Completed" },
+    { key: "stat_years",    label: "Years Experience" },
+    { key: "stat_clients",  label: "Happy Clients" },
+    { key: "stat_awards",   label: "Awards Won" },
   ];
+  const stats = allStats.filter(s => settings?.[s.key]).map(s => ({ value: settings[s.key], label: s.label }));
+
+  if (!stats.length) return null;
+
+  const cols = stats.length === 1 ? "grid-cols-1" : stats.length === 2 ? "grid-cols-2" : stats.length === 3 ? "grid-cols-2 lg:grid-cols-3" : "grid-cols-2 lg:grid-cols-4";
+
   return (
     <section ref={ref} className="py-20 border-y border-white/5 bg-navy">
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className={`max-w-7xl mx-auto px-6 grid gap-8 ${cols}`}>
         {stats.map((s, i) => {
           const num = parseInt(s.value);
           const suffix = s.value.replace(/[0-9]/g, "");
@@ -169,7 +206,7 @@ function ServicesOverview({ services }) {
           <div className="gold-divider mx-auto" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {(services || defaultServices).map((service, i) => {
+          {(services || defaultServices).slice(0, 8).map((service, i) => {
             const ServiceIcon = getServiceIcon(service.title);
             return (
             <motion.div
@@ -351,12 +388,53 @@ function WhyChooseUs() {
 }
 
 // ── Testimonials ───────────────────────────────────────────────
+function TestimonialCard({ t }) {
+  return (
+    <div className="card-dark p-8 h-full flex flex-col">
+      <div className="flex gap-0.5 mb-4">
+        {Array.from({ length: t.rating || 5 }).map((_, j) => (
+          <span key={j} className="text-gold text-sm">★</span>
+        ))}
+      </div>
+      <p className="text-silver/60 text-sm leading-relaxed mb-6 italic flex-1">"{t.message}"</p>
+      <div className="flex items-center gap-3">
+        {t.image ? (
+          <img src={t.image} alt={t.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
+        ) : (
+          <div className="w-10 h-10 bg-gold/10 border border-gold/20 rounded-full flex items-center justify-center text-gold font-semibold text-sm shrink-0">
+            {t.name[0]}
+          </div>
+        )}
+        <div>
+          <p className="text-white text-sm font-semibold">{t.name}</p>
+          <p className="text-silver/40 text-xs">{t.designation}{t.location && t.designation ? ` · ${t.location}` : t.location}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Testimonials({ testimonials }) {
-  const { ref, inView } = useInView({ triggerOnce: true });
-  const items = testimonials?.slice(0, 3) || [];
+  const items = testimonials || [];
+  const [current, setCurrent] = useState(0);
+  const perPage = 3;
+  const total = items.length;
+  const maxIndex = Math.max(0, total - perPage);
+
+  const prev = () => setCurrent((c) => Math.max(0, c - 1));
+  const next = () => setCurrent((c) => Math.min(maxIndex, c + 1));
+
+  // Auto-advance
+  useEffect(() => {
+    if (total <= perPage) return;
+    const id = setInterval(() => setCurrent((c) => (c >= maxIndex ? 0 : c + 1)), 4000);
+    return () => clearInterval(id);
+  }, [total, maxIndex]);
+
+  const isLoading = !testimonials;
 
   return (
-    <section ref={ref} className="py-24 bg-navy">
+    <section className="py-24 bg-navy">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <p className="section-tag mx-auto justify-center">Testimonials</p>
@@ -365,41 +443,10 @@ function Testimonials({ testimonials }) {
           </h2>
           <div className="gold-divider mx-auto" />
         </div>
-        {items.length > 0 ? (
+
+        {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {items.map((t, i) => (
-              <motion.div
-                key={t._id}
-                className="card-dark p-8"
-                initial={{ opacity: 0, y: 20 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: i * 0.1 }}
-              >
-                <div className="flex gap-0.5 mb-4">
-                  {Array.from({ length: t.rating || 5 }).map((_, j) => (
-                    <span key={j} className="text-gold text-sm">★</span>
-                  ))}
-                </div>
-                <p className="text-silver/60 text-sm leading-relaxed mb-6 italic">"{t.message}"</p>
-                <div className="flex items-center gap-3">
-                  {t.image ? (
-                    <img src={t.image} alt={t.name} className="w-10 h-10 rounded-full object-cover" />
-                  ) : (
-                    <div className="w-10 h-10 bg-gold/10 border border-gold/20 rounded-full flex items-center justify-center text-gold font-semibold text-sm">
-                      {t.name[0]}
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-white text-sm font-semibold">{t.name}</p>
-                    <p className="text-silver/40 text-xs">{t.designation || t.location}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[1,2,3].map((i) => (
+            {[1, 2, 3].map((i) => (
               <div key={i} className="card-dark p-8 animate-pulse">
                 <div className="h-4 bg-white/5 rounded mb-4 w-24" />
                 <div className="space-y-2 mb-6">
@@ -408,7 +455,7 @@ function Testimonials({ testimonials }) {
                 </div>
                 <div className="flex gap-3">
                   <div className="w-10 h-10 bg-white/5 rounded-full" />
-                  <div className="space-y-1">
+                  <div className="space-y-1 flex-1">
                     <div className="h-3 bg-white/5 rounded w-20" />
                     <div className="h-2 bg-white/5 rounded w-16" />
                   </div>
@@ -416,6 +463,54 @@ function Testimonials({ testimonials }) {
               </div>
             ))}
           </div>
+        ) : items.length === 0 ? null : (
+          <>
+            {/* Cards — sliding window */}
+            <div className="overflow-hidden">
+              <motion.div
+                className="flex gap-6"
+                animate={{ x: `calc(-${current} * (100% / ${perPage} + 8px))` }}
+                transition={{ type: "spring", stiffness: 300, damping: 35 }}
+              >
+                {items.map((t) => (
+                  <div key={t._id} className="shrink-0 w-full md:w-[calc(33.333%-16px)]">
+                    <TestimonialCard t={t} />
+                  </div>
+                ))}
+              </motion.div>
+            </div>
+
+            {/* Controls */}
+            {total > perPage && (
+              <div className="flex items-center justify-center gap-6 mt-10">
+                <button
+                  onClick={prev}
+                  disabled={current === 0}
+                  className="w-10 h-10 border border-white/10 hover:border-gold/50 flex items-center justify-center text-silver/50 hover:text-gold transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+
+                <div className="flex gap-2">
+                  {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrent(i)}
+                      className={`h-1 transition-all duration-300 ${i === current ? "w-8 bg-gold" : "w-3 bg-white/20 hover:bg-white/40"}`}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  onClick={next}
+                  disabled={current === maxIndex}
+                  className="w-10 h-10 border border-white/10 hover:border-gold/50 flex items-center justify-center text-silver/50 hover:text-gold transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </section>

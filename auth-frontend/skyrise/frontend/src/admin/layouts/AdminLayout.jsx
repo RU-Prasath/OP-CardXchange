@@ -3,11 +3,13 @@ import { Outlet, Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import {
   LayoutDashboard, Target, Mail, Building2, Settings, Star,
-  Users, Image, Wrench, LogOut, Menu, ExternalLink
+  Users, Image, Wrench, LogOut, Menu, ExternalLink, Layers
 } from "lucide-react";
+import logo from "../../assets/logo.png";
 
 const navItems = [
   { to: "/admin", label: "Dashboard", Icon: LayoutDashboard, exact: true },
+  { to: "/admin/hero-slides", label: "Hero Slides", Icon: Layers },
   { to: "/admin/leads", label: "Leads", Icon: Target },
   { to: "/admin/enquiries", label: "Enquiries", Icon: Mail },
   { to: "/admin/projects", label: "Projects", Icon: Building2 },
@@ -42,11 +44,14 @@ export default function AdminLayout() {
       <aside className={`fixed lg:relative z-40 h-full w-64 bg-[#070a10] border-r border-white/5 flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
         {/* Logo */}
         <div className="p-6 border-b border-white/5">
-          <Link to="/" className="inline-block" target="_blank">
-            <div className="font-display text-xl font-semibold text-white tracking-wider">
-              SKY<span className="text-gold">RISE</span>
+          <Link to="/" className="inline-flex items-center gap-3" target="_blank">
+            <img src={logo} alt="Skyrise" className="h-10 w-10 object-contain" />
+            <div>
+              <div className="font-display text-xl font-semibold text-white tracking-wider">
+                SKY<span className="text-gold">RISE</span>
+              </div>
+              <div className="text-silver/30 text-[9px] tracking-[0.35em] uppercase">Admin Panel</div>
             </div>
-            <div className="text-silver/30 text-[9px] tracking-[0.35em] uppercase">Admin Panel</div>
           </Link>
         </div>
 

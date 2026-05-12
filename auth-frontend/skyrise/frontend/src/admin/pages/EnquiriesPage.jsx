@@ -16,7 +16,10 @@ export default function EnquiriesPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["contacts", search, statusFilter],
-    queryFn: () => adminApi.getContacts({ search, status: statusFilter }),
+    queryFn: () => adminApi.getContacts({
+      ...(search && { search }),
+      ...(statusFilter && { status: statusFilter }),
+    }),
   });
 
   const { mutate: updateStatus } = useMutation({

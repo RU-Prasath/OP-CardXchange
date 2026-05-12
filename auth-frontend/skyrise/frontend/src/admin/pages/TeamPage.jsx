@@ -3,10 +3,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import toast from "react-hot-toast";
 import { adminApi } from "../../services/api";
+import ImageUploadField from "../components/ImageUploadField";
 
 function TeamForm({ member, onClose, onSave }) {
   const [form, setForm] = useState({ name: member?.name||"", designation: member?.designation||"", bio: member?.bio||"", linkedin: member?.linkedin||"", order: member?.order||0 });
   const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(member?.image || null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -43,9 +45,16 @@ function TeamForm({ member, onClose, onSave }) {
             <textarea value={form.bio} onChange={(e) => setForm({...form, bio: e.target.value})} rows={3} className="input-dark resize-none" />
           </div>
           <div>
-            <label className="text-silver/40 text-xs uppercase tracking-widest block mb-1.5">Photo</label>
-            <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} className="text-silver/50 text-xs w-full" />
-            {member?.image && <img src={member.image} className="h-12 w-12 mt-1 rounded-full object-cover" />}
+            <ImageUploadField
+              label="Photo"
+              recommended="400×400px (1:1 square)"
+              recWidth={400} recHeight={400}
+              maxMB={5}
+              preview={imagePreview}
+              aspectClass="aspect-square w-24"
+              onChange={(file, url) => { setImageFile(file); setImagePreview(url); }}
+              onClear={() => { setImageFile(null); setImagePreview(null); }}
+            />
           </div>
           <div className="flex gap-3 pt-2">
             <button type="submit" disabled={loading} className="btn-primary text-xs py-2.5 px-6 disabled:opacity-60">{loading ? "Saving..." : member ? "Update" : "Create"}</button>

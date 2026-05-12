@@ -29,6 +29,7 @@ const TestimonialsPage = lazy(() => import("./admin/pages/TestimonialsPage"));
 const TeamPage = lazy(() => import("./admin/pages/TeamPage"));
 const GalleryPage = lazy(() => import("./admin/pages/GalleryPage"));
 const SettingsPage = lazy(() => import("./admin/pages/SettingsPage"));
+const HeroSlidesPage = lazy(() => import("./admin/pages/HeroSlidesPage"));
 
 export default function App() {
   const location = useLocation();
@@ -63,6 +64,7 @@ export default function App() {
                 <Route path="/admin/team" element={<TeamPage />} />
                 <Route path="/admin/gallery" element={<GalleryPage />} />
                 <Route path="/admin/settings" element={<SettingsPage />} />
+                <Route path="/admin/hero-slides" element={<HeroSlidesPage />} />
               </Route>
             </Route>
           </Routes>

@@ -1,5 +1,7 @@
 const createTransporter = require("../config/email");
 
+const SITE_URL = process.env.CLIENT_URL || "http://localhost:5173";
+
 const emailTemplate = (title, content) => `
 <!DOCTYPE html>
 <html>
@@ -23,6 +25,7 @@ const emailTemplate = (title, content) => `
 <body>
 <div class="wrapper">
   <div class="header">
+    <img src="${SITE_URL}/logo.png" alt="Skyrise" width="60" height="60" style="display:block;margin:0 auto 12px;object-fit:contain;" />
     <div class="logo-text">SKYRISE</div>
     <div class="logo-sub">BUILD & INTERIORS</div>
   </div>

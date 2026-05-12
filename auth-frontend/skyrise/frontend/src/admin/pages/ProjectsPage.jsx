@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { adminApi } from "../../services/api";
-import { Building } from "lucide-react";
+import { Building, AlertTriangle, Info } from "lucide-react";
+import ImageUploadField from "../components/ImageUploadField";
 
 const CATEGORIES = ["completed", "ongoing", "interior", "elevation"];
 
@@ -87,46 +88,33 @@ function ProjectForm({ project, onClose, onSave }) {
               <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="input-dark resize-none" />
             </div>
             <div className="col-span-2">
-              <label className="text-silver/40 text-xs uppercase tracking-widest block mb-1.5">Cover Image</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  if (file) {
-                    setCoverFile(file);
-                    setCoverPreview(URL.createObjectURL(file));
-                  }
-                }}
-                className="text-silver/50 text-xs w-full"
+              <ImageUploadField
+                label="Cover Image"
+                recommended="1920×1080px (16:9) or 1200×800px (3:2)"
+                recWidth={1920} recHeight={1080}
+                maxMB={5}
+                preview={coverPreview}
+                aspectClass="aspect-video"
+                onChange={(file, url) => { setCoverFile(file); setCoverPreview(url); }}
+                onClear={() => { setCoverFile(null); setCoverPreview(null); }}
               />
-              <p className="text-silver/30 text-[10px] mt-1">Recommended: 1200×800px (3:2 ratio) or 1920×1080px (16:9). Max 5MB.</p>
-              {coverPreview && (
-                <div className="relative mt-2 inline-block w-full">
-                  <div className="relative w-full aspect-video overflow-hidden border border-white/10">
-                    <img src={coverPreview} alt="Cover preview" className="w-full h-full object-cover" />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => { setCoverPreview(null); setCoverFile(null); }}
-                    className="absolute top-1 right-1 w-6 h-6 bg-black/70 text-white/70 hover:text-white flex items-center justify-center text-sm leading-none"
-                  >
-                    ×
-                  </button>
-                </div>
-              )}
             </div>
             <div className="col-span-2">
-              <label className="text-silver/40 text-xs uppercase tracking-widest block mb-1.5">Gallery Images</label>
+              <div className="flex items-center gap-1.5 mb-2">
+                <Info size={11} className="text-gold/60 shrink-0" />
+                <p className="text-silver/40 text-[11px]">Gallery Images — Recommended: <span className="text-gold/70">1200×800px (3:2)</span>. Max 5 MB each.</p>
+              </div>
               <input
                 type="file"
                 accept="image/*"
                 multiple
                 onChange={(e) => {
                   const files = [...e.target.files];
-                  setImageFiles(files);
+                  const oversized = files.filter(f => f.size > 5 * 1024 * 1024);
+                  if (oversized.length) { toast.error(`${oversized.length} file(s) exceed 5 MB and were skipped.`); }
+                  setImageFiles(files.filter(f => f.size <= 5 * 1024 * 1024));
                 }}
-                className="text-silver/50 text-xs w-full"
+                className="text-silver/50 text-xs w-full file:mr-3 file:py-1.5 file:px-3 file:border file:border-gold/30 file:bg-gold/10 file:text-gold file:text-xs file:cursor-pointer hover:file:bg-gold/20 file:transition-colors"
               />
               {/* Existing gallery images */}
               {galleryPreviews.length > 0 && (

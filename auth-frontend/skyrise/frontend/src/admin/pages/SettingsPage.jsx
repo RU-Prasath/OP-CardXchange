@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { adminApi } from "../../services/api";
+import ImageUploadField from "../components/ImageUploadField";
 
 const SECTIONS = [
   { key: "general", label: "General", fields: [
@@ -35,7 +36,11 @@ export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState("general");
   const [formData, setFormData] = useState({});
   const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
   const [logoUploading, setLogoUploading] = useState(false);
+  const [aboutImageFile, setAboutImageFile] = useState(null);
+  const [aboutImagePreview, setAboutImagePreview] = useState(null);
+  const [aboutImageUploading, setAboutImageUploading] = useState(false);
   const queryClient = useQueryClient();
 
   const { data } = useQuery({ queryKey: ["admin-settings"], queryFn: () => adminApi.getSettings() });
@@ -78,6 +83,19 @@ export default function SettingsPage() {
     } catch { toast.error("Logo upload failed"); } finally { setLogoUploading(false); }
   };
 
+  const handleAboutImageUpload = async () => {
+    if (!aboutImageFile) return;
+    setAboutImageUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("image", aboutImageFile);
+      await adminApi.uploadAboutImage(fd);
+      queryClient.invalidateQueries(["settings"]);
+      toast.success("About image uploaded");
+      setAboutImageFile(null);
+    } catch { toast.error("Upload failed"); } finally { setAboutImageUploading(false); }
+  };
+
   return (
     <div>
       <div className="mb-8">
@@ -108,26 +126,65 @@ export default function SettingsPage() {
             >
               Logo
             </button>
+            <button
+              onClick={() => setActiveSection("about")}
+              className={`w-full text-left px-3 py-2.5 text-sm rounded transition-all ${
+                activeSection === "about" ? "bg-gold/10 text-gold" : "text-silver/50 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              About Image
+            </button>
           </div>
         </div>
 
         {/* Form */}
         <div className="lg:col-span-4 bg-[#0a0e17] border border-white/5 p-6">
-          {activeSection === "logo" ? (
+          {activeSection === "about" ? (
+            <div>
+              <h3 className="font-display text-xl text-white mb-2">About Page Image</h3>
+              <p className="text-silver/40 text-sm mb-6">This image appears in the "Who We Are" section on the About page.</p>
+              {formData.about_image && !aboutImagePreview && (
+                <div className="mb-4">
+                  <p className="text-silver/40 text-xs mb-2 uppercase tracking-widest">Current Image</p>
+                  <img src={formData.about_image} className="w-64 h-80 object-cover border border-white/10" alt="About" />
+                </div>
+              )}
+              <div className="space-y-4 max-w-sm">
+                <ImageUploadField
+                  label="Upload New Image"
+                  recommended="800×1000px (portrait 4:5)"
+                  recWidth={800} recHeight={1000}
+                  tolerance={0.3}
+                  maxMB={10}
+                  preview={aboutImagePreview}
+                  aspectClass="aspect-[4/5] w-48"
+                  onChange={(file, url) => { setAboutImageFile(file); setAboutImagePreview(url); }}
+                  onClear={() => { setAboutImageFile(null); setAboutImagePreview(null); }}
+                />
+                <button
+                  onClick={handleAboutImageUpload}
+                  disabled={!aboutImageFile || aboutImageUploading}
+                  className="btn-primary text-xs py-2.5 px-6 disabled:opacity-60"
+                >
+                  {aboutImageUploading ? "Uploading..." : "Upload Image"}
+                </button>
+              </div>
+            </div>
+          ) : activeSection === "logo" ? (
             <div>
               <h3 className="font-display text-xl text-white mb-6">Logo Upload</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-silver/40 text-xs uppercase tracking-widest block mb-2">Upload New Logo</label>
-                  <input type="file" accept="image/*" onChange={(e) => setLogoFile(e.target.files[0])} className="text-silver/50 text-sm" />
-                  <p className="text-silver/30 text-xs mt-1">Supported: JPG, PNG, WEBP. Max 10MB.</p>
-                </div>
-                {logoFile && (
-                  <div>
-                    <p className="text-silver/40 text-xs mb-2">Preview:</p>
-                    <img src={URL.createObjectURL(logoFile)} className="h-20 object-contain" />
-                  </div>
-                )}
+              <div className="space-y-4 max-w-sm">
+                <ImageUploadField
+                  label="Upload New Logo"
+                  recommended="200×200px (1:1 square, transparent PNG preferred)"
+                  recWidth={200} recHeight={200}
+                  tolerance={0.4}
+                  maxMB={5}
+                  preview={logoPreview}
+                  aspectClass="aspect-square w-24"
+                  onChange={(file, url) => { setLogoFile(file); setLogoPreview(url); }}
+                  onClear={() => { setLogoFile(null); setLogoPreview(null); }}
+                />
                 <button
                   onClick={handleLogoUpload}
                   disabled={!logoFile || logoUploading}

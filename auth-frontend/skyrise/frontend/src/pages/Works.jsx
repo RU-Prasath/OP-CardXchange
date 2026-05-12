@@ -118,10 +118,13 @@ export default function Works() {
   const [selectedProject, setSelectedProject] = useState(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [visibleProjects, setVisibleProjects] = useState(8);
+  const [visibleGallery, setVisibleGallery] = useState(8);
 
   const { data, isLoading } = useQuery({
     queryKey: ["projects", activeFilter],
     queryFn: () => publicApi.getProjects(activeFilter ? { category: activeFilter } : {}),
+    onSuccess: () => setVisibleProjects(8),
   });
 
   const { data: galleryData } = useQuery({
@@ -190,18 +193,30 @@ export default function Works() {
               <p className="text-silver/40">No projects found in this category</p>
             </div>
           ) : (
-            <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              <AnimatePresence mode="popLayout">
-                {projects.map((project, i) => (
-                  <ProjectCard
-                    key={project._id}
-                    project={project}
-                    index={i}
-                    onClick={setSelectedProject}
-                  />
-                ))}
-              </AnimatePresence>
-            </motion.div>
+            <>
+              <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <AnimatePresence mode="popLayout">
+                  {projects.slice(0, visibleProjects).map((project, i) => (
+                    <ProjectCard
+                      key={project._id}
+                      project={project}
+                      index={i}
+                      onClick={setSelectedProject}
+                    />
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+              {visibleProjects < projects.length && (
+                <div className="text-center mt-10">
+                  <button
+                    onClick={() => setVisibleProjects((v) => v + 10)}
+                    className="btn-outline text-xs py-3 px-8"
+                  >
+                    Show More ({projects.length - visibleProjects} remaining)
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
@@ -217,7 +232,7 @@ export default function Works() {
               </h2>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {gallery.map((item, i) => (
+              {gallery.slice(0, visibleGallery).map((item, i) => (
                 <motion.div
                   key={item._id}
                   className="aspect-square overflow-hidden cursor-pointer group"
@@ -236,6 +251,16 @@ export default function Works() {
                 </motion.div>
               ))}
             </div>
+            {visibleGallery < gallery.length && (
+              <div className="text-center mt-8">
+                <button
+                  onClick={() => setVisibleGallery((v) => v + 10)}
+                  className="btn-outline text-xs py-3 px-8"
+                >
+                  Show More ({gallery.length - visibleGallery} remaining)
+                </button>
+              </div>
+            )}
           </div>
         </section>
       )}

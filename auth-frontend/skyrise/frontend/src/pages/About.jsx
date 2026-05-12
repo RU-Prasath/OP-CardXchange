@@ -26,7 +26,7 @@ function PageHero() {
   );
 }
 
-function CompanyIntro() {
+function CompanyIntro({ settings }) {
   return (
     <section className="py-24 bg-black">
       <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
@@ -63,11 +63,17 @@ function CompanyIntro() {
           viewport={{ once: true }}
           transition={{ duration: 0.7 }}
         >
-          <div className="aspect-[4/5] bg-navy border border-white/5 flex items-center justify-center">
-            <div className="text-center text-silver/10">
-              <Building size={80} className="mx-auto mb-4 opacity-20" />
-              <p className="font-display text-2xl">Skyrise HQ</p>
-            </div>
+          <div className="aspect-[4/5] bg-navy border border-white/5 overflow-hidden">
+            {settings?.about_image ? (
+              <img src={settings.about_image} alt="Skyrise HQ" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-silver/10">
+                <div className="text-center">
+                  <Building size={80} className="mx-auto mb-4 opacity-20" />
+                  <p className="font-display text-2xl">Skyrise HQ</p>
+                </div>
+              </div>
+            )}
           </div>
           <div className="absolute -bottom-6 -left-6 w-48 h-48 border border-gold/20 -z-10" />
           <div className="absolute -top-6 -right-6 w-32 h-32 border border-gold/10 -z-10" />
@@ -210,12 +216,14 @@ function Team({ team }) {
 
 export default function About() {
   const { data: teamData } = useQuery({ queryKey: ["team"], queryFn: () => publicApi.getTeam() });
+  const { data: settingsData } = useQuery({ queryKey: ["settings"], queryFn: () => publicApi.getSettings(), staleTime: 600000 });
   const team = teamData?.data?.team;
+  const settings = settingsData?.data?.settings || {};
 
   return (
     <div>
       <PageHero />
-      <CompanyIntro />
+      <CompanyIntro settings={settings} />
       <FounderMessage />
       <VisionMission />
       <Values />

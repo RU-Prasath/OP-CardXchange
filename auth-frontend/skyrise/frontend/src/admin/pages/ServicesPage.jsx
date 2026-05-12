@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import toast from "react-hot-toast";
 import { adminApi } from "../../services/api";
+import ImageUploadField from "../components/ImageUploadField";
 
 function ServiceForm({ service, onClose, onSave }) {
   const [form, setForm] = useState({
@@ -14,7 +15,9 @@ function ServiceForm({ service, onClose, onSave }) {
     order: service?.order || 0,
   });
   const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(service?.image || null);
   const [heroFile, setHeroFile] = useState(null);
+  const [heroPreview, setHeroPreview] = useState(service?.heroImage || null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -68,16 +71,27 @@ function ServiceForm({ service, onClose, onSave }) {
             <label className="text-silver/40 text-xs uppercase tracking-widest block mb-1.5">Features (one per line)</label>
             <textarea value={form.features} onChange={(e) => setForm({ ...form, features: e.target.value })} rows={4} className="input-dark resize-none font-mono text-xs" placeholder="Feature 1&#10;Feature 2&#10;Feature 3" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-silver/40 text-xs uppercase tracking-widest block mb-1.5">Card Image</label>
-              <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} className="text-silver/50 text-xs w-full" />
-              {service?.image && <img src={service.image} className="h-10 mt-1 object-cover" />}
-            </div>
-            <div>
-              <label className="text-silver/40 text-xs uppercase tracking-widest block mb-1.5">Hero Image</label>
-              <input type="file" accept="image/*" onChange={(e) => setHeroFile(e.target.files[0])} className="text-silver/50 text-xs w-full" />
-            </div>
+          <div className="space-y-4">
+            <ImageUploadField
+              label="Card Image"
+              recommended="800×600px (4:3)"
+              recWidth={800} recHeight={600}
+              maxMB={5}
+              preview={imagePreview}
+              aspectClass="aspect-video"
+              onChange={(file, url) => { setImageFile(file); setImagePreview(url); }}
+              onClear={() => { setImageFile(null); setImagePreview(null); }}
+            />
+            <ImageUploadField
+              label="Hero Image (shown in modal popup)"
+              recommended="1920×1080px (16:9)"
+              recWidth={1920} recHeight={1080}
+              maxMB={5}
+              preview={heroPreview}
+              aspectClass="aspect-video"
+              onChange={(file, url) => { setHeroFile(file); setHeroPreview(url); }}
+              onClear={() => { setHeroFile(null); setHeroPreview(null); }}
+            />
           </div>
           <div>
             <label className="text-silver/40 text-xs uppercase tracking-widest block mb-1.5">Display Order</label>

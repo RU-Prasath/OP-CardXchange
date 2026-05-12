@@ -3,10 +3,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import toast from "react-hot-toast";
 import { adminApi } from "../../services/api";
+import ImageUploadField from "../components/ImageUploadField";
 
 function TestimonialForm({ item, onClose, onSave }) {
   const [form, setForm] = useState({ name: item?.name||"", designation: item?.designation||"", location: item?.location||"", message: item?.message||"", rating: item?.rating||5, order: item?.order||0 });
   const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(item?.image || null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -55,9 +57,16 @@ function TestimonialForm({ item, onClose, onSave }) {
             <textarea value={form.message} onChange={(e) => setForm({...form, message: e.target.value})} rows={4} className="input-dark resize-none" />
           </div>
           <div>
-            <label className="text-silver/40 text-xs uppercase tracking-widest block mb-1.5">Photo</label>
-            <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} className="text-silver/50 text-xs w-full" />
-            {item?.image && <img src={item.image} className="h-10 mt-1 rounded-full object-cover w-10" />}
+            <ImageUploadField
+              label="Photo"
+              recommended="200×200px (1:1 square)"
+              recWidth={200} recHeight={200}
+              maxMB={2}
+              preview={imagePreview}
+              aspectClass="aspect-square w-20"
+              onChange={(file, url) => { setImageFile(file); setImagePreview(url); }}
+              onClear={() => { setImageFile(null); setImagePreview(null); }}
+            />
           </div>
           <div className="flex gap-3 pt-2">
             <button type="submit" disabled={loading} className="btn-primary text-xs py-2.5 px-6 disabled:opacity-60">{loading ? "Saving..." : item ? "Update" : "Create"}</button>

@@ -37,6 +37,7 @@ export const publicApi = {
   getTeam: () => api.get("/team"),
   getGallery: (params) => api.get("/gallery", { params }),
   getSettings: () => api.get("/settings"),
+  getHeroSlides: () => api.get("/hero-slides"),
   submitContact: (data) => api.post("/contact", data),
   submitLead: (data) => api.post("/leads", data),
 };
@@ -92,6 +93,13 @@ export const adminApi = {
   getSettings: () => api.get("/settings"),
   updateSettings: (data) => api.put("/settings/bulk", { settings: data }),
   uploadLogo: (data) => api.post("/settings/logo", data, { headers: { "Content-Type": "multipart/form-data" } }),
+  uploadAboutImage: (data) => api.post("/settings/about-image", data, { headers: { "Content-Type": "multipart/form-data" } }),
+
+  // Hero Slides
+  getHeroSlides: () => api.get("/hero-slides/all"),
+  createHeroSlide: (data) => api.post("/hero-slides", data, { headers: { "Content-Type": "multipart/form-data" } }),
+  updateHeroSlide: (id, data) => api.put(`/hero-slides/${id}`, data, { headers: { "Content-Type": "multipart/form-data" } }),
+  deleteHeroSlide: (id) => api.delete(`/hero-slides/${id}`),
 };
 
 export default api;
