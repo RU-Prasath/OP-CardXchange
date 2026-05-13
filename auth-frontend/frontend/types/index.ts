@@ -8,7 +8,7 @@ export interface JWTPayload {
 export interface TemplateField {
   key: string;
   label: string;
-  type: 'text' | 'textarea' | 'url' | 'array' | 'image' | 'boolean' | 'select' | 'color';
+  type: 'text' | 'textarea' | 'url' | 'array' | 'image' | 'boolean' | 'select' | 'color' | 'font';
   placeholder?: string;
   options?: string[];
   section: string;

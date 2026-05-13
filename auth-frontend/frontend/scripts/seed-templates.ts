@@ -5,6 +5,8 @@ import mongoose from 'mongoose';
 import marenConfig from '../configs/template-configs/maren';
 import mintslateConfig from '../configs/template-configs/mintslate';
 import apexConfig from '../configs/template-configs/apex';
+import atelierConfig from '../configs/template-configs/atelier';
+import quartzConfig from '../configs/template-configs/quartz';
 
 const MONGODB_URI = process.env.MONGODB_URI!;
 
@@ -49,6 +51,20 @@ async function seed() {
     thumbnail: '', isPublished: true, pricingType: 'free',
     frontendPath: 'developer/ApexTemplate',
     adminConfig: { defaultContent: apexConfig.defaultContent },
+  });
+
+  await upsert('atelier', {
+    name: 'Atelier', slug: 'atelier', category: 'designer',
+    thumbnail: '', isPublished: true, pricingType: 'free',
+    frontendPath: 'designer/AtelierTemplate',
+    adminConfig: { defaultContent: atelierConfig.defaultContent },
+  });
+
+  await upsert('quartz', {
+    name: 'Quartz', slug: 'quartz', category: 'developer',
+    thumbnail: '', isPublished: true, pricingType: 'free',
+    frontendPath: 'developer/QuartzTemplate',
+    adminConfig: { defaultContent: quartzConfig.defaultContent },
   });
 
   await mongoose.disconnect();

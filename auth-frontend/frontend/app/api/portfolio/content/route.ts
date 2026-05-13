@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Portfolio from '@/lib/models/Portfolio';
 import User from '@/lib/models/User';
+import '@/lib/models/Template';
 import { getSession } from '@/lib/auth';
 
 export async function GET() {

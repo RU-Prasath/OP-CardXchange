@@ -8,8 +8,8 @@ import { Badge } from '@/components/ui/badge';
 
 interface Template { _id: string; name: string; slug: string; category: string; thumbnail: string; isPublished: boolean; pricingType: 'free' | 'paid'; monthlyPrice: number; yearlyPrice: number; frontendPath: string; createdAt: string; adminConfig?: { defaultContent?: Record<string, string> }; }
 
-const CATEGORIES = ['developer'];
-const TEMPLATE_PATHS = ['developer/MarenTemplate','developer/MintSlateTemplate','developer/ApexTemplate'];
+const CATEGORIES = ['developer','designer'];
+const TEMPLATE_PATHS = ['developer/MarenTemplate','developer/MintSlateTemplate','developer/ApexTemplate','developer/QuartzTemplate','designer/AtelierTemplate'];
 
 const inputCls = "w-full h-10 rounded-xl border border-white/[0.12] bg-white/[0.03] px-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono";
 const textareaCls = "w-full rounded-xl border border-white/[0.12] bg-white/[0.03] px-3 py-2 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono resize-y min-h-[80px]";

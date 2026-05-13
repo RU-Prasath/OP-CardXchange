@@ -41,22 +41,29 @@ export default function AdminShell({ children, role, userEmail, username }: Prop
   }
 
   return (
-    <div className="flex min-h-screen bg-[#0A0D14]">
+    <div className="flex h-screen bg-[#0A0D14] overflow-hidden">
       {/* Sidebar */}
-      <aside className={cn('flex flex-col border-r border-white/[0.07] bg-black/20 transition-all duration-200', collapsed ? 'w-16' : 'w-[220px]')}>
-        {/* Brand */}
-        <div className={cn('flex items-center gap-2.5 p-4 border-b border-white/[0.07]', collapsed && 'justify-center')}>
+      <aside className={cn('flex flex-col h-screen border-r border-white/[0.07] bg-black/20 transition-all duration-200 shrink-0', collapsed ? 'w-16' : 'w-[220px]')}>
+        {/* Brand + collapse toggle */}
+        <div className={cn('flex items-center gap-2.5 p-4 border-b border-white/[0.07]', collapsed && 'flex-col gap-3')}>
           <div className="w-6 h-6 rounded-lg flex items-center justify-center font-mono font-bold text-[12px] text-[#0A0D14] shrink-0" style={{background:'linear-gradient(135deg,#22D3EE,#6366F1,#A855F7)'}}>F</div>
           {!collapsed && (
-            <div>
-              <div className="font-bold text-sm">Folioforge</div>
-              <div className="font-mono text-[10px] text-white/30">{role === 'superadmin' ? 'Super Admin' : 'Dashboard'}</div>
+            <div className="flex-1 min-w-0">
+              <div className="font-bold text-sm leading-tight truncate">Folioforge</div>
+              <div className="font-mono text-[10px] text-white/30 truncate">{role === 'superadmin' ? 'Super Admin' : 'Dashboard'}</div>
             </div>
           )}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className="w-6 h-6 rounded-md border border-white/[0.12] bg-white/[0.03] flex items-center justify-center text-white/40 hover:text-white hover:border-white/[0.25] transition-all shrink-0"
+          >
+            {collapsed ? <ChevronRight size={12}/> : <ChevronLeft size={12}/>}
+          </button>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 p-2 space-y-0.5 mt-2">
+        <nav className="flex-1 overflow-y-auto p-2 space-y-0.5 mt-2">
           {nav.map(item => {
             const active = pathname === item.href || (item.href !== '/super-admin' && item.href !== '/dashboard' && pathname.startsWith(item.href));
             return (
@@ -89,15 +96,10 @@ export default function AdminShell({ children, role, userEmail, username }: Prop
             <LogOut size={14}/>{!collapsed && 'Sign out'}
           </button>
         </div>
-
-        {/* Collapse toggle */}
-        <button onClick={() => setCollapsed(!collapsed)} className="absolute top-20 -right-3 w-6 h-6 rounded-full bg-[#11151F] border border-white/[0.12] flex items-center justify-center text-white/40 hover:text-white transition-all z-10">
-          {collapsed ? <ChevronRight size={12}/> : <ChevronLeft size={12}/>}
-        </button>
       </aside>
 
       {/* Main */}
-      <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
         {/* Top bar */}
         <header className="h-14 border-b border-white/[0.07] flex items-center justify-between px-6 bg-black/10 shrink-0">
           <div className="font-mono text-xs text-white/30 flex items-center gap-2">

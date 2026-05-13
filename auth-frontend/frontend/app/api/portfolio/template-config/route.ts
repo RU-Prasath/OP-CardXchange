@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import Portfolio from '@/lib/models/Portfolio';
+import '@/lib/models/Template';
 import { getTemplateConfig } from '@/configs/template-configs';
 
 export async function GET() {

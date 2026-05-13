@@ -1,7 +1,7 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { useParams } from 'next/navigation';
-import { Plus, X, Upload, RotateCcw } from 'lucide-react';
+import { Plus, X, Upload, RotateCcw, ChevronDown, Type } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import SectionPage from '@/components/editor/SectionPage';
 import { Card, CardTitle, Label, Input, Textarea, ColorField } from '@/components/editor/FormControls';
@@ -28,6 +28,14 @@ interface ApexEduEntry   { school: string; degree: string; period: string; detai
 interface ApexCertEntry  { name: string; issuer: string; year: string; url: string; }
 interface ApexTestEntry  { quote: string; author: string; role: string; }
 
+// Atelier types
+interface AtelierWorkEntry { title: string; category: string; year: string; role: string; description: string; image: string; liveUrl: string; }
+interface AtelierDiscEntry { number: string; title: string; description: string; items: string; }
+interface AtelierProcEntry { number: string; title: string; description: string; }
+interface AtelierPressEntry { publication: string; item: string; year: string; url: string; }
+interface AtelierClientEntry { name: string; }
+interface AtelierTestEntry { quote: string; author: string; role: string; company: string; }
+
 // ── Parse helpers ──
 function parseStats(content: Record<string, string>): StatEntry[] {
   if (content.heroStatsJson) { try { return JSON.parse(content.heroStatsJson); } catch {} }
@@ -46,6 +54,82 @@ function parseJson<T>(v: string | undefined, fallback: T[]): T[] {
   if (!v) return fallback;
   try { return JSON.parse(v); } catch { return fallback; }
 }
+
+// ── Google Fonts loader (loads each option in its own link so a font with
+//    limited variants does not break the whole stylesheet request) ──
+function loadGoogleFonts(families: string[]) {
+  if (typeof document === 'undefined' || families.length === 0) return;
+  families.forEach(f => {
+    const id = 'editor-font-' + f.replace(/\s+/g, '');
+    if (document.getElementById(id)) return;
+    const name = f.trim().replace(/\s+/g, '+');
+    const link = document.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${name}:ital,wght@0,400;0,500;0,700;1,400&display=swap`;
+    document.head.appendChild(link);
+  });
+}
+
+// ── Font picker field with live preview ──
+const FontField = memo(function FontField({
+  label, value, onChange, options, kind,
+}: { label: string; value: string; onChange: (v: string) => void; options: string[]; kind: 'display' | 'body' | 'mono' }) {
+  useEffect(() => { loadGoogleFonts(options); }, [options]);
+  const previewText = kind === 'display'
+    ? 'The quiet shape of an idea.'
+    : kind === 'mono'
+      ? 'const design = craft + restraint;'
+      : 'Designed with intention, built with care — every detail considered.';
+  const previewSize = kind === 'display' ? 36 : kind === 'mono' ? 14 : 17;
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">{label}</label>
+      <div className="relative">
+        <select
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          className="w-full appearance-none px-3 py-2 pr-9 rounded-lg border border-gray-200 bg-white text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 transition-all"
+        >
+          {options.map(opt => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
+        <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"/>
+      </div>
+      <div className="mt-2 rounded-lg border border-dashed border-emerald-400/40 bg-emerald-50/30 px-4 py-4 overflow-hidden">
+        <div className="flex items-center gap-1.5 mb-2 text-[10px] font-medium text-emerald-700 uppercase tracking-wider">
+          <Type size={11}/> Preview · <span className="font-mono normal-case tracking-normal text-emerald-700/80">{value}</span>
+        </div>
+        <div
+          style={{
+            fontFamily: `'${value}', ${kind === 'mono' ? 'ui-monospace, monospace' : kind === 'display' ? 'Georgia, serif' : 'system-ui, sans-serif'}`,
+            fontSize: previewSize,
+            lineHeight: 1.25,
+            color: '#1a1a1a',
+            letterSpacing: kind === 'display' ? '-0.01em' : 'normal',
+            fontWeight: kind === 'display' ? 500 : 400,
+          }}
+        >
+          {previewText}
+        </div>
+        <div
+          style={{
+            fontFamily: `'${value}', ${kind === 'mono' ? 'ui-monospace, monospace' : kind === 'display' ? 'Georgia, serif' : 'system-ui, sans-serif'}`,
+            fontSize: kind === 'display' ? 60 : 28,
+            lineHeight: 1,
+            color: '#0a0a0a',
+            letterSpacing: '-0.02em',
+            fontWeight: kind === 'display' ? 500 : 500,
+            marginTop: 8,
+          }}
+        >
+          Aa Bb Cc 123
+        </div>
+      </div>
+    </div>
+  );
+});
 
 // ── Theme key list (for reset) ──
 const THEME_KEYS_PREFIX = 'color';
@@ -90,13 +174,21 @@ export default function DynamicSectionPage() {
   const [apexCerts,  setApexCerts]  = useState<ApexCertEntry[]>([]);
   const [apexTests,  setApexTests]  = useState<ApexTestEntry[]>([]);
 
+  // Atelier widgets
+  const [atelierWorks,   setAtelierWorks]   = useState<AtelierWorkEntry[]>([]);
+  const [atelierDisc,    setAtelierDisc]    = useState<AtelierDiscEntry[]>([]);
+  const [atelierProc,    setAtelierProc]    = useState<AtelierProcEntry[]>([]);
+  const [atelierPress,   setAtelierPress]   = useState<AtelierPressEntry[]>([]);
+  const [atelierClients, setAtelierClients] = useState<AtelierClientEntry[]>([]);
+  const [atelierTests,   setAtelierTests]   = useState<AtelierTestEntry[]>([]);
+
   // Upload
-  const resumeRef  = useRef<HTMLInputElement>(null);
-  const photoRef   = useRef<HTMLInputElement>(null);
   const toolImgRef = useRef<HTMLInputElement>(null);
   const [toolImgIdx, setToolImgIdx] = useState<number | null>(null);
   const mintProjImgRef = useRef<HTMLInputElement>(null);
   const [mintProjImgIdx, setMintProjImgIdx] = useState<number | null>(null);
+  const atelierProjImgRef = useRef<HTMLInputElement>(null);
+  const [atelierProjImgIdx, setAtelierProjImgIdx] = useState<number | null>(null);
   const [uploading,  setUploading]  = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -125,6 +217,12 @@ export default function DynamicSectionPage() {
         setApexEdu(parseJson<ApexEduEntry>(c.educationJson, []));
         setApexCerts(parseJson<ApexCertEntry>(c.certsJson, []));
         setApexTests(parseJson<ApexTestEntry>(c.testimonialsJson, []));
+        setAtelierWorks(parseJson<AtelierWorkEntry>(c.workJson, []));
+        setAtelierDisc(parseJson<AtelierDiscEntry>(c.discJson, []));
+        setAtelierProc(parseJson<AtelierProcEntry>(c.procJson, []));
+        setAtelierPress(parseJson<AtelierPressEntry>(c.pressJson, []));
+        setAtelierClients(parseJson<AtelierClientEntry>(c.clientsJson, []));
+        setAtelierTests(parseJson<AtelierTestEntry>(c.testimonialsJson, []));
       }
       if (configRes.success) {
         setTemplateSlug(configRes.data.slug);
@@ -169,7 +267,7 @@ export default function DynamicSectionPage() {
       paragraphs.forEach((p, i) => { merged[`aboutPara${i + 1}`] = p; });
     }
 
-    if (templateSlug === 'maren') {
+    if (templateSlug === 'maren' || templateSlug === 'quartz') {
       if (sectionKey === 'skills')     merged.skillsJson    = JSON.stringify(skills);
       if (sectionKey === 'experience') merged.expJson       = JSON.stringify(marenExps);
       if (sectionKey === 'projects')   merged.projJson      = JSON.stringify(marenProjs);
@@ -184,6 +282,17 @@ export default function DynamicSectionPage() {
       if (sectionKey === 'experience')   merged.expJson   = JSON.stringify(mintExps);
       if (sectionKey === 'projects')     merged.projJson  = JSON.stringify(mintProjs);
       if (sectionKey === 'testimonials') merged.testJson  = JSON.stringify(tests);
+    }
+
+    if (templateSlug === 'atelier') {
+      if (sectionKey === 'work')         merged.workJson         = JSON.stringify(atelierWorks);
+      if (sectionKey === 'disciplines')  merged.discJson         = JSON.stringify(atelierDisc);
+      if (sectionKey === 'process')      merged.procJson         = JSON.stringify(atelierProc);
+      if (sectionKey === 'recognition') {
+        merged.pressJson   = JSON.stringify(atelierPress);
+        merged.clientsJson = JSON.stringify(atelierClients);
+      }
+      if (sectionKey === 'testimonials') merged.testimonialsJson = JSON.stringify(atelierTests);
     }
 
     if (templateSlug === 'apex') {
@@ -234,7 +343,7 @@ export default function DynamicSectionPage() {
     if (showStatsWidget && /^stat\d(Num|Unit|Label)$/.test(f.key)) return false;
     if (/^aboutPara\d$/.test(f.key)) return false;
     if (templateSlug === 'apex' && apexJsonKeys.has(f.key)) return false;
-    if (templateSlug === 'maren' && sectionKey === 'education' && marenEduJsonKeys.has(f.key)) return false;
+    if ((templateSlug === 'maren' || templateSlug === 'quartz') && sectionKey === 'education' && marenEduJsonKeys.has(f.key)) return false;
     return true;
   });
   const isThemeSection = sectionKey === 'theme';
@@ -274,27 +383,31 @@ export default function DynamicSectionPage() {
                 return <ColorField key={field.key} label={field.label} value={c(field.key)} onChange={v => set(field.key, v)} placeholder={field.placeholder}/>;
               }
               if (field.type === 'image') {
-                const isResume  = field.key === 'resumeUrl';
-                const isPhoto   = field.key === 'photoUrl';
-                const fileRef   = isResume ? resumeRef : isPhoto ? photoRef : null;
-                const accept    = isResume ? '.pdf' : 'image/*';
+                const isResume = field.key === 'resumeUrl';
+                const accept = isResume ? '.pdf' : 'image/*';
+                const isPhotoLike = field.key === 'photoUrl' || field.key === 'aboutPhotoUrl';
                 const isUploading = uploading[field.key];
+                const inputId = `imgupload-${field.key}`;
                 return (
                   <div key={field.key}>
                     <Label>{field.label}</Label>
+                    <input id={inputId} type="file" accept={accept} className="hidden"
+                      onChange={e => {
+                        const f = e.target.files?.[0];
+                        if (f) uploadFile(f, field.key);
+                        (e.target as HTMLInputElement).value = '';
+                      }}/>
                     <div className="flex items-center gap-3 flex-wrap">
-                      {isPhoto && c(field.key) && (
+                      {isPhotoLike && c(field.key) && (
                         <div className="relative w-32 h-40 rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 shadow-sm">
-                          <img src={c(field.key)} alt="Profile" className="w-full h-full object-cover"/>
-                          <div className="absolute bottom-0 left-0 right-0 px-2 py-1 bg-black/40 text-white text-[10px] font-mono text-center">Profile preview</div>
+                          <img src={c(field.key)} alt="Preview" className="w-full h-full object-cover"/>
+                          <div className="absolute bottom-0 left-0 right-0 px-2 py-1 bg-black/40 text-white text-[10px] font-mono text-center">Preview</div>
                         </div>
                       )}
-                      <button onClick={() => fileRef?.current?.click()} disabled={isUploading}
-                        className="px-4 py-2 rounded-lg border-2 border-dashed border-emerald-500/40 text-emerald-700 text-sm font-medium hover:border-emerald-500 transition-colors disabled:opacity-50">
-                        {isUploading ? 'Uploading…' : c(field.key) ? 'Change file' : `Upload ${isResume ? 'PDF' : 'photo'}`}
-                      </button>
-                      <input ref={fileRef || undefined} type="file" accept={accept} className="hidden"
-                        onChange={e => { const f = e.target.files?.[0]; if (f) uploadFile(f, field.key); }}/>
+                      <label htmlFor={inputId}
+                        className={`px-4 py-2 rounded-lg border-2 border-dashed border-emerald-500/40 text-emerald-700 text-sm font-medium hover:border-emerald-500 transition-colors cursor-pointer ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                        {isUploading ? 'Uploading…' : c(field.key) ? 'Change file' : `Upload ${isResume ? 'PDF' : 'image'}`}
+                      </label>
                       {c(field.key) && (
                         <>
                           <span className="text-sm text-gray-500 font-mono truncate max-w-[160px]">{c(field.key).split('/').pop()}</span>
@@ -305,6 +418,13 @@ export default function DynamicSectionPage() {
                     </div>
                   </div>
                 );
+              }
+              if (field.type === 'font') {
+                const opts = field.options || [];
+                const current = c(field.key) || field.placeholder || opts[0] || '';
+                const previewKind = field.key.toLowerCase().includes('display') ? 'display'
+                  : field.key.toLowerCase().includes('mono') ? 'mono' : 'body';
+                return <FontField key={field.key} label={field.label} value={current} onChange={v => set(field.key, v)} options={opts} kind={previewKind}/>;
               }
               if (field.type === 'textarea') {
                 return (
@@ -379,8 +499,8 @@ export default function DynamicSectionPage() {
         </Card>
       )}
 
-      {/* ── Maren: Skills (categories) widget ── */}
-      {templateSlug === 'maren' && sectionKey === 'skills' && (
+      {/* ── Maren/Quartz: Skills (categories) widget ── */}
+      {(templateSlug === 'maren' || templateSlug === 'quartz') && sectionKey === 'skills' && (
         <Card>
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -408,8 +528,8 @@ export default function DynamicSectionPage() {
         </Card>
       )}
 
-      {/* ── Maren: Experience widget ── */}
-      {templateSlug === 'maren' && sectionKey === 'experience' && (
+      {/* ── Maren/Quartz: Experience widget ── */}
+      {(templateSlug === 'maren' || templateSlug === 'quartz') && sectionKey === 'experience' && (
         <Card>
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -460,8 +580,8 @@ export default function DynamicSectionPage() {
         </Card>
       )}
 
-      {/* ── Maren: Projects widget ── */}
-      {templateSlug === 'maren' && sectionKey === 'projects' && (
+      {/* ── Maren/Quartz: Projects widget ── */}
+      {(templateSlug === 'maren' || templateSlug === 'quartz') && sectionKey === 'projects' && (
         <Card>
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -502,8 +622,222 @@ export default function DynamicSectionPage() {
         </Card>
       )}
 
-      {/* ── Maren: Education & Certifications widget ── */}
-      {templateSlug === 'maren' && sectionKey === 'education' && (<>
+      {/* ── Atelier: Selected Work widget ── */}
+      {templateSlug === 'atelier' && sectionKey === 'work' && (
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Projects</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Add the case studies you want featured on the portfolio</p>
+            </div>
+            <button onClick={() => setAtelierWorks(w => [...w, { title: '', category: '', year: '', role: '', description: '', image: '', liveUrl: '' }])} className={addBtn}>
+              <Plus size={12}/> Add Project
+            </button>
+          </div>
+          <div className="space-y-4">
+            {atelierWorks.map((w, i) => (
+              <div key={i} className="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Project {i + 1}</span>
+                  <button onClick={() => setAtelierWorks(w => w.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><Label>Title</Label><input value={w.title} onChange={e => setAtelierWorks(ws => ws.map((x, j) => j===i ? {...x, title: e.target.value} : x))} placeholder="Project name" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Category</Label><input value={w.category} onChange={e => setAtelierWorks(ws => ws.map((x, j) => j===i ? {...x, category: e.target.value} : x))} placeholder="Brand · Hospitality" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Year</Label><input value={w.year} onChange={e => setAtelierWorks(ws => ws.map((x, j) => j===i ? {...x, year: e.target.value} : x))} placeholder="2025" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Role</Label><input value={w.role} onChange={e => setAtelierWorks(ws => ws.map((x, j) => j===i ? {...x, role: e.target.value} : x))} placeholder="Designer & Art Direction" className={`${fieldInput} w-full`}/></div>
+                </div>
+                <div><Label>Description</Label>
+                  <textarea value={w.description} onChange={e => setAtelierWorks(ws => ws.map((x, j) => j===i ? {...x, description: e.target.value} : x))} rows={3} placeholder="A complete brand system for…" className={taInput}/>
+                </div>
+                <div>
+                  <Label>Project Image</Label>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {w.image && <img src={w.image} alt={w.title} className="w-24 h-16 rounded-lg border border-gray-200 object-cover"/>}
+                    <button onClick={() => { setAtelierProjImgIdx(i); atelierProjImgRef.current?.click(); }}
+                      className="px-4 py-2 rounded-lg border-2 border-dashed border-emerald-500/40 text-emerald-700 text-sm font-medium hover:border-emerald-500 transition-colors">
+                      <Upload size={11} className="inline mr-1"/>{w.image ? 'Change image' : 'Upload image'}
+                    </button>
+                    {w.image && (
+                      <button onClick={() => setAtelierWorks(ws => ws.map((x, j) => j===i ? {...x, image: ''} : x))}
+                        className="px-3 py-1.5 text-xs rounded-lg border border-red-200 text-red-600 hover:bg-red-50">Remove</button>
+                    )}
+                    {uploading[`atelierproj-${i}`] && <span className="text-xs text-gray-400">Uploading…</span>}
+                  </div>
+                  <input value={w.image} onChange={e => setAtelierWorks(ws => ws.map((x, j) => j===i ? {...x, image: e.target.value} : x))} placeholder="Or paste image URL" className={`${fieldInput} w-full mt-2`}/>
+                </div>
+                <div><Label>Live URL</Label><input type="url" value={w.liveUrl} onChange={e => setAtelierWorks(ws => ws.map((x, j) => j===i ? {...x, liveUrl: e.target.value} : x))} placeholder="https://… (optional)" className={`${fieldInput} w-full`}/></div>
+              </div>
+            ))}
+            {atelierWorks.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No projects yet. Click &quot;Add Project&quot; to start.</p>}
+          </div>
+          <input ref={atelierProjImgRef} type="file" accept="image/*" className="hidden"
+            onChange={e => {
+              const f = e.target.files?.[0];
+              if (f && atelierProjImgIdx !== null) {
+                uploadFile(f, `atelierproj-${atelierProjImgIdx}`, url => setAtelierWorks(ws => ws.map((x, j) => j===atelierProjImgIdx ? {...x, image: url} : x)));
+              }
+              if (atelierProjImgRef.current) atelierProjImgRef.current.value = '';
+            }}/>
+        </Card>
+      )}
+
+      {/* ── Atelier: Disciplines widget ── */}
+      {templateSlug === 'atelier' && sectionKey === 'disciplines' && (
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Disciplines</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Add the kinds of work you take on</p>
+            </div>
+            <button onClick={() => setAtelierDisc(d => [...d, { number: String(d.length+1).padStart(2,'0'), title: '', description: '', items: '' }])} className={addBtn}>
+              <Plus size={12}/> Add Discipline
+            </button>
+          </div>
+          <div className="space-y-4">
+            {atelierDisc.map((d, i) => (
+              <div key={i} className="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Discipline {i + 1}</span>
+                  <button onClick={() => setAtelierDisc(d => d.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div><Label>Number</Label><input value={d.number} onChange={e => setAtelierDisc(ds => ds.map((x, j) => j===i ? {...x, number: e.target.value} : x))} placeholder="01" className={`${fieldInput} w-full`}/></div>
+                  <div className="col-span-2"><Label>Title</Label><input value={d.title} onChange={e => setAtelierDisc(ds => ds.map((x, j) => j===i ? {...x, title: e.target.value} : x))} placeholder="Brand Systems" className={`${fieldInput} w-full`}/></div>
+                </div>
+                <div><Label>Description</Label>
+                  <textarea value={d.description} onChange={e => setAtelierDisc(ds => ds.map((x, j) => j===i ? {...x, description: e.target.value} : x))} rows={2} placeholder="Identity, type, palette, voice…" className={taInput}/>
+                </div>
+                <div><Label>Items / Tags (comma-separated)</Label>
+                  <input value={d.items} onChange={e => setAtelierDisc(ds => ds.map((x, j) => j===i ? {...x, items: e.target.value} : x))} placeholder="Naming, Wordmarks, Type, Guidelines" className={`${fieldInput} w-full`}/>
+                </div>
+              </div>
+            ))}
+            {atelierDisc.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No disciplines yet. Click &quot;Add Discipline&quot; to start.</p>}
+          </div>
+        </Card>
+      )}
+
+      {/* ── Atelier: Process widget ── */}
+      {templateSlug === 'atelier' && sectionKey === 'process' && (
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Process Steps</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Walk visitors through how you work</p>
+            </div>
+            <button onClick={() => setAtelierProc(p => [...p, { number: String(p.length+1).padStart(2,'0'), title: '', description: '' }])} className={addBtn}>
+              <Plus size={12}/> Add Step
+            </button>
+          </div>
+          <div className="space-y-4">
+            {atelierProc.map((p, i) => (
+              <div key={i} className="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Step {i + 1}</span>
+                  <button onClick={() => setAtelierProc(p => p.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div><Label>Number</Label><input value={p.number} onChange={e => setAtelierProc(ps => ps.map((x, j) => j===i ? {...x, number: e.target.value} : x))} placeholder="01" className={`${fieldInput} w-full`}/></div>
+                  <div className="col-span-2"><Label>Title</Label><input value={p.title} onChange={e => setAtelierProc(ps => ps.map((x, j) => j===i ? {...x, title: e.target.value} : x))} placeholder="Listen" className={`${fieldInput} w-full`}/></div>
+                </div>
+                <div><Label>Description</Label>
+                  <textarea value={p.description} onChange={e => setAtelierProc(ps => ps.map((x, j) => j===i ? {...x, description: e.target.value} : x))} rows={2} placeholder="A long conversation. I want to understand…" className={taInput}/>
+                </div>
+              </div>
+            ))}
+            {atelierProc.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No steps yet. Click &quot;Add Step&quot; to start.</p>}
+          </div>
+        </Card>
+      )}
+
+      {/* ── Atelier: Recognition & Clients widgets ── */}
+      {templateSlug === 'atelier' && sectionKey === 'recognition' && (<>
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Press & Awards</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Publications, awards, and recognition</p>
+            </div>
+            <button onClick={() => setAtelierPress(p => [...p, { publication: '', item: '', year: '', url: '' }])} className={addBtn}>
+              <Plus size={12}/> Add Entry
+            </button>
+          </div>
+          <div className="space-y-3">
+            {atelierPress.map((p, i) => (
+              <div key={i} className="p-3 rounded-lg border border-gray-200 bg-gray-50 space-y-2">
+                <div className="flex items-center gap-2">
+                  <input value={p.publication} onChange={e => setAtelierPress(ps => ps.map((x, j) => j===i ? {...x, publication: e.target.value} : x))} placeholder="Publication (e.g. It's Nice That)" className={fieldInput}/>
+                  <button onClick={() => setAtelierPress(ps => ps.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+                </div>
+                <input value={p.item} onChange={e => setAtelierPress(ps => ps.map((x, j) => j===i ? {...x, item: e.target.value} : x))} placeholder="What they featured (e.g. Feature on…)" className={`${fieldInput} w-full`}/>
+                <div className="grid grid-cols-2 gap-2">
+                  <input value={p.year} onChange={e => setAtelierPress(ps => ps.map((x, j) => j===i ? {...x, year: e.target.value} : x))} placeholder="Year" className={`${fieldInput} w-full`}/>
+                  <input type="url" value={p.url} onChange={e => setAtelierPress(ps => ps.map((x, j) => j===i ? {...x, url: e.target.value} : x))} placeholder="Link (optional)" className={`${fieldInput} w-full`}/>
+                </div>
+              </div>
+            ))}
+            {atelierPress.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No press entries yet.</p>}
+          </div>
+        </Card>
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Selected Clients</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">A list of brands or studios you have worked with</p>
+            </div>
+            <button onClick={() => setAtelierClients(c => [...c, { name: '' }])} className={addBtn}>
+              <Plus size={12}/> Add Client
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {atelierClients.map((cl, i) => (
+              <div key={i} className="flex items-center gap-2 p-2.5 rounded-lg border border-gray-200 bg-gray-50">
+                <input value={cl.name} onChange={e => setAtelierClients(cs => cs.map((x, j) => j===i ? {...x, name: e.target.value} : x))} placeholder="Client name" className={fieldInput}/>
+                <button onClick={() => setAtelierClients(cs => cs.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+              </div>
+            ))}
+            {atelierClients.length === 0 && <p className="text-xs text-gray-400 text-center py-4 col-span-2">No clients yet.</p>}
+          </div>
+        </Card>
+      </>)}
+
+      {/* ── Atelier: Testimonials widget ── */}
+      {templateSlug === 'atelier' && sectionKey === 'testimonials' && (
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Testimonials</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Kind words from collaborators</p>
+            </div>
+            <button onClick={() => setAtelierTests(t => [...t, { quote: '', author: '', role: '', company: '' }])} className={addBtn}>
+              <Plus size={12}/> Add Testimonial
+            </button>
+          </div>
+          <div className="space-y-4">
+            {atelierTests.map((t, i) => (
+              <div key={i} className="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Testimonial {i + 1}</span>
+                  <button onClick={() => setAtelierTests(ts => ts.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+                </div>
+                <div><Label>Quote</Label>
+                  <textarea value={t.quote} onChange={e => setAtelierTests(ts => ts.map((x, j) => j===i ? {...x, quote: e.target.value} : x))} rows={3} placeholder="What they said…" className={taInput}/>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div><Label>Author</Label><input value={t.author} onChange={e => setAtelierTests(ts => ts.map((x, j) => j===i ? {...x, author: e.target.value} : x))} placeholder="Mariana Costa" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Role</Label><input value={t.role} onChange={e => setAtelierTests(ts => ts.map((x, j) => j===i ? {...x, role: e.target.value} : x))} placeholder="Founder" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Company</Label><input value={t.company} onChange={e => setAtelierTests(ts => ts.map((x, j) => j===i ? {...x, company: e.target.value} : x))} placeholder="Maison Quaí" className={`${fieldInput} w-full`}/></div>
+                </div>
+              </div>
+            ))}
+            {atelierTests.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No testimonials yet.</p>}
+          </div>
+        </Card>
+      )}
+
+      {/* ── Maren/Quartz: Education & Certifications widget ── */}
+      {(templateSlug === 'maren' || templateSlug === 'quartz') && sectionKey === 'education' && (<>
         <Card>
           <div className="flex items-center justify-between mb-4">
             <div>
