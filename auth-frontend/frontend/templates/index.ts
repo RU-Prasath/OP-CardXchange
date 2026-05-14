@@ -12,7 +12,11 @@ const templateRegistry: Record<string, ComponentType<TemplateProps>> = {
   'developer/MintSlateTemplate': dynamic(() => import('./developer/MintSlateTemplate'), { ssr: true }) as ComponentType<TemplateProps>,
   'developer/ApexTemplate': dynamic(() => import('./developer/ApexTemplate'), { ssr: true }) as ComponentType<TemplateProps>,
   'developer/QuartzTemplate': dynamic(() => import('./developer/QuartzTemplate'), { ssr: true }) as ComponentType<TemplateProps>,
+  'developer/NexusTemplate': dynamic(() => import('./developer/NexusTemplate'), { ssr: true }) as ComponentType<TemplateProps>,
   'designer/AtelierTemplate': dynamic(() => import('./designer/AtelierTemplate'), { ssr: true }) as ComponentType<TemplateProps>,
+  'designer/PrismTemplate': dynamic(() => import('./designer/PrismTemplate'), { ssr: true }) as ComponentType<TemplateProps>,
+  'designer/MosaicTemplate': dynamic(() => import('./designer/MosaicTemplate'), { ssr: true }) as ComponentType<TemplateProps>,
+  'designer/DebutTemplate': dynamic(() => import('./designer/DebutTemplate'), { ssr: true }) as ComponentType<TemplateProps>,
 };
 
 export function getTemplateComponent(frontendPath: string): ComponentType<TemplateProps> | null {

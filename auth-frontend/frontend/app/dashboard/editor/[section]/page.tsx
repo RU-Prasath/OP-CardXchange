@@ -36,6 +36,16 @@ interface AtelierPressEntry { publication: string; item: string; year: string; u
 interface AtelierClientEntry { name: string; }
 interface AtelierTestEntry { quote: string; author: string; role: string; company: string; }
 
+// Prism types
+interface PrismWorkEntry { title: string; year: string; category: string; image: string; desc: string; stack: string; impact: string; liveUrl: string; }
+interface PrismProcEntry { title: string; description: string; }
+
+// Debut types
+interface DebutEduEntry { period: string; school: string; degree: string; detail: string; grade: string; }
+interface DebutInternshipEntry { period: string; isCurrent: boolean; role: string; company: string; description: string; tags: string; }
+interface DebutSkillItem { name: string; level: number; }
+interface DebutSkillCatEntry { title: string; items: DebutSkillItem[]; }
+
 // ── Parse helpers ──
 function parseStats(content: Record<string, string>): StatEntry[] {
   if (content.heroStatsJson) { try { return JSON.parse(content.heroStatsJson); } catch {} }
@@ -182,6 +192,15 @@ export default function DynamicSectionPage() {
   const [atelierClients, setAtelierClients] = useState<AtelierClientEntry[]>([]);
   const [atelierTests,   setAtelierTests]   = useState<AtelierTestEntry[]>([]);
 
+  // Prism widgets
+  const [prismWorks, setPrismWorks] = useState<PrismWorkEntry[]>([]);
+  const [prismProc,  setPrismProc]  = useState<PrismProcEntry[]>([]);
+
+  // Debut widgets
+  const [debutEdu,   setDebutEdu]   = useState<DebutEduEntry[]>([]);
+  const [debutInts,  setDebutInts]  = useState<DebutInternshipEntry[]>([]);
+  const [debutSkillCats, setDebutSkillCats] = useState<DebutSkillCatEntry[]>([]);
+
   // Upload
   const toolImgRef = useRef<HTMLInputElement>(null);
   const [toolImgIdx, setToolImgIdx] = useState<number | null>(null);
@@ -189,6 +208,8 @@ export default function DynamicSectionPage() {
   const [mintProjImgIdx, setMintProjImgIdx] = useState<number | null>(null);
   const atelierProjImgRef = useRef<HTMLInputElement>(null);
   const [atelierProjImgIdx, setAtelierProjImgIdx] = useState<number | null>(null);
+  const prismWorkImgRef = useRef<HTMLInputElement>(null);
+  const [prismWorkImgIdx, setPrismWorkImgIdx] = useState<number | null>(null);
   const [uploading,  setUploading]  = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -223,6 +244,11 @@ export default function DynamicSectionPage() {
         setAtelierPress(parseJson<AtelierPressEntry>(c.pressJson, []));
         setAtelierClients(parseJson<AtelierClientEntry>(c.clientsJson, []));
         setAtelierTests(parseJson<AtelierTestEntry>(c.testimonialsJson, []));
+        setPrismWorks(parseJson<PrismWorkEntry>(c.projJson, []));
+        setPrismProc(parseJson<PrismProcEntry>(c.processJson, []));
+        setDebutEdu(parseJson<DebutEduEntry>(c.educationJson, []));
+        setDebutInts(parseJson<DebutInternshipEntry>(c.internshipsJson, []));
+        setDebutSkillCats(parseJson<DebutSkillCatEntry>(c.skillCategoriesJson, []));
       }
       if (configRes.success) {
         setTemplateSlug(configRes.data.slug);
@@ -277,7 +303,7 @@ export default function DynamicSectionPage() {
       }
     }
 
-    if (templateSlug === 'mintslate') {
+    if (templateSlug === 'mintslate' || templateSlug === 'nexus') {
       if (sectionKey === 'skills')       merged.toolsJson = JSON.stringify(tools);
       if (sectionKey === 'experience')   merged.expJson   = JSON.stringify(mintExps);
       if (sectionKey === 'projects')     merged.projJson  = JSON.stringify(mintProjs);
@@ -293,6 +319,20 @@ export default function DynamicSectionPage() {
         merged.clientsJson = JSON.stringify(atelierClients);
       }
       if (sectionKey === 'testimonials') merged.testimonialsJson = JSON.stringify(atelierTests);
+    }
+
+    if (templateSlug === 'prism' || templateSlug === 'mosaic') {
+      if (sectionKey === 'work')         merged.projJson    = JSON.stringify(prismWorks);
+      if (sectionKey === 'process')      merged.processJson = JSON.stringify(prismProc);
+      if (sectionKey === 'testimonials') merged.testJson    = JSON.stringify(tests);
+    }
+
+    if (templateSlug === 'debut') {
+      if (sectionKey === 'work')         merged.projJson           = JSON.stringify(prismWorks);
+      if (sectionKey === 'testimonials') merged.testJson           = JSON.stringify(tests);
+      if (sectionKey === 'education')    merged.educationJson      = JSON.stringify(debutEdu);
+      if (sectionKey === 'internships')  merged.internshipsJson    = JSON.stringify(debutInts);
+      if (sectionKey === 'skills')       merged.skillCategoriesJson = JSON.stringify(debutSkillCats);
     }
 
     if (templateSlug === 'apex') {
@@ -898,7 +938,7 @@ export default function DynamicSectionPage() {
       </>)}
 
       {/* ── MintSlate: Tools widget ── */}
-      {templateSlug === 'mintslate' && sectionKey === 'skills' && (
+      {(templateSlug === 'mintslate' || templateSlug === 'nexus') && sectionKey === 'skills' && (
         <Card>
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -955,7 +995,7 @@ export default function DynamicSectionPage() {
         }}/>
 
       {/* ── MintSlate: Experience widget ── */}
-      {templateSlug === 'mintslate' && sectionKey === 'experience' && (
+      {(templateSlug === 'mintslate' || templateSlug === 'nexus') && sectionKey === 'experience' && (
         <Card>
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -1005,7 +1045,7 @@ export default function DynamicSectionPage() {
       )}
 
       {/* ── MintSlate: Projects widget ── */}
-      {templateSlug === 'mintslate' && sectionKey === 'projects' && (
+      {(templateSlug === 'mintslate' || templateSlug === 'nexus') && sectionKey === 'projects' && (
         <Card>
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -1296,8 +1336,8 @@ export default function DynamicSectionPage() {
         </Card>
       )}
 
-      {/* ── MintSlate: Testimonials widget ── */}
-      {templateSlug === 'mintslate' && sectionKey === 'testimonials' && (
+      {/* ── MintSlate / Nexus / Prism / Mosaic / Debut: Testimonials widget ── */}
+      {(templateSlug === 'mintslate' || templateSlug === 'nexus' || templateSlug === 'prism' || templateSlug === 'mosaic' || templateSlug === 'debut') && sectionKey === 'testimonials' && (
         <Card>
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -1328,6 +1368,220 @@ export default function DynamicSectionPage() {
               </div>
             ))}
             {tests.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No testimonials yet. Click &quot;Add Testimonial&quot; to get started.</p>}
+          </div>
+        </Card>
+      )}
+
+      {/* ── Prism / Mosaic / Debut: Selected Work widget ── */}
+      {(templateSlug === 'prism' || templateSlug === 'mosaic' || templateSlug === 'debut') && sectionKey === 'work' && (
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Selected Work</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Add project case studies — they appear as alternating featured cards</p>
+            </div>
+            <button onClick={() => setPrismWorks(p => [...p, { title: '', year: '', category: '', image: '', desc: '', stack: '', impact: '', liveUrl: '' }])} className={addBtn}>
+              <Plus size={12}/> Add Project
+            </button>
+          </div>
+          <div className="space-y-4">
+            {prismWorks.map((proj, i) => (
+              <div key={i} className="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Project {i + 1}</span>
+                  <button onClick={() => setPrismWorks(p => p.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="col-span-2"><Label>Title</Label><input value={proj.title} onChange={e => setPrismWorks(ps => ps.map((x, j) => j===i ? {...x, title: e.target.value} : x))} placeholder="Lumen Studio" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Year</Label><input value={proj.year} onChange={e => setPrismWorks(ps => ps.map((x, j) => j===i ? {...x, year: e.target.value} : x))} placeholder="2024" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Category</Label><input value={proj.category} onChange={e => setPrismWorks(ps => ps.map((x, j) => j===i ? {...x, category: e.target.value} : x))} placeholder="Brand identity" className={`${fieldInput} w-full`}/></div>
+                  <div className="col-span-2"><Label>Impact / Outcome</Label><input value={proj.impact} onChange={e => setPrismWorks(ps => ps.map((x, j) => j===i ? {...x, impact: e.target.value} : x))} placeholder="Series A close" className={`${fieldInput} w-full`}/></div>
+                </div>
+                <div>
+                  <Label>Project Image</Label>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {proj.image && <img src={proj.image} alt={proj.title} className="w-24 h-16 rounded-lg border border-gray-200 object-cover"/>}
+                    <button onClick={() => { setPrismWorkImgIdx(i); prismWorkImgRef.current?.click(); }}
+                      className="px-4 py-2 rounded-lg border-2 border-dashed border-emerald-500/40 text-emerald-700 text-sm font-medium hover:border-emerald-500 transition-colors">
+                      <Upload size={11} className="inline mr-1"/>{proj.image ? 'Change image' : 'Upload image'}
+                    </button>
+                    {proj.image && (
+                      <button onClick={() => setPrismWorks(ps => ps.map((x, j) => j===i ? {...x, image: ''} : x))}
+                        className="px-3 py-1.5 text-xs rounded-lg border border-red-200 text-red-600 hover:bg-red-50">Remove</button>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <Label>Description</Label>
+                  <textarea value={proj.desc} onChange={e => setPrismWorks(ps => ps.map((x, j) => j===i ? {...x, desc: e.target.value} : x))} rows={2} placeholder="Short story — what was the brief, what did you make?" className={taInput}/>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><Label>Stack / Tags (comma-sep)</Label><input value={proj.stack} onChange={e => setPrismWorks(ps => ps.map((x, j) => j===i ? {...x, stack: e.target.value} : x))} placeholder="Identity, Web, Print" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Live URL / Case Study</Label><input type="url" value={proj.liveUrl} onChange={e => setPrismWorks(ps => ps.map((x, j) => j===i ? {...x, liveUrl: e.target.value} : x))} placeholder="https://..." className={`${fieldInput} w-full`}/></div>
+                </div>
+              </div>
+            ))}
+            {prismWorks.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No projects yet. Click &quot;Add Project&quot; to get started.</p>}
+          </div>
+          <input ref={prismWorkImgRef} type="file" accept="image/*" className="hidden"
+            onChange={e => {
+              const f = e.target.files?.[0];
+              if (f && prismWorkImgIdx !== null) {
+                uploadFile(f, `prism-work-${prismWorkImgIdx}`, url => setPrismWorks(ps => ps.map((x, j) => j===prismWorkImgIdx ? {...x, image: url} : x)));
+              }
+              if (prismWorkImgRef.current) prismWorkImgRef.current.value = '';
+            }}/>
+        </Card>
+      )}
+
+      {/* ── Prism: Process Steps widget ── */}
+      {templateSlug === 'prism' && sectionKey === 'process' && (
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Process Steps</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Walk visitors through how you work — each step gets its own tile</p>
+            </div>
+            <button onClick={() => setPrismProc(p => [...p, { title: '', description: '' }])} className={addBtn}>
+              <Plus size={12}/> Add Step
+            </button>
+          </div>
+          <div className="space-y-3">
+            {prismProc.map((step, i) => (
+              <div key={i} className="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Step 0{i + 1}</span>
+                  <button onClick={() => setPrismProc(p => p.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+                </div>
+                <div><Label>Title</Label>
+                  <input value={step.title} onChange={e => setPrismProc(ps => ps.map((x, j) => j===i ? {...x, title: e.target.value} : x))} placeholder="Discover" className={`${fieldInput} w-full`}/>
+                </div>
+                <div><Label>Description</Label>
+                  <textarea value={step.description} onChange={e => setPrismProc(ps => ps.map((x, j) => j===i ? {...x, description: e.target.value} : x))} rows={2} placeholder="What this step involves and why it matters." className={taInput}/>
+                </div>
+              </div>
+            ))}
+            {prismProc.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No steps yet. Click &quot;Add Step&quot; to start.</p>}
+          </div>
+        </Card>
+      )}
+
+      {/* ── Debut: Education widget ── */}
+      {templateSlug === 'debut' && sectionKey === 'education' && (
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Education</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Schools, degrees, periods, and grades</p>
+            </div>
+            <button onClick={() => setDebutEdu(e => [...e, { period: '', school: '', degree: '', detail: '', grade: '' }])} className={addBtn}>
+              <Plus size={12}/> Add Entry
+            </button>
+          </div>
+          <div className="space-y-4">
+            {debutEdu.map((ed, i) => (
+              <div key={i} className="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Entry {i + 1}</span>
+                  <button onClick={() => setDebutEdu(es => es.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><Label>Institution</Label><input value={ed.school} onChange={e => setDebutEdu(es => es.map((x, j) => j===i ? {...x, school: e.target.value} : x))} placeholder="NID Ahmedabad" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Degree / Program</Label><input value={ed.degree} onChange={e => setDebutEdu(es => es.map((x, j) => j===i ? {...x, degree: e.target.value} : x))} placeholder="BDes · Communication Design" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Period</Label><input value={ed.period} onChange={e => setDebutEdu(es => es.map((x, j) => j===i ? {...x, period: e.target.value} : x))} placeholder="2022 – 2026" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Grade / CGPA</Label><input value={ed.grade} onChange={e => setDebutEdu(es => es.map((x, j) => j===i ? {...x, grade: e.target.value} : x))} placeholder="8.7" className={`${fieldInput} w-full`}/></div>
+                </div>
+                <div><Label>Detail / Notes</Label>
+                  <textarea value={ed.detail} onChange={e => setDebutEdu(es => es.map((x, j) => j===i ? {...x, detail: e.target.value} : x))} rows={2} placeholder="Capstone topic, achievements, focus areas…" className={taInput}/>
+                </div>
+              </div>
+            ))}
+            {debutEdu.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No education entries yet. Click &quot;Add Entry&quot; to start.</p>}
+          </div>
+        </Card>
+      )}
+
+      {/* ── Debut: Internships widget ── */}
+      {templateSlug === 'debut' && sectionKey === 'internships' && (
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Internships</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Past internships and short-term roles</p>
+            </div>
+            <button onClick={() => setDebutInts(it => [...it, { period: '', isCurrent: false, role: '', company: '', description: '', tags: '' }])} className={addBtn}>
+              <Plus size={12}/> Add Internship
+            </button>
+          </div>
+          <div className="space-y-4">
+            {debutInts.map((it, i) => (
+              <div key={i} className="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Internship {i + 1}</span>
+                  <button onClick={() => setDebutInts(is => is.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><Label>Role</Label><input value={it.role} onChange={e => setDebutInts(is => is.map((x, j) => j===i ? {...x, role: e.target.value} : x))} placeholder="Visual Design Intern" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Company / Studio</Label><input value={it.company} onChange={e => setDebutInts(is => is.map((x, j) => j===i ? {...x, company: e.target.value} : x))} placeholder="Studio Lumen" className={`${fieldInput} w-full`}/></div>
+                  <div><Label>Period</Label><input value={it.period} onChange={e => setDebutInts(is => is.map((x, j) => j===i ? {...x, period: e.target.value} : x))} placeholder="May – Aug 2025" className={`${fieldInput} w-full`}/></div>
+                  <div className="flex items-end gap-2 pb-0.5">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={it.isCurrent} onChange={e => setDebutInts(is => is.map((x, j) => j===i ? {...x, isCurrent: e.target.checked} : x))} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"/>
+                      <span className="text-sm text-gray-700">Currently here</span>
+                    </label>
+                  </div>
+                </div>
+                <div><Label>Description</Label>
+                  <textarea value={it.description} onChange={e => setDebutInts(is => is.map((x, j) => j===i ? {...x, description: e.target.value} : x))} rows={2} placeholder="What you worked on and what you learned" className={taInput}/>
+                </div>
+                <div><Label>Tags (comma-separated)</Label>
+                  <input value={it.tags} onChange={e => setDebutInts(is => is.map((x, j) => j===i ? {...x, tags: e.target.value} : x))} placeholder="Brand, Type, Packaging" className={`${fieldInput} w-full`}/>
+                </div>
+              </div>
+            ))}
+            {debutInts.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No internships yet. Click &quot;Add Internship&quot; to start.</p>}
+          </div>
+        </Card>
+      )}
+
+      {/* ── Debut: Skill Categories widget ── */}
+      {templateSlug === 'debut' && sectionKey === 'skills' && (
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle>Skill Categories</CardTitle>
+              <p className="text-xs text-gray-500 mt-0.5">Group skills into categories with proficiency dots (1–5)</p>
+            </div>
+            <button onClick={() => setDebutSkillCats(cs => [...cs, { title: '', items: [] }])} className={addBtn}>
+              <Plus size={12}/> Add Category
+            </button>
+          </div>
+          <div className="space-y-4">
+            {debutSkillCats.map((cat, i) => (
+              <div key={i} className="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-3">
+                <div className="flex items-center gap-2">
+                  <input value={cat.title} onChange={e => setDebutSkillCats(cs => cs.map((x, j) => j===i ? {...x, title: e.target.value} : x))} placeholder="Category name (e.g. Design tools)" className={fieldInput}/>
+                  <button onClick={() => setDebutSkillCats(cs => cs.filter((_, j) => j!==i))} className={removeBtn}><X size={14}/></button>
+                </div>
+                <div className="space-y-2">
+                  {cat.items.map((item, k) => (
+                    <div key={k} className="flex items-center gap-2 p-2 rounded-md border border-gray-200 bg-white">
+                      <input value={item.name} onChange={e => setDebutSkillCats(cs => cs.map((x, j) => j===i ? {...x, items: x.items.map((y, m) => m===k ? {...y, name: e.target.value} : y)} : x))} placeholder="Skill name (e.g. Figma)" className={fieldInput}/>
+                      <select value={item.level} onChange={e => setDebutSkillCats(cs => cs.map((x, j) => j===i ? {...x, items: x.items.map((y, m) => m===k ? {...y, level: Number(e.target.value)} : y)} : x))}
+                        className="px-2 py-1.5 rounded-md border border-gray-200 bg-white text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                        {[1,2,3,4,5].map(n => <option key={n} value={n}>● ● ● ● ● {n}/5</option>)}
+                      </select>
+                      <button onClick={() => setDebutSkillCats(cs => cs.map((x, j) => j===i ? {...x, items: x.items.filter((_, m) => m!==k)} : x))} className={removeBtn}><X size={14}/></button>
+                    </div>
+                  ))}
+                  <button onClick={() => setDebutSkillCats(cs => cs.map((x, j) => j===i ? {...x, items: [...x.items, { name: '', level: 3 }]} : x))}
+                    className="text-xs text-emerald-700 font-medium hover:underline flex items-center gap-1">
+                    <Plus size={11}/> Add skill to {cat.title || 'this category'}
+                  </button>
+                </div>
+              </div>
+            ))}
+            {debutSkillCats.length === 0 && <p className="text-xs text-gray-400 text-center py-4">No skill categories yet. Click &quot;Add Category&quot; to start.</p>}
           </div>
         </Card>
       )}

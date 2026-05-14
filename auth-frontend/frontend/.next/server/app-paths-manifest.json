@@ -1,8 +1,20 @@
 {
+  "/preview/[slug]/page": "app/preview/[slug]/page.js",
   "/page": "app/page.js",
+  "/templates/page": "app/templates/page.js",
   "/api/super-admin/db-stats/route": "app/api/super-admin/db-stats/route.js",
+  "/api/super-admin/users/route": "app/api/super-admin/users/route.js",
+  "/api/super-admin/templates/route": "app/api/super-admin/templates/route.js",
+  "/api/cron/deactivate-expired/route": "app/api/cron/deactivate-expired/route.js",
+  "/api/super-admin/templates/[id]/route": "app/api/super-admin/templates/[id]/route.js",
+  "/api/auth/me/route": "app/api/auth/me/route.js",
+  "/api/landing/stats/route": "app/api/landing/stats/route.js",
+  "/api/landing/templates/route": "app/api/landing/templates/route.js",
+  "/api/landing/settings/route": "app/api/landing/settings/route.js",
+  "/api/landing/testimonials/route": "app/api/landing/testimonials/route.js",
   "/portfolio/[username]/page": "app/portfolio/[username]/page.js",
   "/super-admin/page": "app/super-admin/page.js",
-  "/dashboard/editor/page": "app/dashboard/editor/page.js",
+  "/super-admin/users/page": "app/super-admin/users/page.js",
+  "/super-admin/templates/page": "app/super-admin/templates/page.js",
   "/dashboard/editor/[section]/page": "app/dashboard/editor/[section]/page.js"
 }

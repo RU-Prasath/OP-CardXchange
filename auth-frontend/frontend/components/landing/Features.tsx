@@ -9,13 +9,13 @@ const features = [
     visual: (
       <div className="mt-5 p-3 sm:p-5 rounded-xl border border-white/[0.07] bg-black/30">
         <div className="flex gap-1.5 sm:gap-2 justify-center mb-4">
-          {['2','8','4','9','',''].map((d,i) => (
+          {['2','6','0','4','',''].map((d,i) => (
             <div key={i} className={`w-[clamp(28px,9vw,40px)] aspect-[5/6] rounded-lg border flex items-center justify-center font-mono font-semibold text-base sm:text-lg ${d ? 'bg-indigo-500/15 border-indigo-500 shadow-[0_0_0_3px_rgba(99,102,241,0.15)]' : i===4 ? 'border-cyan-400' : 'border-white/[0.12]'}`}>
               {d || (i===4 ? <span className="w-px h-5 bg-cyan-400 blink"/> : '')}
             </div>
           ))}
         </div>
-        <div className="text-center font-mono text-[11px] sm:text-xs text-emerald-400">● code sent · expires in 04:32</div>
+        <div className="text-center font-mono text-[11px] sm:text-xs text-emerald-400">● code sent · expires in 04:11</div>
       </div>
     ),
   },

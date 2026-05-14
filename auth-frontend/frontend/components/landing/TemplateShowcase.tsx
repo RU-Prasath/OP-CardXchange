@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { Eye } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
-interface Template { _id: string; name: string; slug: string; category: string; pricingType: 'free'|'paid'; monthlyPrice: number; yearlyPrice: number; thumbnail: string; }
+interface Template { _id: string; name: string; slug: string; category: string; pricingType: 'free'|'paid'; monthlyPrice: number; yearlyPrice: number; thumbnail: string; createdAt: string; }
+
+const MAX_TILES = 6;
 interface SiteContact { contactEmail: string; contactPhone: string; }
 
 const THUMB_STYLES: Record<string, React.ReactNode> = {
@@ -61,7 +63,16 @@ export default function TemplateShowcase() {
   }, []);
 
   const categories = ['All', ...Array.from(new Set(templates.map(t => t.category.charAt(0).toUpperCase() + t.category.slice(1))))];
-  const filtered = filter === 'All' ? templates : templates.filter(t => t.category.toLowerCase() === filter.toLowerCase());
+
+  // Newest first
+  const byNewest = (a: Template, b: Template) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  // Apply category filter, then prefer latest free; top-up with latest paid until MAX_TILES
+  const pool = (filter === 'All' ? templates : templates.filter(t => t.category.toLowerCase() === filter.toLowerCase()));
+  const freeSorted = pool.filter(t => t.pricingType === 'free').sort(byNewest);
+  const paidSorted = pool.filter(t => t.pricingType === 'paid').sort(byNewest);
+  const filtered = (freeSorted.length >= MAX_TILES
+    ? freeSorted.slice(0, MAX_TILES)
+    : [...freeSorted, ...paidSorted.slice(0, MAX_TILES - freeSorted.length)]);
 
   return (
     <section id="templates" className="py-24 px-6">

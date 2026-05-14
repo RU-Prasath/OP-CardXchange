@@ -7,6 +7,10 @@ import mintslateConfig from '../configs/template-configs/mintslate';
 import apexConfig from '../configs/template-configs/apex';
 import atelierConfig from '../configs/template-configs/atelier';
 import quartzConfig from '../configs/template-configs/quartz';
+import nexusConfig from '../configs/template-configs/nexus';
+import prismConfig from '../configs/template-configs/prism';
+import mosaicConfig from '../configs/template-configs/mosaic';
+import debutConfig from '../configs/template-configs/debut';
 
 const MONGODB_URI = process.env.MONGODB_URI!;
 
@@ -65,6 +69,34 @@ async function seed() {
     thumbnail: '', isPublished: true, pricingType: 'free',
     frontendPath: 'developer/QuartzTemplate',
     adminConfig: { defaultContent: quartzConfig.defaultContent },
+  });
+
+  await upsert('nexus', {
+    name: 'Nexus', slug: 'nexus', category: 'developer',
+    thumbnail: '', isPublished: true, pricingType: 'free',
+    frontendPath: 'developer/NexusTemplate',
+    adminConfig: { defaultContent: nexusConfig.defaultContent },
+  });
+
+  await upsert('prism', {
+    name: 'Prism', slug: 'prism', category: 'designer',
+    thumbnail: '', isPublished: true, pricingType: 'free',
+    frontendPath: 'designer/PrismTemplate',
+    adminConfig: { defaultContent: prismConfig.defaultContent },
+  });
+
+  await upsert('mosaic', {
+    name: 'Mosaic', slug: 'mosaic', category: 'designer',
+    thumbnail: '', isPublished: true, pricingType: 'free',
+    frontendPath: 'designer/MosaicTemplate',
+    adminConfig: { defaultContent: mosaicConfig.defaultContent },
+  });
+
+  await upsert('debut', {
+    name: 'Debut', slug: 'debut', category: 'designer',
+    thumbnail: '', isPublished: true, pricingType: 'free',
+    frontendPath: 'designer/DebutTemplate',
+    adminConfig: { defaultContent: debutConfig.defaultContent },
   });
 
   await mongoose.disconnect();
