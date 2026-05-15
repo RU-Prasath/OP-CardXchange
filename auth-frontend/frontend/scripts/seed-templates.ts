@@ -11,6 +11,13 @@ import nexusConfig from '../configs/template-configs/nexus';
 import prismConfig from '../configs/template-configs/prism';
 import mosaicConfig from '../configs/template-configs/mosaic';
 import debutConfig from '../configs/template-configs/debut';
+import helixConfig from '../configs/template-configs/helix';
+import vellumConfig from '../configs/template-configs/vellum';
+import solaceConfig from '../configs/template-configs/solace';
+import campusConfig from '../configs/template-configs/campus';
+import pulseConfig from '../configs/template-configs/pulse';
+import lumenConfig from '../configs/template-configs/lumen';
+import forgeConfig from '../configs/template-configs/forge';
 
 const MONGODB_URI = process.env.MONGODB_URI!;
 
@@ -97,6 +104,56 @@ async function seed() {
     thumbnail: '', isPublished: true, pricingType: 'free',
     frontendPath: 'designer/DebutTemplate',
     adminConfig: { defaultContent: debutConfig.defaultContent },
+  });
+
+  // ── New templates (May 2026) ──
+  await upsert('helix', {
+    name: 'Helix', slug: 'helix', category: 'developer',
+    thumbnail: '', isPublished: true, pricingType: 'free',
+    frontendPath: 'developer/HelixTemplate',
+    adminConfig: { defaultContent: helixConfig.defaultContent },
+  });
+
+  await upsert('vellum', {
+    name: 'Vellum', slug: 'vellum', category: 'designer',
+    thumbnail: '', isPublished: true, pricingType: 'free',
+    frontendPath: 'designer/VellumTemplate',
+    adminConfig: { defaultContent: vellumConfig.defaultContent },
+  });
+
+  await upsert('solace', {
+    name: 'Solace', slug: 'solace', category: 'freelancer',
+    thumbnail: '', isPublished: true, pricingType: 'free',
+    frontendPath: 'freelancer/SolaceTemplate',
+    adminConfig: { defaultContent: solaceConfig.defaultContent },
+  });
+
+  await upsert('campus', {
+    name: 'Campus', slug: 'campus', category: 'student',
+    thumbnail: '', isPublished: true, pricingType: 'free',
+    frontendPath: 'student/CampusTemplate',
+    adminConfig: { defaultContent: campusConfig.defaultContent },
+  });
+
+  await upsert('pulse', {
+    name: 'Pulse', slug: 'pulse', category: 'marketer',
+    thumbnail: '', isPublished: true, pricingType: 'free',
+    frontendPath: 'marketer/PulseTemplate',
+    adminConfig: { defaultContent: pulseConfig.defaultContent },
+  });
+
+  await upsert('lumen', {
+    name: 'Lumen', slug: 'lumen', category: 'content-creator',
+    thumbnail: '', isPublished: true, pricingType: 'free',
+    frontendPath: 'content-creator/LumenTemplate',
+    adminConfig: { defaultContent: lumenConfig.defaultContent },
+  });
+
+  await upsert('forge', {
+    name: 'Forge', slug: 'forge', category: 'agency',
+    thumbnail: '', isPublished: true, pricingType: 'free',
+    frontendPath: 'agency/ForgeTemplate',
+    adminConfig: { defaultContent: forgeConfig.defaultContent },
   });
 
   await mongoose.disconnect();

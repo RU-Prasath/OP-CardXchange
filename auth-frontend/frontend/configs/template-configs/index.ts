@@ -8,6 +8,13 @@ import nexusConfig from './nexus';
 import prismConfig from './prism';
 import mosaicConfig from './mosaic';
 import debutConfig from './debut';
+import helixConfig from './helix';
+import vellumConfig from './vellum';
+import solaceConfig from './solace';
+import campusConfig from './campus';
+import pulseConfig from './pulse';
+import lumenConfig from './lumen';
+import forgeConfig from './forge';
 import type { TemplateConfig } from '@/types';
 
 const templateConfigs: Record<string, TemplateConfig> = {
@@ -21,6 +28,13 @@ const templateConfigs: Record<string, TemplateConfig> = {
   prism: prismConfig,
   mosaic: mosaicConfig,
   debut: debutConfig,
+  helix: helixConfig,
+  vellum: vellumConfig,
+  solace: solaceConfig,
+  campus: campusConfig,
+  pulse: pulseConfig,
+  lumen: lumenConfig,
+  forge: forgeConfig,
 };
 
 export function getTemplateConfig(slug: string): TemplateConfig | null {

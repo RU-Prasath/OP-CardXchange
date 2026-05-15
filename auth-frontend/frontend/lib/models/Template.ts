@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 export interface ITemplate extends Document {
   name: string;
   slug: string;
-  category: 'developer' | 'designer' | 'photographer' | 'writer' | 'minimal';
+  category: 'developer' | 'designer' | 'freelancer' | 'student' | 'marketer' | 'content-creator' | 'agency' | 'photographer' | 'writer' | 'minimal';
   thumbnail: string;
   isPublished: boolean;
   pricingType: 'free' | 'paid';
@@ -21,7 +21,7 @@ const TemplateSchema = new Schema<ITemplate>(
     slug: { type: String, required: true, unique: true, lowercase: true },
     category: {
       type: String,
-      enum: ['developer', 'designer', 'photographer', 'writer', 'minimal'],
+      enum: ['developer', 'designer', 'freelancer', 'student', 'marketer', 'content-creator', 'agency', 'photographer', 'writer', 'minimal'],
       required: true,
     },
     thumbnail: { type: String, default: '' },

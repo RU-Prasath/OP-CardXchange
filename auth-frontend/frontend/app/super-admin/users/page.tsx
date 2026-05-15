@@ -1,6 +1,6 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, ToggleLeft, ToggleRight, Trash2, ExternalLink, RefreshCw, Clock, AlertTriangle, Pencil, Check, X } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { Plus, Search, ToggleLeft, ToggleRight, Trash2, ExternalLink, RefreshCw, Clock, AlertTriangle, Pencil, Check, X, SlidersHorizontal, Filter, LayoutTemplate, CheckCircle2, Circle, AtSign, Phone, DollarSign } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
@@ -43,10 +43,19 @@ function InlineEdit({ value, onSave, type = 'text', prefix }: { value: string; o
   );
 }
 
+// Users with <= this many days left appear in the "Plan Expiry Status" panel.
+const EXPIRY_WARNING_DAYS = 14;
+
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [search, setSearch] = useState('');
+  const [usernameSearch, setUsernameSearch] = useState('');
+  const [phoneSearch, setPhoneSearch] = useState('');
+  const [filterTemplate, setFilterTemplate] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
+  const [filterPlan, setFilterPlan] = useState<'all' | 'free' | 'paid'>('all');
+  const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [form, setForm] = useState({ email: '', username: '', phone: '', planBilling: 'monthly' as 'monthly'|'yearly', templateId: '' });
@@ -103,9 +112,51 @@ export default function UsersPage() {
   const selectedTemplate = templates.find(t => t._id === form.templateId);
   const availableTemplates = templates.filter(t => t.isPublished);
 
-  // Plan expiry summary cards
-  const paidUsers = users.filter(u => (u.plan || 'free') === 'paid' && u.planStartDate);
-  const expiryData = paidUsers.map(u => ({ ...u, remaining: getRemainingDays(u.planStartDate, u.planBilling || 'monthly') })).sort((a, b) => a.remaining - b.remaining);
+  // ── Plan expiry: only users whose plan is going to expire soon (or already expired) ──
+  const expiryData = useMemo(() => {
+    return users
+      .filter(u => (u.plan || 'free') === 'paid' && u.planStartDate)
+      .map(u => ({ ...u, remaining: getRemainingDays(u.planStartDate, u.planBilling || 'monthly') }))
+      .filter(u => u.remaining <= EXPIRY_WARNING_DAYS)
+      .sort((a, b) => a.remaining - b.remaining);
+  }, [users]);
+
+  // ── Client-side filtering ──
+  const filteredUsers = useMemo(() => {
+    return users.filter(u => {
+      if (usernameSearch && !u.username?.toLowerCase().includes(usernameSearch.toLowerCase())) return false;
+      if (phoneSearch && !(u.phone || '').toLowerCase().includes(phoneSearch.toLowerCase())) return false;
+      if (filterTemplate !== 'all') {
+        if (filterTemplate === 'none') {
+          if (u.allocatedTemplate) return false;
+        } else if (u.allocatedTemplate?._id !== filterTemplate) return false;
+      }
+      if (filterStatus !== 'all' && (filterStatus === 'active' ? !u.isActive : u.isActive)) return false;
+      if (filterPlan !== 'all' && (u.plan || 'free') !== filterPlan) return false;
+      return true;
+    });
+  }, [users, usernameSearch, phoneSearch, filterTemplate, filterStatus, filterPlan]);
+
+  const planCounts = useMemo(() => ({
+    free: users.filter(u => (u.plan || 'free') === 'free').length,
+    paid: users.filter(u => (u.plan || 'free') === 'paid').length,
+  }), [users]);
+  const statusCounts = useMemo(() => ({
+    active: users.filter(u => u.isActive).length,
+    inactive: users.filter(u => !u.isActive).length,
+  }), [users]);
+
+  const activeFilterCount =
+    (usernameSearch ? 1 : 0) +
+    (phoneSearch ? 1 : 0) +
+    (filterTemplate !== 'all' ? 1 : 0) +
+    (filterStatus !== 'all' ? 1 : 0) +
+    (filterPlan !== 'all' ? 1 : 0);
+
+  function clearFilters() {
+    setUsernameSearch(''); setPhoneSearch('');
+    setFilterTemplate('all'); setFilterStatus('all'); setFilterPlan('all');
+  }
 
   return (
     <div>
@@ -119,22 +170,30 @@ export default function UsersPage() {
         </button>
       </div>
 
-      {/* Plan expiry grid */}
+      {/* Plan expiry grid — only users whose plan is going to expire (or already expired) */}
       {expiryData.length > 0 && (
         <div className="mb-8">
-          <h2 className="font-semibold text-sm text-white/60 mb-3 flex items-center gap-2"><Clock size={14}/> Plan Expiry Status</h2>
+          <h2 className="font-semibold text-sm text-white/60 mb-3 flex items-center gap-2">
+            <Clock size={14}/> Plan Expiry Status
+            <span className="text-[10px] font-mono text-white/30 normal-case font-normal">
+              · {expiryData.length} expiring within {EXPIRY_WARNING_DAYS} days
+            </span>
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {expiryData.map(u => {
-              const urgent = u.remaining <= 3;
-              const warning = u.remaining <= 7 && u.remaining > 3;
+              const expired = u.remaining <= 0;
+              const urgent = u.remaining > 0 && u.remaining <= 3;
+              const warning = u.remaining > 3 && u.remaining <= 7;
               return (
-                <div key={u._id} className={`card-panel p-4 border ${urgent ? 'border-red-500/40' : warning ? 'border-amber-500/30' : 'border-white/[0.07]'}`}>
+                <div key={u._id} className={`card-panel p-4 border ${expired ? 'border-red-500/60 bg-red-500/[0.04]' : urgent ? 'border-red-500/40' : warning ? 'border-amber-500/30' : 'border-white/[0.07]'}`}>
                   <div className="flex items-center gap-2 mb-2">
-                    {urgent && <AlertTriangle size={12} className="text-red-400 shrink-0"/>}
+                    {(expired || urgent) && <AlertTriangle size={12} className="text-red-400 shrink-0"/>}
                     <span className="text-xs font-mono text-white/60 truncate">{u.email}</span>
                   </div>
-                  <div className={`text-2xl font-bold mb-0.5 ${urgent ? 'text-red-400' : warning ? 'text-amber-400' : 'text-white'}`}>{u.remaining}d</div>
-                  <div className="text-[10px] text-white/30 font-mono capitalize">{u.planBilling} · remaining</div>
+                  <div className={`text-2xl font-bold mb-0.5 ${expired ? 'text-red-500' : urgent ? 'text-red-400' : warning ? 'text-amber-400' : 'text-white'}`}>
+                    {expired ? 'Expired' : `${u.remaining}d`}
+                  </div>
+                  <div className="text-[10px] text-white/30 font-mono capitalize">{u.planBilling} · {expired ? 'past due' : 'remaining'}</div>
                 </div>
               );
             })}
@@ -142,13 +201,134 @@ export default function UsersPage() {
         </div>
       )}
 
-      {/* Search */}
-      <div className="relative mb-5">
-        <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30"/>
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by email…"
-          className="w-full h-10 pl-9 pr-4 rounded-xl border border-white/[0.07] bg-white/[0.03] text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all max-w-sm"/>
-        <button onClick={fetchUsers} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white p-1 max-w-sm"><RefreshCw size={12}/></button>
+      {/* ── Search + Filter Toolbar ── */}
+      <div className="card-panel p-3 mb-4 flex items-center gap-3 flex-wrap">
+        <div className="relative flex-1 min-w-[220px]">
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30"/>
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by email…"
+            className="w-full h-10 pl-9 pr-9 rounded-lg border border-white/[0.07] bg-white/[0.02] text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"/>
+          {search && (
+            <button onClick={() => setSearch('')} className="absolute right-9 top-1/2 -translate-y-1/2 p-1 text-white/30 hover:text-white/70">
+              <X size={13}/>
+            </button>
+          )}
+          <button onClick={fetchUsers} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white p-1" title="Refresh"><RefreshCw size={12}/></button>
+        </div>
+
+        <button
+          onClick={() => setShowFilters(s => !s)}
+          className={`relative flex items-center gap-2 h-10 px-3.5 rounded-lg border text-sm transition-all ${showFilters ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300' : 'border-white/[0.08] text-white/60 hover:text-white hover:border-white/[0.15]'}`}
+        >
+          <SlidersHorizontal size={14}/> Filters
+          {activeFilterCount > 0 && (
+            <span className="ml-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-indigo-500 text-white text-[10px] font-bold">
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
       </div>
+
+      {/* ── Filter Panel ── */}
+      {showFilters && (
+        <div className="card-panel p-4 mb-4 animate-in fade-in slide-in-from-top-1 duration-200 space-y-4">
+          {/* Username + Phone search row */}
+          <div className="grid md:grid-cols-2 gap-3">
+            <div>
+              <label className="text-[11px] font-mono uppercase tracking-wider text-white/40 mb-2 flex items-center gap-1.5">
+                <AtSign size={11}/> Username
+              </label>
+              <div className="relative">
+                <input value={usernameSearch} onChange={e => setUsernameSearch(e.target.value)} placeholder="Filter by username…"
+                  className="w-full h-9 pl-3 pr-9 rounded-lg border border-white/[0.08] bg-white/[0.02] text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"/>
+                {usernameSearch && (
+                  <button onClick={() => setUsernameSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-white/30 hover:text-white/70">
+                    <X size={12}/>
+                  </button>
+                )}
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] font-mono uppercase tracking-wider text-white/40 mb-2 flex items-center gap-1.5">
+                <Phone size={11}/> Phone
+              </label>
+              <div className="relative">
+                <input value={phoneSearch} onChange={e => setPhoneSearch(e.target.value)} placeholder="Filter by phone…"
+                  className="w-full h-9 pl-3 pr-9 rounded-lg border border-white/[0.08] bg-white/[0.02] text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"/>
+                {phoneSearch && (
+                  <button onClick={() => setPhoneSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-white/30 hover:text-white/70">
+                    <X size={12}/>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            {/* Template Filter */}
+            <div>
+              <label className="text-[11px] font-mono uppercase tracking-wider text-white/40 mb-2 flex items-center gap-1.5">
+                <LayoutTemplate size={11}/> Template
+              </label>
+              <select value={filterTemplate} onChange={e => setFilterTemplate(e.target.value)} className="w-full h-9 rounded-lg border border-white/[0.08] bg-[#11151F] px-3 text-sm text-white/80 focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{colorScheme:'dark'}}>
+                <option value="all">All templates</option>
+                <option value="none">— None (unallocated) —</option>
+                {templates.map(t => <option key={t._id} value={t._id}>{t.name} ({t.category})</option>)}
+              </select>
+            </div>
+
+            {/* Status Filter */}
+            <div>
+              <label className="text-[11px] font-mono uppercase tracking-wider text-white/40 mb-2 flex items-center gap-1.5">
+                <CheckCircle2 size={11}/> Status
+              </label>
+              <div className="flex gap-1.5 flex-wrap">
+                {[
+                  { v: 'all', label: 'All', icon: null, count: users.length },
+                  { v: 'active', label: 'Active', icon: <CheckCircle2 size={11}/>, count: statusCounts.active },
+                  { v: 'inactive', label: 'Inactive', icon: <Circle size={11}/>, count: statusCounts.inactive },
+                ].map(opt => (
+                  <button key={opt.v} onClick={() => setFilterStatus(opt.v as 'all' | 'active' | 'inactive')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${filterStatus === opt.v ? (opt.v === 'active' ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300' : opt.v === 'inactive' ? 'bg-red-500/15 border-red-500/40 text-red-300' : 'bg-indigo-500/15 border-indigo-500/40 text-indigo-200') : 'border-white/[0.08] text-white/50 hover:text-white hover:border-white/[0.15]'}`}>
+                    {opt.icon}{opt.label}
+                    {opt.v !== 'all' && <span className="ml-1 text-[10px] font-mono opacity-60">{opt.count}</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Pricing Plan Filter */}
+            <div>
+              <label className="text-[11px] font-mono uppercase tracking-wider text-white/40 mb-2 flex items-center gap-1.5">
+                <DollarSign size={11}/> Pricing plan
+              </label>
+              <div className="flex gap-1.5 flex-wrap">
+                {[
+                  { v: 'all', label: 'All', count: users.length },
+                  { v: 'free', label: 'Free', count: planCounts.free },
+                  { v: 'paid', label: 'Paid', count: planCounts.paid },
+                ].map(opt => (
+                  <button key={opt.v} onClick={() => setFilterPlan(opt.v as 'all' | 'free' | 'paid')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${filterPlan === opt.v ? (opt.v === 'free' ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300' : opt.v === 'paid' ? 'bg-violet-500/15 border-violet-500/40 text-violet-300' : 'bg-indigo-500/15 border-indigo-500/40 text-indigo-200') : 'border-white/[0.08] text-white/50 hover:text-white hover:border-white/[0.15]'}`}>
+                    {opt.label}
+                    {opt.v !== 'all' && <span className="ml-1 text-[10px] font-mono opacity-60">{opt.count}</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {(activeFilterCount > 0 || search) && (
+            <div className="pt-3 border-t border-white/[0.05] flex items-center justify-between">
+              <div className="text-xs text-white/40 font-mono">
+                Showing <span className="text-white/80 font-semibold">{filteredUsers.length}</span> of {users.length} users
+              </div>
+              <button onClick={clearFilters} className="flex items-center gap-1.5 text-xs text-white/50 hover:text-red-400 transition-colors">
+                <X size={12}/> Clear filters
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Table */}
       <div className="card-panel overflow-x-auto">
@@ -165,7 +345,14 @@ export default function UsersPage() {
               <tr><td colSpan={10} className="text-center py-12 text-white/30 text-sm">Loading…</td></tr>
             ) : users.length === 0 ? (
               <tr><td colSpan={10} className="text-center py-12 text-white/30 text-sm">No users yet.</td></tr>
-            ) : users.map(u => {
+            ) : filteredUsers.length === 0 ? (
+              <tr><td colSpan={10} className="text-center py-12 text-white/30 text-sm">
+                No users match your filters.
+                {(activeFilterCount > 0 || search) && (
+                  <button onClick={() => { clearFilters(); setSearch(''); }} className="ml-2 text-indigo-400 hover:text-indigo-300">Clear filters</button>
+                )}
+              </td></tr>
+            ) : filteredUsers.map(u => {
               const planType = u.plan || 'free';
               const remaining = planType === 'paid' ? getRemainingDays(u.planStartDate, u.planBilling || 'monthly') : null;
               return (

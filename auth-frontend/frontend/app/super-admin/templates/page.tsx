@@ -1,15 +1,33 @@
 'use client';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
-import { Plus, Eye, EyeOff, Trash2, DollarSign, Gift, ExternalLink, Pencil, Upload, Search, Filter, X, LayoutGrid, List, ArrowUpDown, SlidersHorizontal, Code2, Palette, CheckCircle2, Circle } from 'lucide-react';
+import { Plus, Eye, EyeOff, Trash2, DollarSign, Gift, ExternalLink, Pencil, Upload, Search, Filter, X, LayoutGrid, List, ArrowUpDown, SlidersHorizontal, Code2, Palette, CheckCircle2, Circle, Briefcase, GraduationCap, TrendingUp, Video, Building2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 
 interface Template { _id: string; name: string; slug: string; category: string; thumbnail: string; isPublished: boolean; pricingType: 'free' | 'paid'; monthlyPrice: number; yearlyPrice: number; frontendPath: string; createdAt: string; adminConfig?: { defaultContent?: Record<string, string> }; }
 
-const CATEGORIES = ['developer','designer'];
-const TEMPLATE_PATHS = ['developer/MarenTemplate','developer/MintSlateTemplate','developer/ApexTemplate','developer/QuartzTemplate','developer/NexusTemplate','designer/AtelierTemplate','designer/PrismTemplate','designer/MosaicTemplate','designer/DebutTemplate'];
+const CATEGORIES = ['developer','designer','freelancer','student','marketer','content-creator','agency'];
+const TEMPLATE_PATHS = [
+  'developer/MarenTemplate','developer/MintSlateTemplate','developer/ApexTemplate','developer/QuartzTemplate','developer/NexusTemplate','developer/HelixTemplate',
+  'designer/AtelierTemplate','designer/PrismTemplate','designer/MosaicTemplate','designer/DebutTemplate','designer/VellumTemplate',
+  'freelancer/SolaceTemplate',
+  'student/CampusTemplate',
+  'marketer/PulseTemplate',
+  'content-creator/LumenTemplate',
+  'agency/ForgeTemplate',
+];
+
+const CATEGORY_META: Record<string, { label: string; icon: React.ReactNode; gradient: string }> = {
+  'developer':       { label: 'Developer',       icon: <Code2 size={11}/>,         gradient: 'linear-gradient(135deg,rgba(99,102,241,0.15),rgba(168,85,247,0.15))' },
+  'designer':        { label: 'Designer',        icon: <Palette size={11}/>,       gradient: 'linear-gradient(135deg,rgba(244,114,182,0.18),rgba(251,146,60,0.15))' },
+  'freelancer':      { label: 'Freelancer',      icon: <Briefcase size={11}/>,     gradient: 'linear-gradient(135deg,rgba(251,146,60,0.18),rgba(34,197,94,0.15))' },
+  'student':         { label: 'Student',         icon: <GraduationCap size={11}/>, gradient: 'linear-gradient(135deg,rgba(250,204,21,0.18),rgba(59,130,246,0.15))' },
+  'marketer':        { label: 'Marketer',        icon: <TrendingUp size={11}/>,    gradient: 'linear-gradient(135deg,rgba(217,249,79,0.18),rgba(236,72,153,0.15))' },
+  'content-creator': { label: 'Content Creator', icon: <Video size={11}/>,         gradient: 'linear-gradient(135deg,rgba(168,85,247,0.18),rgba(56,189,248,0.15))' },
+  'agency':          { label: 'Agency',          icon: <Building2 size={11}/>,     gradient: 'linear-gradient(135deg,rgba(255,94,31,0.18),rgba(255,255,255,0.05))' },
+};
 
 type SortKey = 'newest' | 'oldest' | 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc';
 
@@ -68,7 +86,7 @@ export default function TemplatesPage() {
     const payload = { ...form, monthlyPrice: parseFloat(form.monthlyPrice) || 0, yearlyPrice: parseFloat(form.yearlyPrice) || 0 };
     const res = await fetch('/api/super-admin/templates', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     const data = await res.json();
-    if (data.success) { toast({ title: 'Template created' }); setCreateOpen(false); setForm({ name: '', slug: '', category: 'developer', pricingType: 'free', monthlyPrice: '', yearlyPrice: '', frontendPath: 'developer/MarenTemplate', thumbnail: '' }); fetchTemplates(); }
+    if (data.success) { toast({ title: 'Template created' }); setCreateOpen(false); setForm({ name: '', slug: '', category: 'developer', pricingType: 'free', monthlyPrice: '', yearlyPrice: '', frontendPath: 'developer/HelixTemplate', thumbnail: '' }); fetchTemplates(); }
     else toast({ title: 'Error', description: data.error, variant: 'destructive' });
     setSaving(false);
   }
@@ -151,15 +169,18 @@ export default function TemplatesPage() {
   }, [templates, search, filterCategory, filterPricing, filterStatus, sortBy]);
 
   // ── Stats ──
-  const stats = useMemo(() => ({
-    total: templates.length,
-    published: templates.filter(t => t.isPublished).length,
-    draft: templates.filter(t => !t.isPublished).length,
-    free: templates.filter(t => t.pricingType === 'free').length,
-    paid: templates.filter(t => t.pricingType === 'paid').length,
-    developer: templates.filter(t => t.category === 'developer').length,
-    designer: templates.filter(t => t.category === 'designer').length,
-  }), [templates]);
+  const stats = useMemo(() => {
+    const byCategory: Record<string, number> = {};
+    CATEGORIES.forEach(c => { byCategory[c] = templates.filter(t => t.category === c).length; });
+    return {
+      total: templates.length,
+      published: templates.filter(t => t.isPublished).length,
+      draft: templates.filter(t => !t.isPublished).length,
+      free: templates.filter(t => t.pricingType === 'free').length,
+      paid: templates.filter(t => t.pricingType === 'paid').length,
+      byCategory,
+    };
+  }, [templates]);
 
   const activeFilterCount = (filterCategory !== 'all' ? 1 : 0) + (filterPricing !== 'all' ? 1 : 0) + (filterStatus !== 'all' ? 1 : 0);
 
@@ -261,27 +282,31 @@ export default function TemplatesPage() {
         <div className="card-panel p-4 mb-4 animate-in fade-in slide-in-from-top-1 duration-200">
           <div className="grid md:grid-cols-3 gap-4">
             {/* Category Filter */}
-            <div>
+            <div className="md:col-span-3">
               <label className="text-[11px] font-mono uppercase tracking-wider text-white/40 mb-2 flex items-center gap-1.5">
                 <Filter size={11}/> Category
               </label>
               <div className="flex gap-1.5 flex-wrap">
-                {[
-                  { v: 'all', label: 'All', icon: null },
-                  { v: 'developer', label: 'Developer', icon: <Code2 size={11}/> },
-                  { v: 'designer', label: 'Designer', icon: <Palette size={11}/> },
-                ].map(opt => (
-                  <button
-                    key={opt.v}
-                    onClick={() => setFilterCategory(opt.v)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${filterCategory === opt.v ? 'bg-indigo-500/15 border-indigo-500/40 text-indigo-200' : 'border-white/[0.08] text-white/50 hover:text-white hover:border-white/[0.15]'}`}
-                  >
-                    {opt.icon}{opt.label}
-                    {opt.v !== 'all' && (
-                      <span className="ml-1 text-[10px] font-mono opacity-60">{opt.v === 'developer' ? stats.developer : stats.designer}</span>
-                    )}
-                  </button>
-                ))}
+                <button
+                  onClick={() => setFilterCategory('all')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${filterCategory === 'all' ? 'bg-indigo-500/15 border-indigo-500/40 text-indigo-200' : 'border-white/[0.08] text-white/50 hover:text-white hover:border-white/[0.15]'}`}
+                >
+                  All
+                </button>
+                {CATEGORIES.map(cat => {
+                  const meta = CATEGORY_META[cat];
+                  const count = stats.byCategory[cat] || 0;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setFilterCategory(cat)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${filterCategory === cat ? 'bg-indigo-500/15 border-indigo-500/40 text-indigo-200' : 'border-white/[0.08] text-white/50 hover:text-white hover:border-white/[0.15]'}`}
+                    >
+                      {meta?.icon}{meta?.label || cat}
+                      <span className="ml-1 text-[10px] font-mono opacity-60">{count}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -379,7 +404,7 @@ export default function TemplatesPage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map(t => (
             <div key={t._id} className="card-panel overflow-hidden hover:border-white/[0.18] transition-all group">
-              <div className="aspect-[4/3] border-b border-white/[0.07] relative overflow-hidden" style={{background: t.category === 'designer' ? 'linear-gradient(135deg,rgba(244,114,182,0.18),rgba(251,146,60,0.15))' : 'linear-gradient(135deg,rgba(99,102,241,0.15),rgba(168,85,247,0.15))'}}>
+              <div className="aspect-[4/3] border-b border-white/[0.07] relative overflow-hidden" style={{background: CATEGORY_META[t.category]?.gradient || 'linear-gradient(135deg,rgba(99,102,241,0.15),rgba(168,85,247,0.15))'}}>
                 {t.thumbnail ? <img src={t.thumbnail} alt={t.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/> :
                   <div className="w-full h-full flex items-center justify-center text-white/10 font-mono text-xs">{t.slug}</div>}
 
@@ -395,8 +420,8 @@ export default function TemplatesPage() {
                 {/* category badge - top right */}
                 <div className="absolute top-2 right-2">
                   <Badge variant="outline" className="backdrop-blur-md bg-black/30">
-                    {t.category === 'developer' ? <Code2 size={10} className="mr-1"/> : <Palette size={10} className="mr-1"/>}
-                    {t.category}
+                    <span className="mr-1 inline-flex items-center">{CATEGORY_META[t.category]?.icon}</span>
+                    {CATEGORY_META[t.category]?.label || t.category}
                   </Badge>
                 </div>
 
@@ -453,7 +478,7 @@ export default function TemplatesPage() {
           {filtered.map(t => (
             <div key={t._id} className="grid grid-cols-12 gap-3 px-4 py-3 border-b border-white/[0.03] last:border-0 hover:bg-white/[0.02] transition-colors items-center">
               <div className="col-span-5 flex items-center gap-3 min-w-0">
-                <div className="w-12 h-12 rounded-lg overflow-hidden border border-white/[0.07] shrink-0" style={{background: t.category === 'designer' ? 'linear-gradient(135deg,rgba(244,114,182,0.18),rgba(251,146,60,0.15))' : 'linear-gradient(135deg,rgba(99,102,241,0.15),rgba(168,85,247,0.15))'}}>
+                <div className="w-12 h-12 rounded-lg overflow-hidden border border-white/[0.07] shrink-0" style={{background: CATEGORY_META[t.category]?.gradient || 'linear-gradient(135deg,rgba(99,102,241,0.15),rgba(168,85,247,0.15))'}}>
                   {t.thumbnail && <img src={t.thumbnail} alt={t.name} className="w-full h-full object-cover"/>}
                 </div>
                 <div className="min-w-0">
@@ -463,8 +488,8 @@ export default function TemplatesPage() {
               </div>
               <div className="col-span-2">
                 <Badge variant="outline">
-                  {t.category === 'developer' ? <Code2 size={10} className="mr-1"/> : <Palette size={10} className="mr-1"/>}
-                  {t.category}
+                  <span className="mr-1 inline-flex items-center">{CATEGORY_META[t.category]?.icon}</span>
+                  {CATEGORY_META[t.category]?.label || t.category}
                 </Badge>
               </div>
               <div className="col-span-1">
@@ -533,7 +558,7 @@ export default function TemplatesPage() {
               <div>
                 <label className="text-sm text-white/60 mb-1 block">Category</label>
                 <select value={form.category} onChange={e => setForm({...form, category: e.target.value})} className="w-full h-10 rounded-xl border border-white/[0.12] bg-[#11151F] px-3 text-sm text-white/70 focus:outline-none">
-                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  {CATEGORIES.map(c => <option key={c} value={c}>{CATEGORY_META[c]?.label || c}</option>)}
                 </select>
               </div>
               <div>
@@ -604,7 +629,7 @@ export default function TemplatesPage() {
                 <div>
                   <label className="text-sm text-white/60 mb-1 block">Category</label>
                   <select value={editingTemplate.category} onChange={e => setEditingTemplate(t => t ? { ...t, category: e.target.value } : t)} className="w-full h-10 rounded-xl border border-white/[0.12] bg-[#11151F] px-3 text-sm text-white/70 focus:outline-none">
-                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    {CATEGORIES.map(c => <option key={c} value={c}>{CATEGORY_META[c]?.label || c}</option>)}
                   </select>
                 </div>
                 <div>
